@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html lang="es" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8"/>
+<link href="/images/logo_happychildren.jpg" rel="icon" type="image/jpg"/>
+<title>Gestión de Productos</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            margin-bottom: 20px;
+        }
+
+        .logo-container img {
+            height: 60px;
+            width: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 12px;
+            border: 2px solid white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-text {
+            font-size: 1.8rem;
+            font-weight: 800;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            letter-spacing: -1px;
+        }
+
+        .logo-text .happy {
+            color: #1565C0;
+        }
+
+        .logo-text .children {
+            color: #ff9800;
+            margin-left: 2px;
+        }
+
+        .container {
+            margin-top: 30px;
+            background: white;
+            padding: 3rem;
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: #1565C0;
+            /* Blue matching index header */
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            font-weight: bold;
+            padding: 1rem;
+        }
+
+        .btn-action {
+            margin-right: 5px;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #e3f2fd;
+            /* Light blue hover */
+        }
+
+        .badge {
+            border-radius: 30px;
+            padding: 0.5em 1em;
+        }
+
+        h2 {
+            color: #1565C0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="container mb-5">
+<a class="logo-container" href="/dashboard">
+<img alt="Logo" src="/images/logo_happychildren.jpg"/>
+<div class="logo-text">
+<span class="happy">Happy</span><span class="children">Children</span>
+</div>
+</a>
+<!-- Header y Botones de Navegación -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+<div>
+<h2 class="mb-0"><i class="fas fa-boxes"></i> Gestión de Productos</h2>
+<div class="mt-2">
+<a class="btn btn-sm btn-outline-primary rounded-pill me-2" href="/categorias"><i class="fas fa-tags"></i> Ir a Categorías</a>
+<a class="btn btn-sm btn-outline-primary rounded-pill" href="/ventas"><i class="fas fa-shopping-cart"></i> Ir a Ventas</a>
+</div>
+</div>
+<a class="btn btn-primary rounded-pill px-4 shadow-sm" href="/dashboard"><i class="fas fa-arrow-left"></i>
+                Volver</a>
+</div>
+<!-- Alertas de Error (Opcional) -->
+{% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+<!-- CARD FORMULARIO -->
+<div class="card mb-4">
+<div class="card-header">
+<i class="fas fa-edit me-2"></i>
+<span>{{ ('Detalles del Producto' if readonly else 'Editar Producto') if producto.id_producto != None else 'Nuevo Producto' }}</span>
+</div>
+<div class="card-body">
+<form action="/productos/guardar" method="post" th:object="${producto}">
+<input th:field="*{id_producto}" type="hidden"/>
+<div class="row g-3">
+<!-- Código -->
+<div class="col-md-3">
+<label class="form-label">Código</label>
+<input class="form-control" placeholder="Autogenerado" readonly="" th:field="*{codigo}" type="text"/>
+</div>
+<!-- Nombre -->
+<div class="col-md-3">
+<label class="form-label">Nombre</label>
+<input class="form-control" required="" th:disabled="${readonly}" th:field="*{nombre}" type="text"/>
+</div>
+<!-- Categoría -->
+<div class="col-md-3">
+<label class="form-label">Categoría</label>
+<select class="form-select" required="" th:disabled="${readonly}" th:field="*{categoria.id_categoria}">
+<option value="">Seleccione...</option>
+{% for cat in categorias %}<option value="{{ cat.id_categoria }}">{{ cat.nombre }}</option>{% endfor %}
+</select>
+</div>
+<!-- Estado -->
+{% if producto.id_producto != None %}<div class="col-md-3">
+<label class="form-label">Estado</label>
+<select class="form-select" th:disabled="${readonly}" th:field="*{activo}">
+<option value="Activo">Activo</option>
+<option value="Inactivo">Inactivo</option>
+</select>
+</div>{% endif %}
+</div>
+<div class="row g-3 mt-2">
+<!-- Descripción -->
+<div class="col-md-12">
+<label class="form-label">Descripción</label>
+<textarea class="form-control" rows="2" th:disabled="${readonly}" th:field="*{descripcion}"></textarea>
+</div>
+<!-- Imagen URL -->
+<div class="col-md-12">
+<label class="form-label">URL de Imagen</label>
+<input class="form-control" placeholder="https://ejemplo.com/imagen.jpg" th:disabled="${readonly}" th:field="*{imagenUrl}" type="text"/>
+</div>
+</div>
+<div class="row g-3 mt-2">
+<!-- P. Compra -->
+<div class="col-md-3">
+<label class="form-label">Precio Compra</label>
+<input class="form-control" required="" step="0.01" th:disabled="${readonly}" th:field="*{precio_compra}" type="number"/>
+</div>
+<!-- P. Venta -->
+<div class="col-md-3">
+<label class="form-label">Precio Venta</label>
+<input class="form-control" required="" step="0.01" th:disabled="${readonly}" th:field="*{precio_venta}" type="number"/>
+</div>
+<!-- Stock -->
+<div class="col-md-3">
+<label class="form-label">Stock Actual</label>
+<input class="form-control" required="" th:disabled="${readonly}" th:field="*{stock_actual}" type="number"/>
+</div>
+<!-- Stock Min -->
+<div class="col-md-3">
+<label class="form-label">Stock Mínimo</label>
+<input class="form-control" required="" th:disabled="${readonly}" th:field="*{stock_minimo}" type="number"/>
+</div>
+</div>
+<div class="row g-3 mt-2">
+<!-- Unidad -->
+<div class="col-md-4">
+<label class="form-label">Unidad de Medida</label>
+<select class="form-select" th:disabled="${readonly}" th:field="*{unidad_medida}">
+<option value="Unidad">Unidad</option>
+<option value="Paquete">Paquete</option>
+<option value="Docena">Docena</option>
+</select>
+</div>
+<!-- Fecha Creación -->
+<div class="col-md-4">
+<label class="form-label">Fecha Registro</label>
+<input class="form-control" readonly="" required="" th:field="*{fecha_creacion}" type="date"/>
+</div>
+</div>
+<!-- Botones Formulario -->
+<div class="mt-4 text-end">
+{% if producto.id_producto != None %}<a class="btn btn-secondary me-2" href="/productos">Cancelar / Nuevo</a>{% endif %}
+{% if not readonly %}<button class="btn btn-success" type="submit">
+<i class="fas fa-save"></i> Guardar
+                        </button>{% endif %}
+</div>
+</form>
+</div>
+</div>
+<!-- SEARCH BOX -->
+<form action="/productos/buscar" class="mb-4" method="get">
+<div class="input-group">
+<input class="form-control" name="nombre" placeholder="Buscar por nombre..." required="" type="text"/>
+<button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Buscar</button>
+</div>
+</form>
+<!-- TABLA Listado -->
+<div class="card">
+<div class="card-header">
+<i class="fas fa-list me-2"></i> Listado de Productos
+            </div>
+<div class="card-body p-0">
+<div class="table-responsive">
+<table class="table table-hover table-striped mb-0">
+<thead style="background-color: #1565C0; color: white;">
+<tr>
+<th>Código</th>
+<th>Nombre</th>
+<th>Categoría</th>
+<th>$/Compra</th>
+<th>$/Venta</th>
+<th>Stock</th>
+<th>Activo</th>
+<th class="text-center">Acciones</th>
+</tr>
+</thead>
+<tbody>
+{% for p in listaProductos %}<tr>
+<td>{{ p.codigo }}</td>
+<td>{{ p.nombre }}</td>
+<td>{{ p.categoria.nombre }}</td>
+<td>{{ p.precio_compra }}</td>
+<td>{{ p.precio_venta }}</td>
+<td>{{ p.stock_actual }}</td>
+<td>
+{% if p.activo == 'Activo' %}<span class="badge bg-success">Activo</span>{% endif %}
+{% if p.activo == 'Inactivo' %}<span class="badge bg-danger">Inactivo</span>{% endif %}
+</td>
+<td class="text-center">
+<a class="btn btn-sm btn-info text-white btn-action" href="/productos/ver/{id}(id=${p.id_producto})" sec:authorize="hasRole('EMPLEADO')" title="Ver">
+<i class="fas fa-eye"></i>
+</a>
+<a class="btn btn-sm btn-warning btn-action" href="/productos/editar/{id}(id=${p.id_producto})" title="Editar">
+<i class="fas fa-edit"></i>
+</a>
+<a class="btn btn-sm btn-action" href="/productos/cambiarEstado/{id}(id=${p.id_producto})" th:classappend="${p.activo == 'Activo' ? 'btn-danger' : 'btn-success'}" th:onclick="return confirm([[${p.activo == 'Activo' ? '¿Seguro que desea desactivar este producto?' : '¿Seguro que desea activar este producto?'}]] )" th:title="${p.activo == 'Activo' ? 'Desactivar' : 'Activar'}">
+<i class="fas" th:classappend="${p.activo == 'Activo' ? 'fa-ban' : 'fa-check-circle'}"></i>
+</a>
+</td>
+</tr>{% endfor %}
+{% if not listaProductos %}<tr>
+<td class="text-center text-muted p-4" colspan="8">No hay productos registrados.</td>
+</tr>{% endif %}
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

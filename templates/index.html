@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+
+<html lang="es" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="{{ url_for('static', filename='images/logo_happychildren.jpg') }}" rel="icon" type="image/jpg"/>
+<title>Happy Children - Piñatería</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<!-- Bootstrap 5 (Added for Dropdown functionality) -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<style>
+        /* Tus estilos existentes (los mismos que tenías) */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        header {
+            background: rgba(21, 101, 192, 0.95);
+            /* Deep Blue with transparency */
+            color: white;
+            padding: 0.5rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 70px;
+            width: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+            margin-right: 15px;
+            border: 3px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .logo img:hover {
+            transform: scale(1.1) rotate(-5deg);
+        }
+
+        .logo-text {
+            font-size: 2.2rem;
+            font-weight: 800;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            letter-spacing: -1px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo-text .happy {
+            color: white;
+        }
+
+        .logo-text .children {
+            color: #ff9800;
+            margin-left: 2px;
+        }
+
+        .nav-links > a {
+            color: white;
+            text-decoration: none;
+            margin-left: 3.5rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+
+        .nav-links > a:hover {
+            background: white;
+            color: #1565C0;
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Hero Section with Carousel merged */
+        .hero-container {
+            position: relative;
+            margin-top: 0;
+            /* Attach to header */
+            width: 100%;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border-bottom: 5px solid #ff9800;
+        }
+
+        .carousel {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            overflow: hidden;
+        }
+
+        .slides {
+            display: flex;
+            width: 700%;
+            animation: slideSlow 60s infinite linear;
+            /* Smooth continuous flow */
+        }
+
+        .slides img {
+            width: calc(100% / 7);
+            height: 600px;
+            object-fit: cover;
+        }
+
+        @keyframes slideSlow {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+
+            /* Adjust for infinite loop illusion */
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 40px;
+            border-radius: 30px;
+            backdrop-filter: blur(3px);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            width: 80%;
+            max-width: 800px;
+        }
+
+        .hero-overlay h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 3px 3px 0 #1565C0;
+        }
+
+        .hero-overlay p {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn-cta {
+            background: #ff9800;
+            color: white;
+            padding: 15px 40px;
+            text-decoration: none;
+            font-size: 1.5rem;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: inline-block;
+        }
+
+        .btn-cta:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 20px rgba(255, 152, 0, 0.4);
+            background: #f57c00;
+        }
+
+        /* Resto de estilos (about, products, testimonials, footer) igual que antes */
+        .section-card {
+            background: white;
+            border-radius: 30px;
+            padding: 5rem;
+            margin: 6rem auto;
+            max-width: 1100px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 2;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 2.5rem;
+            color: #1565C0;
+            /* Blue */
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        h2::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 5px;
+            background: #ff9800;
+            margin: 10px auto 0;
+            border-radius: 10px;
+        }
+
+        .about {
+            text-align: center;
+            font-size: 1.3rem;
+            line-height: 2;
+        }
+
+        .about h2 {
+            left: auto;
+            transform: none;
+        }
+
+        .about strong {
+            color: #1565C0;
+        }
+
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 3.5rem;
+            padding-top: 2rem;
+        }
+
+        .product-card {
+            background: #fff;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.4s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .product-card img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+        }
+
+        .product-info {
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .product-info h3 {
+            color: #1565C0;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .price {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #ff9800;
+            /* Orange price */
+            text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .testimonials {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            padding-top: 2rem;
+        }
+
+        .testimonial {
+            background: #f9f9f9;
+            padding: 2rem;
+            border-radius: 15px;
+            font-style: italic;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: background 0.3s;
+        }
+
+        .testimonial:hover {
+            background: #a0e6ff;
+        }
+
+        .testimonial p {
+            margin-bottom: 1rem;
+        }
+
+        .author {
+            font-weight: bold;
+            text-align: right;
+            color: #007bff;
+        }
+
+        footer {
+            background: #1565C0;
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .social a {
+            color: white;
+            font-size: 2.2rem;
+            margin: 0 1.2rem;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .social a:hover {
+            color: #ff9800;
+            transform: rotate(15deg) scale(1.2);
+        }
+
+        @media (max-width: 768px) {
+            .nav-links a {
+                margin-left: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .slides img {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+<div class="container">
+<nav>
+<div class="logo">
+<a href="/" style="display: flex; align-items: center; text-decoration: none;">
+<img alt="Happy Children Logo" src="{{ url_for('static', filename='images/logo_happychildren.jpg') }}"/>
+<div class="logo-text">
+<span class="happy">Happy</span><span class="children">Children</span>
+</div>
+</a>
+</div>
+<div class="nav-links">
+<a href="/">Inicio</a>
+<a href="/cart/catalogo">Productos</a>
+<!-- Guest: Show Login/Register -->
+{% if not current_user.is_authenticated %}
+<a href="/login" style="color: #ff9800 !important; font-weight: 900; text-decoration: none;">Iniciar sesión</a>
+{% else %}
+<!-- Auth: Show Profile Dropdown -->
+<span class="dropdown d-inline-block" style="margin-left: 3.5rem;">
+<a aria-expanded="false" class="dropdown-toggle text-white text-decoration-none fw-bold" data-bs-display="static" data-bs-toggle="dropdown" href="#" role="button" style="background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 20px;">
+<i class="fas fa-user-circle me-1"></i> <span>User</span>
+</a>
+<ul class="dropdown-menu shadow-lg" style="margin-top: 15px !important; left: 50% !important; transform: translateX(-50%) !important; right: auto !important; width: max-content; min-width: 200px; border-radius: 15px; border:none;">
+<li>
+<h6 class="dropdown-header text-primary">{{ current_user.nombre_usuario if current_user.is_authenticated else '' }}</h6>
+</li>
+<li><a class="dropdown-item" href="/dashboard"><i class="fas fa-tachometer-alt me-2"></i>Ir
+                                    al Dashboard</a></li>
+<!-- Gestión rápida para Admin/Empleado -->
+<li sec:authorize="hasAnyRole('ADMINISTRADOR', 'EMPLEADO')">
+<hr class="dropdown-divider"/>
+</li>
+<li sec:authorize="hasAnyRole('ADMINISTRADOR', 'EMPLEADO')">
+<a class="dropdown-item" href="/productos"><i class="fas fa-boxes me-2"></i>Productos</a>
+</li>
+<li sec:authorize="hasAnyRole('ADMINISTRADOR', 'EMPLEADO')">
+<a class="dropdown-item" href="/ventas"><i class="fas fa-shopping-cart me-2"></i>Ventas</a>
+</li>
+<li sec:authorize="hasRole('ADMINISTRADOR')">
+<a class="dropdown-item" href="/usuarios"><i class="fas fa-users-cog me-2"></i>Configuración</a>
+</li>
+<li>
+<hr class="dropdown-divider"/>
+</li>
+<li>
+<form action="/logout" class="m-0" method="post">
+<button class="dropdown-item text-danger fw-bold" type="submit">
+<i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
+                                    </button>
+</form>
+</li>
+</ul>
+</span>
+{% endif %}
+</div>
+</nav>
+</div>
+</header>
+<!-- Hero Section with Carousel -->
+<div class="hero-container">
+<div class="carousel">
+<div class="slides">
+<img alt="Piñata Colorida" src="https://m.media-amazon.com/images/I/81Wa8mJ7HeL._AC_UF894,1000_QL80_.jpg"/>
+<img alt="Fiesta" src="https://m.media-amazon.com/images/S/aplus-media-library-service-media/7a40e301-9863-4edf-a684-fbfd3d9c4203.__CR0,0,970,600_PT0_SX970_V1___.jpg"/>
+<img alt="Cumpleaños" src="https://media.istockphoto.com/id/475991424/photo/little-girl-hitting-pinata-at-birthday-party-in-suburb-backyard.jpg?s=612x612&amp;w=0&amp;k=20&amp;c=zeJRwrwD8jVc6KUQ6pGK4p2NLYFZ0C32BF97vuq8UtE="/>
+<img alt="Juegos" src="https://media.istockphoto.com/id/619970302/photo/kids-playing-with-birthday-pinata-in-decorated-garden.jpg?s=612x612&amp;w=0&amp;k=20&amp;c=dd8bWoM6wRRNFhSK_oU0AIWcrGdtBTTPlqSL9fky6F4="/>
+<img alt="DIY" src="https://playtivities.com/wp-content/uploads/2020/08/1-diy-pinatas-for-children-birthday-party-fb.jpg"/>
+<img alt="Manualidades" src="https://e.staedtlercdn.com/images/V37ATSiC7OfmkTpeUunFdidWZVCp8m27cD9DVk_YDTs/w:1120/h:630/fn:Y3NtX1R1dG9yaWFsX05vcmlzX1BpbmF0YV9NaWxpZXVfbGFuZHNjYXBlXzJfNDc3YTRmYzg3OQ:t/cb:8a3587ab285213e2cb7893b1eb584dd56f05b6b7/el:1/fq:jpeg:85:avif:70:webp:80/c:4555.44:2561.4392803598:fp:0.4995:0.49925037481259/rt:force/aHR0cHM6Ly9lLnN0YWVkdGxlcmNkbi5jb20vZmlsZWFkbWluL3VzZXJfdXBsb2FkL0NvbnRlbnQvQXJ0aWNsZXMvSTQyNy1TZWxmbWFkZS1jaGVzdC1waW5hdGEtRElZLWlkZWEtZm9yLWFuLXVuZm9yZ2V0dGFibGUtY2hpbGRyZW5zLWJpcnRoZGF5LXBhcnR5L1R1dG9yaWFsX05vcmlzX1BpbmF0YV9NaWxpZXVfbGFuZHNjYXBlXzIuanBnPzE3MTgwMDM1NTA"/>
+<img alt="Repeat" src="https://m.media-amazon.com/images/I/81Wa8mJ7HeL._AC_UF894,1000_QL80_.jpg"/>
+</div>
+</div>
+<div class="hero-overlay">
+<h1>¡Celebra con Happy Children! 🪅</h1>
+<p>Hacemos de tu fiesta un momento mágico e inolvidable con las mejores piñatas y decoraciones.</p>
+<a class="btn-cta" href="/cart/catalogo">Ver Catálogo <i class="fas fa-arrow-right"></i></a>
+</div>
+</div>
+<!-- Resto del contenido (about, productos destacados, testimonios, footer) igual que antes -->
+<div class="container">
+<section class="about section-card">
+<h2>Sobre Nosotros</h2>
+<p style="margin-bottom: 2rem;">En <strong>Happy Children</strong> llevamos más de 10 años llenando de
+                alegría
+                las fiestas infantiles con
+                nuestras piñatas hechas a mano. Creemos que cada celebración debe ser única, por eso diseñamos piñatas
+                personalizadas y ofrecemos una gran variedad de estilos para que cada niño viva un momento inolvidable.
+            </p>
+<p>Nuestro compromiso es ofrecer calidad, creatividad y diversión en cada producto. <strong>¡Queremos ser
+                    parte de tus recuerdos más felices!</strong></p>
+</section>
+<section class="products section-card" id="productos">
+<h2>🎉 Productos Destacados</h2>
+<div class="product-card">
+<img alt="Piñata Colorida" src="https://m.media-amazon.com/images/I/81Wa8mJ7HeL._AC_UF894,1000_QL80_.jpg"/>
+<div class="product-info">
+<h3>Piñata Colorida</h3>
+<div class="price">$60.000</div>
+</div>
+</div>
+<div class="product-card">
+<img alt="Pack de Globos Festivos" src="https://i.etsystatic.com/24450055/r/il/8a578d/3553315563/il_570xN.3553315563_nngf.jpg"/>
+<div class="product-info">
+<h3>Pack de Globos Festivos</h3>
+<div class="price">$20.000</div>
+</div>
+</div>
+<div class="product-card">
+<img alt="Pack de Globos Festivos" src="https://i.etsystatic.com/24450055/r/il/8a578d/3553315563/il_570xN.3553315563_nngf.jpg"/>
+<div class="product-info">
+<h3>Pack de Globos Festivos</h3>
+<div class="price">$20.000</div>
+</div>
+</div>
+<div class="product-card">
+<img alt="Pack de Globos Festivos" src="https://i.etsystatic.com/24450055/r/il/8a578d/3553315563/il_570xN.3553315563_nngf.jpg"/>
+<div class="product-info">
+<h3>Pack de Globos Festivos</h3>
+<div class="price">$20.000</div>
+</div>
+</div>
+<div class="product-card">
+<img alt="Luces LED de Colores" src="https://m.media-amazon.com/images/I/81dak1pT73L.jpg"/>
+<div class="product-info">
+<h3>Luces LED de Colores</h3>
+<div class="price">$55.000</div>
+</div>
+</div>
+</section>
+<section class="testimonials section-card">
+<h2>💬 Testimonios</h2>
+<div class="testimonial">
+<p>"Las mejores piñatas, súper resistentes y hermosas. A mis hijos les encantaron."</p>
+<div class="author">- María Gómez</div>
+</div>
+<div class="testimonial">
+<p>"Excelente atención y productos de calidad. Recomiendo totalmente Happy Children."</p>
+<div class="author">- Juan Pérez</div>
+</div>
+<div class="testimonial">
+<p>"Excelente atención y productos de calidad. Recomiendo totalmente Happy Children."</p>
+<div class="author">- Juan Pérez</div>
+</div>
+<div class="testimonial">
+<p>"Excelente atención y productos de calidad. Recomiendo totalmente Happy Children."</p>
+<div class="author">- Juan Pérez</div>
+</div>
+<div class="testimonial">
+<p>"Hicieron mi fiesta inolvidable, todo lo compré aquí. 100% recomendado."</p>
+<div class="author">- Andrea Torres</div>
+</div>
+</section>
+</div>
+<footer>
+<div class="container">
+<div class="footer-info">
+<h3>Happy Children</h3>
+<p>📍 Dirección: Calle Fiestas #123</p>
+<p>📞 Teléfono: +57 300 123 4567</p>
+<p>✉️ Email: contacto@happychildren.com</p>
+</div>
+<div class="social">
+<h4>Síguenos</h4>
+<a href="#"><i class="fab fa-facebook"></i></a>
+<a href="#"><i class="fab fa-instagram"></i></a>
+<a href="#"><i class="fab fa-tiktok"></i></a>
+</div>
+<p>© 2025 Happy Children - Todos los derechos reservados</p>
+</div>
+</footer>
+<script>
+        // Background static logic han by CSS
+    </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

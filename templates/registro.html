@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="{{ url_for('static', filename='images/logo_happychildren.jpg') }}" rel="icon" type="image/jpg"/>
+<title>Registro de Usuario - Happy Children 🎉</title>
+<!-- Bootstrap 5 -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<!-- Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+        /* Todo tu estilo exactamente igual, no toqué ni un píxel */
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background-attachment: fixed;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            margin: 0;
+        }
+
+        .auth-logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            margin-bottom: 30px;
+        }
+
+        .auth-logo-container img {
+            height: 90px;
+            width: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #1565C0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+
+        .logo-text {
+            font-size: 2.2rem;
+            font-weight: 800;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            letter-spacing: -1px;
+        }
+
+        .logo-text .happy {
+            color: #1565C0;
+        }
+
+        .logo-text .children {
+            color: #ff9800;
+            margin-left: 2px;
+        }
+
+        .register-container {
+            background: white;
+            width: 100%;
+            max-width: 600px;
+            padding: 50px;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            animation: fadeInDown 0.8s ease;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card-header {
+            background: #1565C0;
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            font-size: 1.8rem;
+        }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #1565C0;
+            font-size: 1.2rem;
+            z-index: 10;
+        }
+
+        .form-control {
+            padding-left: 45px;
+            padding-right: 45px;
+            border-radius: 50px;
+            border: 2px solid #ddd;
+            transition: all 0.3s ease;
+            height: 50px;
+        }
+
+        /* Custom Validation Styles */
+        .form-control:not(:placeholder-shown):invalid {
+            border-color: #dc3545;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(.375em + .1875rem) center;
+            background-size: calc(.75em + .375rem) calc(.75em + .375rem);
+        }
+
+        .form-control:not(:placeholder-shown):valid {
+            border-color: #28a745;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(.375em + .1875rem) center;
+            background-size: calc(.75em + .375rem) calc(.75em + .375rem);
+        }
+
+        /* Float validation messages */
+        .error, .valid {
+            font-size: 0.85rem;
+            margin-top: 5px;
+            padding-left: 15px;
+            display: block;
+            font-weight: 500;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .error {
+            color: #dc3545;
+        }
+
+        .valid {
+            color: #28a745;
+        }
+
+        .form-control:focus {
+            border-color: #1565C0;
+            box-shadow: 0 0 0 0.2rem rgba(21, 101, 192, 0.25);
+        }
+
+        .show-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #1565C0;
+            font-size: 1.2rem;
+            z-index: 10;
+            display: none;
+            /* Hidden as we use checkbox now */
+        }
+
+        .checkbox-container {
+            text-align: left;
+            margin-top: -10px;
+            margin-bottom: 20px;
+            padding-left: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-container label {
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: #555;
+            user-select: none;
+        }
+
+        .btn-submit {
+            background: #1565C0;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 14px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            width: 100%;
+            transition: all 0.4s ease;
+            box-shadow: 0 5px 15px rgba(21, 101, 192, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-submit:hover {
+            background: #0D47A1;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(21, 101, 192, 0.4);
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: rippleAnim 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes rippleAnim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+
+
+        @media (max-width: 576px) {
+            .card {
+                margin: 20px;
+            }
+
+            .card-header {
+                font-size: 1.5rem;
+            }
+        }
+
+        .btn-home-container {
+            margin-top: 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .btn-home-custom {
+            display: inline-block;
+            background: #ff9800;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .btn-home-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+            color: white;
+            background: #f57c00;
+        }
+    </style>
+</head>
+<body>
+<div class="register-container">
+<a class="auth-logo-container" href="/">
+<img alt="Logo" src="{{ url_for('static', filename='images/logo_happychildren.jpg') }}"/>
+<div class="logo-text">
+<span class="happy">Happy</span><span class="children">Children</span>
+</div>
+</a>
+<div class="card">
+<div class="card-header">
+<i class="fas fa-user-plus me-2"></i> Crear Nuevo Usuario
+            </div>
+<div class="card-body p-4">
+<form action="/register" id="registerForm" method="POST" onsubmit="return validateForm()">
+<div class="form-group">
+<i class="fas fa-user"></i>
+<input class="form-control" id="firstname" name="firstname" oninput="this.setCustomValidity(''); if(!this.checkValidity()) this.setCustomValidity('El nombre solo debe contener letras');" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+" placeholder="Nombre" required="" title="Solo letras y espacios" type="text" value="{{ firstname if firstname else '' }}"/>
+<div class="error" id="firstnameError"></div>
+{% if errorFirstname %}<div style="color:red; font-size:0.85rem; margin-top:5px; margin-left:15px;" class="error">{{ errorFirstname }}</div>{% endif %}
+</div>
+<div class="form-group">
+<i class="fas fa-user"></i>
+<input class="form-control" id="lastname" name="lastname" oninput="this.setCustomValidity(''); if(!this.checkValidity()) this.setCustomValidity('El apellido solo debe contener letras');" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+" placeholder="Apellido" required="" title="Solo letras y espacios" type="text" value="{{ lastname if lastname else '' }}"/>
+<div class="error" id="lastnameError"></div>
+{% if errorLastname %}<div style="color:red; font-size:0.85rem; margin-top:5px; margin-left:15px;" class="error">{{ errorLastname }}</div>{% endif %}
+</div>
+<div class="form-group">
+<i class="fas fa-passport"></i>
+<select class="form-control" name="tipoDocumento" required="">
+<option disabled="" selected="" value="">Tipo de Documento</option>
+<option value="CC" {% if tipoDocumento == 'CC' %}selected{% endif %}>Cédula de Ciudadanía</option>
+<option value="CE" {% if tipoDocumento == 'CE' %}selected{% endif %}>Cédula de Extranjería</option>
+<option value="PAS" {% if tipoDocumento == 'PAS' %}selected{% endif %}>Pasaporte</option>
+</select>
+{% if errorTipoDoc %}<div style="color:red; font-size:0.85rem; margin-top:5px; margin-left:15px;" class="error">{{ errorTipoDoc }}</div>{% endif %}
+</div>
+<div class="form-group">
+<i class="fas fa-id-card"></i>
+<input class="form-control" id="numeroDocumento" inputmode="numeric" minlength="10" name="numeroDocumento" oninput="validateDocNumber()" pattern="\d+" placeholder="Número de Documento (mín. 10)" required="" title="Solo números" type="text" value="{{ numeroDocumento if numeroDocumento else '' }}"/>
+<div class="error" id="docError"></div>
+{% if errorDoc %}<div style="color:red; font-size:0.85rem; margin-top:5px; margin-left:15px;" class="error">{{ errorDoc }}</div>{% endif %}
+</div>
+<div class="form-group">
+<i class="fas fa-envelope"></i>
+<input class="form-control" id="email" name="email" oninput="validateEmail()" placeholder="Correo electrónico" required="" type="email" value="{{ email if email else '' }}"/>
+<div class="error" id="emailError"></div>
+{% if errorEmail %}<div style="color:red; font-size:0.85rem; margin-top:5px; margin-left:15px;" class="error">{{ errorEmail }}</div>{% endif %}
+</div>
+<div class="form-group">
+<i class="fas fa-lock"></i>
+<input class="form-control" id="password" name="password" pattern="(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{5,}" placeholder="Contraseña" required="" title="Mínimo 5 caracteres, incluyendo letras, números y caracteres especiales" type="password"/>
+<div class="error" id="passwordError"></div>
+<div class="valid" id="passwordValid"></div>
+{% if errorPassword %}<div style="color:red; font-size:0.85rem; margin-top:5px; margin-left:15px;" class="error">{{ errorPassword }}</div>{% endif %}
+</div>
+<div class="form-group">
+<i class="fas fa-lock"></i>
+<input class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Confirmar contraseña" required="" type="password"/>
+<div class="error" id="confirmError"></div>
+</div>
+<div class="checkbox-container">
+<input id="verPassword" onclick="toggleAllPasswords()" type="checkbox"/>
+<label for="verPassword">Ver contraseña</label>
+</div>
+<button class="btn-submit" onclick="rippleEffect(event)" type="submit">
+<i class="fas fa-user-plus me-2"></i> Crear Usuario
+                    </button>
+</form>
+<div class="btn-home-container">
+<a class="btn-home-custom" href="/">
+<i class="fas fa-home"></i> Volver al inicio
+                    </a>
+</div>
+</div>
+</div>
+<script>
+            // Todo tu script original exactamente igual hasta aquí
+            function toggleAllPasswords() {
+                const password = document.getElementById('password');
+                const confirm = document.getElementById('confirmPassword');
+                const checkbox = document.getElementById('verPassword');
+                const type = checkbox.checked ? 'text' : 'password';
+                password.type = type;
+                confirm.type = type;
+            }
+
+            document.getElementById('firstname').addEventListener('input', validateFirstname);
+            document.getElementById('lastname').addEventListener('input', validateLastname);
+            document.getElementById('email').addEventListener('input', validateEmail);
+            document.getElementById('numeroDocumento').addEventListener('input', validateDocNumber);
+            document.getElementById('password').addEventListener('input', validatePassword);
+            document.getElementById('confirmPassword').addEventListener('input', validateConfirm);
+
+            function validateFirstname() {
+                const nameInput = document.getElementById('firstname');
+                const name = nameInput.value;
+                const errorDiv = document.getElementById('firstnameError');
+                if (name.length > 0 && !/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(name)) {
+                    errorDiv.parentElement.querySelector('input').setCustomValidity("El nombre solo debe contener letras");
+                    errorDiv.textContent = "⚠️ El nombre solo debe contener letras";
+                    errorDiv.style.color = "#dc3545";
+                    nameInput.style.borderColor = "#dc3545";
+                    return false;
+                } else if (name.length > 0) {
+                    errorDiv.parentElement.querySelector('input').setCustomValidity("");
+                    errorDiv.textContent = "✓ Nombre válido";
+                    errorDiv.style.color = "#28a745";
+                    nameInput.style.borderColor = "#28a745";
+                    return true;
+                } else {
+                    errorDiv.parentElement.querySelector('input').setCustomValidity("");
+                    errorDiv.textContent = "";
+                    nameInput.style.borderColor = "#ddd";
+                    return false;
+                }
+            }
+
+            function validateLastname() {
+                const nameInput = document.getElementById('lastname');
+                const name = nameInput.value;
+                const errorDiv = document.getElementById('lastnameError');
+                if (name.length > 0 && !/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(name)) {
+                    errorDiv.parentElement.querySelector('input').setCustomValidity("El apellido solo debe contener letras");
+                    errorDiv.textContent = "⚠️ El apellido solo debe contener letras";
+                    errorDiv.style.color = "#dc3545";
+                    nameInput.style.borderColor = "#dc3545";
+                    return false;
+                } else if (name.length > 0) {
+                    errorDiv.parentElement.querySelector('input').setCustomValidity("");
+                    errorDiv.textContent = "✓ Apellido válido";
+                    errorDiv.style.color = "#28a745";
+                    nameInput.style.borderColor = "#28a745";
+                    return true;
+                } else {
+                    errorDiv.parentElement.querySelector('input').setCustomValidity("");
+                    errorDiv.textContent = "";
+                    nameInput.style.borderColor = "#ddd";
+                    return false;
+                }
+            }
+
+            function validateEmail() {
+                const emailInput = document.getElementById('email');
+                const email = emailInput.value.trim().toLowerCase();
+                const errorDiv = document.getElementById('emailError');
+                if (email === "") {
+                    emailInput.setCustomValidity("Campo obligatorio");
+                    errorDiv.textContent = "";
+                    emailInput.style.borderColor = "#ddd";
+                    return false;
+                }
+                if (!email.endsWith("@gmail.com")) {
+                    emailInput.setCustomValidity("Solo se permiten correos @gmail.com");
+                    errorDiv.textContent = "⚠️ Solo se permiten correos @gmail.com";
+                    errorDiv.style.color = "#dc3545";
+                    emailInput.style.borderColor = "#dc3545";
+                    return false;
+                } else {
+                    emailInput.setCustomValidity("");
+                    errorDiv.textContent = "✓ Correo válido";
+                    errorDiv.style.color = "#28a745";
+                    emailInput.style.borderColor = "#28a745";
+                    return true;
+                }
+            }
+
+            function validateDocNumber() {
+                const docInput = document.getElementById('numeroDocumento');
+                const doc = docInput.value;
+                const errorDiv = document.getElementById('docError');
+                if (doc.length > 0 && !/^[0-9]+$/.test(doc)) {
+                    errorDiv.parentElement.querySelector('input').setCustomValidity("Solo se permiten números");
+                    errorDiv.textContent = "⚠️ Solo se permiten números";
+                    errorDiv.style.color = "#dc3545";
+                    docInput.style.borderColor = "#dc3545";
+                    return false;
+                } else if (doc.length > 0 && doc.length < 10) {
+                    errorDiv.parentElement.querySelector('input').setCustomValidity("El documento debe tener al menos 10 caracteres");
+                    errorDiv.textContent = "⚠️ El documento debe tener al menos 10 caracteres";
+                    errorDiv.style.color = "#dc3545";
+                    docInput.style.borderColor = "#dc3545";
+                    return false;
+                } else if (doc.length >= 10) {
+                    errorDiv.parentElement.querySelector('input').setCustomValidity("");
+                    errorDiv.textContent = "✓ Documento válido";
+                    errorDiv.style.color = "#28a745";
+                    docInput.style.borderColor = "#28a745";
+                    return true;
+                } else {
+                    errorDiv.parentElement.querySelector('input').setCustomValidity("");
+                    errorDiv.textContent = "";
+                    docInput.style.borderColor = "#ddd";
+                    return false;
+                }
+            }
+
+            function validatePassword() {
+                const passwordInput = document.getElementById('password');
+                const password = passwordInput.value;
+                const errorDiv = document.getElementById('passwordError');
+                const validDiv = document.getElementById('passwordValid');
+
+                if (password.length > 0 && password.length < 5) {
+                    errorDiv.parentElement.querySelector('input').setCustomValidity("Mínimo 5 caracteres");
+                    errorDiv.textContent = "⚠️ Mínimo 5 caracteres";
+                    validDiv.textContent = "";
+                    passwordInput.style.borderColor = "#dc3545";
+                    return false;
+                } else if (password.length >= 5 && (!/[A-Za-z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password))) {
+                    errorDiv.parentElement.querySelector('input').setCustomValidity("Debe incluir letras, números y caracteres especiales");
+                    errorDiv.textContent = "⚠️ Debe incluir letras, números y caracteres especiales";
+                    validDiv.textContent = "";
+                    passwordInput.style.borderColor = "#dc3545";
+                    return false;
+                } else if (password.length >= 5) {
+                    errorDiv.parentElement.querySelector('input').setCustomValidity("");
+                    errorDiv.textContent = "";
+                    validDiv.textContent = "✓ Contraseña segura";
+                    validDiv.style.color = "#28a745";
+                    passwordInput.style.borderColor = "#28a745";
+                    return true;
+                } else {
+                    errorDiv.parentElement.querySelector('input').setCustomValidity("");
+                    errorDiv.textContent = "";
+                    validDiv.textContent = "";
+                    passwordInput.style.borderColor = "#ddd";
+                    return false;
+                }
+            }
+
+            function validateConfirm() {
+                const password = document.getElementById('password').value;
+                const confirmInput = document.getElementById('confirmPassword');
+                const confirm = confirmInput.value;
+                const errorDiv = document.getElementById('confirmError');
+
+                if (confirm && password !== confirm) {
+                    confirmInput.setCustomValidity("Las contraseñas no coinciden");
+                    errorDiv.textContent = "⚠️ Las contraseñas no coinciden";
+                    errorDiv.style.color = "#dc3545";
+                    confirmInput.style.borderColor = "#dc3545";
+                    return false;
+                } else if (confirm && password === confirm) {
+                    confirmInput.setCustomValidity("");
+                    errorDiv.textContent = "✓ Coinciden";
+                    errorDiv.style.color = "#28a745";
+                    confirmInput.style.borderColor = "#28a745";
+                    return true;
+                } else {
+                    confirmInput.setCustomValidity("Campo obligatorio");
+                    errorDiv.textContent = "";
+                    confirmInput.style.borderColor = "#ddd";
+                    return false;
+                }
+            }
+
+            function validateForm() {
+                const isFirstNameValid = validateFirstname();
+                const isLastNameValid = validateLastname();
+                const isEmailValid = validateEmail();
+                const isDocValid = validateDocNumber();
+                const isPassValid = validatePassword();
+                const isConfirmValid = validateConfirm();
+                
+                if (!isFirstNameValid || !isLastNameValid || !isEmailValid || !isDocValid || !isPassValid || !isConfirmValid) {
+                    return false;
+                }
+                return true;
+            }
+
+            function rippleEffect(e) {
+                const button = e.currentTarget;
+                const ripple = document.createElement('span');
+                const rect = button.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+
+                ripple.classList.add('ripple');
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+
+                button.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            }
+
+            // Nueva función: solo permite ir a login si todo está perfecto
+            function goToLoginIfValid() {
+                const allFieldsFilled =
+                    document.querySelector('input[name="firstname"]').value.trim() !== "" &&
+                    document.querySelector('input[name="lastname"]').value.trim() !== "" &&
+                    document.querySelector('input[name="email"]').value.trim() !== "" &&
+                    validatePassword() && validateConfirm();
+
+                if (allFieldsFilled) {
+                    window.location.href = "/login";  // o la ruta que tengas en tu controlador
+                    return false;  // evita que el <a> haga su acción por defecto
+                } else {
+                    alert("Completa todos los campos correctamente antes de ir a iniciar sesión");
+                    return false;  // se queda en la página
+                }
+            }
+        </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</div></body>
+</html>

@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="{{ url_for('static', filename='images/logo_happychildren.jpg') }}" rel="icon" type="image/jpg"/>
+<title>Iniciar Sesión - Happy Children </title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            margin: 0;
+        }
+
+        .btn-home-container {
+            margin-top: 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .btn-home-custom {
+            display: inline-block;
+            background: #ff9800;
+            /* Vibrant orange from piñatas */
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .btn-home-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+            color: white;
+            background: #f57c00;
+        }
+
+        .auth-logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            margin-bottom: 25px;
+        }
+
+        .auth-logo-container img {
+            height: 80px;
+            width: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #1565C0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+
+        .logo-text {
+            font-size: 2rem;
+            font-weight: 800;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            letter-spacing: -1px;
+        }
+
+        .logo-text .happy {
+            color: #1565C0;
+        }
+
+        .logo-text .children {
+            color: #ff9800;
+            margin-left: 2px;
+        }
+
+
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            animation: fadeInUp 0.8s ease-out;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-container h1 {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        .login-container p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .form-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #1565C0;
+            /* Deep Blue */
+            font-size: 1.3rem;
+            transition: color 0.3s;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 14px 14px 50px;
+            border: 2px solid #ddd;
+            border-radius: 50px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        /* Custom Validation Styles */
+        .form-group input:not(:placeholder-shown):invalid {
+            border-color: #dc3545;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(.375em + .1875rem) center;
+            background-size: calc(.75em + .375rem) calc(.75em + .375rem);
+        }
+
+        .form-group input:not(:placeholder-shown):valid {
+            border-color: #28a745;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(.375em + .1875rem) center;
+            background-size: calc(.75em + .375rem) calc(.75em + .375rem);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #1565C0;
+            box-shadow: 0 0 15px rgba(21, 101, 192, 0.4);
+        }
+
+        .show-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #28a745;
+            font-size: 1.1rem;
+            display: none;
+            /* Hidden as we use checkbox now, but keeping for reference if needed */
+        }
+
+        .checkbox-container {
+            text-align: left;
+            margin-top: -15px;
+            margin-bottom: 20px;
+            padding-left: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-container label {
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #555;
+            user-select: none;
+        }
+
+        input[type="submit"] {
+            width: 100%;
+            padding: 15px;
+            background: #1565C0;
+            /* Blue button */
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow: 0 6px 20px rgba(21, 101, 192, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        input[type="submit"]:hover {
+            background: #0D47A1;
+            transform: translateY(-4px);
+            box-shadow: 0 12px 25px rgba(21, 101, 192, 0.4);
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: rippleAnim 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes rippleAnim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 14px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-weight: bold;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(10px);
+            }
+        }
+
+        /* New Success Card Styles */
+        .registration-success-card {
+            background: #e8f5e9;
+            border: 2px solid #2e7d32;
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 25px;
+            margin-bottom: 25px;
+            animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 10px 20px rgba(46, 125, 50, 0.1);
+        }
+
+        .success-icon {
+            font-size: 3rem;
+            color: #2e7d32;
+            margin-bottom: 15px;
+            animation: pulse 2s infinite;
+        }
+
+        .registration-success-card h3 {
+            color: #1b5e20;
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        .registration-success-card p {
+            color: #33691e;
+            font-size: 0.95rem;
+            margin-bottom: 0;
+            line-height: 1.4;
+        }
+
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+
+            70% {
+                transform: scale(0.9);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .links {
+            margin-top: 20px;
+            font-size: 0.95rem;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .links a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0;
+            display: inline-block;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+            color: #1565C0;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px;
+                margin: 10px;
+            }
+
+            .login-container h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="login-container">
+<a class="auth-logo-container" href="/">
+<img alt="Logo" src="{{ url_for('static', filename='images/logo_happychildren.jpg') }}"/>
+<div class="logo-text">
+<span class="happy">Happy</span><span class="children">Children</span>
+</div>
+</a>
+<h1>Iniciar Sesión</h1>
+<p>Bienvenido de nuevo a Happy Children </p>
+<form action="/login" autocomplete="off" method="post">
+<div class="form-group">
+<i class="fas fa-envelope"></i>
+<input autocomplete="off" class="form-control" name="username" placeholder="Correo Electrónico" required="" type="text"/>
+</div>
+<div class="form-group">
+<i class="fas fa-lock"></i>
+<input autocomplete="new-password" id="password" name="password" placeholder="Contraseña" required="" type="password"/>
+</div>
+<div class="checkbox-container">
+<input id="verPassword" onclick="togglePassword()" type="checkbox"/>
+<label for="verPassword">Ver contraseña</label>
+</div>
+<input onclick="rippleEffect(event)" type="submit" value="Iniciar Sesión">
+</input></form>
+{% if request.args.get('error') %}<div class="error-message">
+            Usuario o contraseña incorrectos
+        </div>{% endif %}
+{% if request.args.get('registered') %}<div class="registration-success-card">
+<div class="success-icon">
+<i class="fas fa-check-circle"></i>
+</div>
+<h3>¡Bienvenido a la familia!</h3>
+<p>Tu cuenta ha sido creada exitosamente. Ya puedes iniciar sesión y empezar a disfrutar de Happy Children.
+            </p>
+</div>{% endif %}
+<div class="links">
+<a href="/register" style="color: #1565C0; font-weight: 800; font-size: 1.1rem; display: block; margin-bottom: 15px; border: 2px solid #1565C0; padding: 12px; border-radius: 50px; text-transform: uppercase; transition: all 0.3s ease;">
+<i class="fas fa-user-plus me-2"></i> Registrarse
+            </a>
+<a href="/olvido-password" style="color: #666; font-size: 0.9rem; margin-top: 5px;">
+<i class="fas fa-key me-1"></i> ¿Olvidaste tu contraseña?
+            </a>
+</div>
+<div class="btn-home-container">
+<a class="btn-home-custom" href="/">
+<i class="fas fa-home"></i> Volver al inicio
+            </a>
+</div>
+</div>
+<script>
+        function togglePassword() {
+            const password = document.getElementById('password');
+            const checkbox = document.getElementById('verPassword');
+            if (checkbox.checked) {
+                password.type = 'text';
+            } else {
+                password.type = 'password';
+            }
+        }
+
+        function rippleEffect(e) {
+            const button = e.target;
+            const ripple = document.createElement('span');
+            const rect = button.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
+
+            ripple.classList.add('ripple');
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+
+            button.appendChild(ripple);
+
+            setTimeout(() => ripple.remove(), 600);
+        }
+    </script>
+</body>
+</html>

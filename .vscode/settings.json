@@ -1,0 +1,7 @@
+{
+    "python.defaultInterpreterPath": "j:\\Desktop\\pinateria- happy children\\venv\\Scripts\\python.exe",
+    "python.analysis.extraPaths": [
+        "j:\\Desktop\\pinateria- happy children\\venv\\Lib\\site-packages",
+        "j:\\Desktop\\pinateria- happy children"
+    ]
+}

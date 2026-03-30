@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="{{ url_for('static', filename='images/logo_happychildren.jpg') }}" rel="icon" type="image/jpg"/>
+<title>Portal Empleado - Happy Children</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        header {
+            background-color: #1565C0;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 5px solid #ff9800;
+        }
+
+        .container {
+            margin-top: 30px;
+        }
+
+        .card-empleado {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            background: white;
+            padding: 20px;
+            text-align: center;
+            height: 100%;
+        }
+
+        .card-empleado:hover {
+            transform: translateY(-5px);
+        }
+
+        .icon-box {
+            font-size: 3rem;
+            color: #1565C0;
+            margin-bottom: 15px;
+        }
+
+        h5 {
+            color: #333;
+            font-weight: bold;
+        }
+
+        .btn-custom {
+            border-radius: 20px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dashboard-section {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            margin-top: 40px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #f0f2f5;
+            padding-bottom: 15px;
+        }
+
+        .section-title {
+            color: #1565C0;
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .table-custom {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .table-custom thead {
+            background-color: #1565C0;
+            color: white;
+        }
+
+        .badge-status {
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            background-color: #1565C0;
+            color: white;
+            border-radius: 20px 20px 0 0;
+            border: none;
+        }
+
+        .modal-title {
+            font-weight: 700;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #1565C0;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            padding: 10px 15px;
+        }
+
+        .btn-save {
+            background-color: #2e7d32;
+            color: white;
+            border-radius: 50px;
+            padding: 10px 25px;
+            font-weight: 700;
+            border: none;
+            transition: all 0.3s;
+        }
+
+        .btn-save:hover {
+            background-color: #1b5e20;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 125, 50, 0.3);
+            color: white;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 50px;
+            color: #1565C0;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+<header>
+<h1><i class="fas fa-user-tie"></i> Panel de Empleado</h1>
+<p>Bienvenido al Sistema de Gestión</p>
+<form action="/logout" method="post">
+<button class="btn btn-outline-light btn-sm mt-2" type="submit">
+<i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </button>
+</form>
+</header>
+<div class="container">
+<h3 class="text-center mb-4">Módulos Disponibles</h3>
+<div class="row g-4 justify-content-center">
+<div class="col-md-2">
+<div class="card card-empleado">
+<div class="icon-box">
+<i class="fas fa-cash-register"></i>
+</div>
+<h5>Ventas</h5>
+<p class="text-muted small">Caja.</p>
+<a class="btn btn-primary btn-custom btn-sm" href="/ventas">Gestionar</a>
+</div>
+</div>
+<div class="col-md-2">
+<div class="card card-empleado">
+<div class="icon-box">
+<i class="fas fa-boxes"></i>
+</div>
+<h5>Inventario</h5>
+<p class="text-muted small">Productos.</p>
+<a class="btn btn-primary btn-custom btn-sm" href="/productos">Gestionar</a>
+</div>
+</div>
+<div class="col-md-2">
+<div class="card card-empleado">
+<div class="icon-box">
+<i class="fas fa-users"></i>
+</div>
+<h5>Clientes</h5>
+<p class="text-muted small">Fidelización.</p>
+<a class="btn btn-primary btn-custom btn-sm" href="/clientes">Gestionar</a>
+</div>
+</div>
+{% if current_user.is_authenticated and current_user.rol and current_user.rol.nombre_rol == 'ADMINISTRADOR' %}
+<div class="col-md-2">
+<div class="card card-empleado">
+<div class="icon-box">
+<i class="fas fa-id-badge"></i>
+</div>
+<h5>Empleados</h5>
+<p class="text-muted small">Equipo.</p>
+<a class="btn btn-primary btn-custom btn-sm" href="/empleados">Gestionar</a>
+</div>
+</div>
+{% endif %}
+<div class="col-md-2">
+<div class="card card-empleado">
+<div class="icon-box">
+<i class="fas fa-users-cog"></i>
+</div>
+<h5>Usuarios</h5>
+<p class="text-muted small">Cuentas.</p>
+<a class="btn btn-primary btn-custom btn-sm" href="/usuarios">Gestionar</a>
+</div>
+</div>
+<div class="col-md-2">
+<div class="card card-empleado">
+<div class="icon-box">
+<i class="fas fa-shipping-fast"></i>
+</div>
+<h5>Pedidos</h5>
+<p class="text-muted small">Envíos.</p>
+<a class="btn btn-primary btn-custom btn-sm" href="/pedidos">Gestionar</a>
+</div>
+</div>
+</div>
+
+{% if current_user.is_authenticated and current_user.rol and current_user.rol.nombre_rol == 'ADMINISTRADOR' %}
+<!-- Nueva Sección: Gestión de Empleados Integrada -->
+<div class="dashboard-section">
+<div class="section-header">
+<h3 class="section-title"><i class="fas fa-list me-2"></i> Listado de Empleados</h3>
+<button class="btn btn-success rounded-pill px-4" data-bs-target="#registroEmpleadoModal" data-bs-toggle="modal" type="button">
+<i class="fas fa-user-plus me-1"></i> Registrar Nuevo Empleado
+                </button>
+</div>
+{% if success %}<div class="alert alert-success alert-dismissible fade show rounded-4 mb-4" role="alert">
+<i class="fas fa-check-circle me-2"></i> <span>{{ success }}</span>
+<button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"></button>
+</div>{% endif %}
+{% if error %}<div class="alert alert-danger alert-dismissible fade show rounded-4 mb-4" role="alert">
+<i class="fas fa-exclamation-circle me-2"></i> <span>{{ error }}</span>
+<button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"></button>
+</div>{% endif %}
+<div class="table-responsive table-custom">
+<table class="table table-hover align-middle mb-0">
+<thead>
+<tr>
+<th>Código</th>
+<th>Nombre Completo</th>
+<th>Usuario</th>
+<th>Rol</th>
+<th>Estado</th>
+<th class="text-center">Acciones</th>
+</tr>
+</thead>
+<tbody>
+{% for e in listaEmpleados %}<tr>
+<td class="fw-bold">{{ e.codigo }}</td>
+<td>{{ e.nombres ~ ' ' ~ e.apellidos }}</td>
+<td>{{ e.nombre_usuario }}</td>
+<td><span class="badge bg-light text-dark border">{{ e.rol.nombre_rol if e.rol else '' }}</span>
+</td>
+<td>
+{% if e.estado == 'Activo' %}<span class="badge-status bg-success text-white">Activo</span>{% endif %}
+{% if e.estado == 'Inactivo' %}<span class="badge-status bg-danger text-white">Inactivo</span>{% endif %}
+</td>
+<td class="text-center">
+<a class="btn btn-sm btn-outline-info rounded-circle p-2" href="/empleados/ver/{{ e.id_empleado }}" title="Ver">
+<i class="fas fa-eye"></i>
+</a>
+<a class="btn btn-sm btn-outline-warning rounded-circle p-2 mx-1" href="/empleados/editar/{{ e.id_empleado }}" title="Editar">
+<i class="fas fa-edit"></i>
+</a>
+</td>
+</tr>{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+<!-- Gestión de Usuarios (Cuentas de Clientes) -->
+<div class="dashboard-section mt-5">
+<div class="section-header">
+<h3 class="section-title"><i class="fas fa-users-cog me-2"></i> Gestión de Cuentas de Usuarios</h3>
+<button class="btn btn-primary rounded-pill px-4 shadow-sm" data-bs-target="#registroUsuarioModal" data-bs-toggle="modal" type="button">
+<i class="fas fa-plus-circle me-1"></i> Nueva Cuenta de Usuario
+                </button>
+</div>
+<div class="table-responsive table-custom">
+<table class="table table-hover align-middle mb-0">
+<thead class="bg-secondary text-white">
+<tr>
+<th>Código</th>
+<th>Usuario / Email</th>
+<th>Cliente Asociado</th>
+<th>Estado</th>
+<th class="text-center">Acciones</th>
+</tr>
+</thead>
+<tbody>
+{% for u in listaUsuarios %}<tr>
+<td class="fw-bold">{{ u.codigo }}</td>
+<td>{{ u.nombre_usuario }}</td>
+<td>{{ u.cliente.nombres ~ ' ' ~ u.cliente.apellidos if u.cliente else '' }}</td>
+<td>
+{% if u.estado == 'Activo' %}<span class="badge bg-success">Activo</span>{% endif %}
+{% if u.estado == 'Inactivo' %}<span class="badge bg-danger">Inactivo</span>{% endif %}
+</td>
+<td class="text-center">
+<a class="btn btn-sm btn-outline-info rounded-circle" href="/usuarios/ver/{{ u.id_usuario }}" title="Ver">
+<i class="fas fa-eye"></i>
+</a>
+</td>
+</tr>{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+{% endif %}
+</div>
+<!-- Modal para registro de usuario -->
+<div aria-hidden="true" class="modal fade" id="registroUsuarioModal" tabindex="-1">
+<div class="modal-dialog modal-lg modal-dialog-centered">
+<div class="modal-content border-0 rounded-4">
+<div class="modal-header bg-primary text-white py-3">
+<h5 class="modal-title"><i class="fas fa-user-shield me-2"></i> Nueva Cuenta de Usuario</h5>
+<button class="btn-close btn-close-white" data-bs-dismiss="modal" type="button"></button>
+</div>
+<div class="modal-body p-4">
+<form action="/usuarios/guardar" method="post">
+<input name="fromDashboard" type="hidden" value="true"/>
+<div class="row g-3">
+<div class="col-md-6">
+<label class="form-label fw-bold">Asociar al Cliente</label>
+<select class="form-select" name="cliente.id_cliente" required="">
+<option value="">Seleccione un cliente...</option>
+{% for c in listaClientes %}<option value="{{ c.id_cliente }}">{{ c.nombres ~ ' ' ~ c.apellidos }}</option>{% endfor %}
+</select>
+</div>
+<div class="col-md-6">
+<label class="form-label fw-bold">Nombre de Usuario</label>
+<input class="form-control" name="nombreUsuario" placeholder="ej: cliente123" required="" type="text"/>
+</div>
+<div class="col-md-6">
+<label class="form-label fw-bold">Contraseña</label>
+<input class="form-control" name="contrasena" placeholder="Contraseña segura" required="" type="password"/>
+</div>
+<div class="col-md-6">
+<label class="form-label fw-bold">Rol de Acceso</label>
+<select class="form-select" name="rol.id_rol" required="">
+<option value="">Asignar rol...</option>
+{% for r in listaRoles %}{% if r.nombre_rol == 'CLIENTE' %}<option selected="" value="{{ r.id_rol }}">{{ r.nombre_rol }}</option>{% endif %}{% endfor %}
+{% for r in listaRoles %}{% if r.nombre_rol != 'CLIENTE' %}<option value="{{ r.id_rol }}">{{ r.nombre_rol }}</option>{% endif %}{% endfor %}
+</select>
+</div>
+</div>
+<div class="mt-4 text-end">
+<button class="btn btn-light rounded-pill px-4 me-2" data-bs-dismiss="modal" type="button">Cancelar</button>
+<button class="btn btn-success rounded-pill px-4" type="submit">
+<i class="fas fa-save me-1"></i> Crear Usuario
+                            </button>
+</div>
+</form>
+</div>
+</div>
+</div>
+</div>
+<!-- Modal para registro de empleado -->
+<div aria-hidden="true" aria-labelledby="registroModalLabel" class="modal fade" id="registroEmpleadoModal" tabindex="-1">
+<div class="modal-dialog modal-lg modal-dialog-centered">
+<div class="modal-content">
+<div class="modal-header">
+<h5 class="modal-title" id="registroModalLabel"><i class="fas fa-user-plus me-2"></i> Registrar
+                        Nuevo
+                        Empleado</h5>
+<button aria-label="Close" class="btn-close btn-close-white" data-bs-dismiss="modal" type="button"></button>
+</div>
+<div class="modal-body p-4">
+<form action="/empleados/guardar" method="post">
+<!-- Campo oculto para redirigir de vuelta al dashboard -->
+<input name="fromDashboard" type="hidden" value="true">
+<div class="row g-3">
+<div class="col-md-6">
+<label class="form-label">Nombres</label>
+<input class="form-control" name="nombres" placeholder="Nombres del empleado" required="" type="text"/>
+</div>
+<div class="col-md-6">
+<label class="form-label">Apellidos</label>
+<input class="form-control" name="apellidos" placeholder="Apellidos del empleado" required="" type="text"/>
+</div>
+<div class="col-md-4">
+<label class="form-label">Tipo Docto.</label>
+<select class="form-select" name="tipo_documento" required="">
+<option value="CC">Cédula</option>
+<option value="CE">Cédula Extranjería</option>
+</select>
+</div>
+<div class="col-md-8">
+<label class="form-label">Número de Documento</label>
+<input class="form-control" name="documento_identidad" placeholder="Ingrese el documento" required="" type="text"/>
+</div>
+<div class="col-md-12">
+<label class="form-label">Email Institucional</label>
+<input class="form-control" name="email" placeholder="correo@happychildren.com" required="" type="email"/>
+</div>
+<div class="col-md-6">
+<label class="form-label">Nombre de Usuario</label>
+<input class="form-control" name="nombre_usuario" placeholder="usuario.empleado" required="" type="text"/>
+</div>
+<div class="col-md-6">
+<label class="form-label">Asignar Rol</label>
+<select class="form-select" name="rol.id_rol" required="">
+<option value="">Seleccione un rol...</option>
+{% for r in listaRoles %}<option value="{{ r.id_rol }}">{{ r.nombre_rol }}</option>{% endfor %}
+</select>
+</div>
+<div class="col-md-12">
+<label class="form-label">Contraseña Temporal</label>
+<input class="form-control" name="contrasena_hash" placeholder="Contraseña inicial (mín. 5 caracteres)" required="" type="password"/>
+</div>
+</div>
+<div class="mt-4 text-end">
+<button class="btn btn-secondary rounded-pill px-4 me-2" data-bs-dismiss="modal" type="button">Cancelar</button>
+<button class="btn-save" type="submit">
+<i class="fas fa-save me-1"></i> Guardar Empleado
+                            </button>
+</div>
+</form>
+</div>
+</div>
+</div>
+</div>
+<footer>
+<p>© 2025 Happy Children - Portal de Trabajo</p>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

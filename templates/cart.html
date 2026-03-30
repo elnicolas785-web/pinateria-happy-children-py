@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<link href="{{ url_for('static', filename='images/logo_happychildren.jpg') }}" rel="icon" type="image/jpg"/>
+<title>Carrito de Compras</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+        .dropdown-menu[data-bs-popper] {
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            margin-top: 15px !important;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background-attachment: fixed;
+            padding-top: 50px;
+            min-height: 100vh;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            margin-bottom: 20px;
+        }
+
+        .logo-container img {
+            height: 60px;
+            width: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 12px;
+            border: 2px solid white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-text {
+            font-size: 1.8rem;
+            font-weight: 800;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            letter-spacing: -1px;
+        }
+
+        .logo-text .happy {
+            color: #1565C0;
+        }
+
+        .logo-text .children {
+            color: #ff9800;
+            margin-left: 2px;
+        }
+
+        .container {
+            max-width: 900px;
+            background: white;
+            padding: 40px;
+            border-radius: 25px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        h2,
+        h4 {
+            color: #1565C0;
+            font-weight: 800;
+        }
+
+        .table thead {
+            background-color: #1565C0;
+            color: white;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #fff0f5;
+        }
+
+        .total {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #ff9800;
+            text-align: right;
+            text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-payment {
+            background: #1565C0;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 30px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .btn-payment:hover {
+            background: #0D47A1;
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        .btn-continue {
+            background: #ff9800;
+            color: white;
+            border-radius: 50px;
+            padding: 12px 30px;
+            font-weight: bold;
+            border: none;
+            transition: all 0.3s;
+        }
+
+        .btn-continue:hover {
+            background: #f57c00;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        .btn-delete:hover {
+            transform: scale(1.2) rotate(15deg);
+            color: white;
+        }
+
+        .dynamic-field {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .form-control:not(:placeholder-shown):invalid, .form-select:invalid {
+            border-color: #dc3545;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(.375em + .1875rem) center;
+            background-size: calc(.75em + .375rem) calc(.75em + .375rem);
+        }
+
+        .form-control:not(:placeholder-shown):valid, .form-select:valid {
+            border-color: #28a745;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(.375em + .1875rem) center;
+            background-size: calc(.75em + .375rem) calc(.75em + .375rem);
+        }
+
+        .error, .valid {
+            font-size: 0.85rem;
+            margin-top: 5px;
+            padding-left: 15px;
+            display: block;
+            font-weight: 500;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .error { color: #dc3545; }
+        .valid { color: #28a745; }
+    </style>
+</head>
+<body>
+<div class="container">
+<a class="logo-container" href="/">
+<img alt="Logo" src="{{ url_for('static', filename='images/logo_happychildren.jpg') }}"/>
+<div class="logo-text">
+<span class="happy">Happy</span><span class="children">Children</span>
+</div>
+</a>
+<div class="d-flex justify-content-between align-items-center mb-4">
+<h2 class="mb-0"><i class="fas fa-shopping-cart text-primary"></i> Tu Carrito</h2>
+<div class="d-flex align-items-center">
+<a class="btn btn-outline-secondary me-3" href="/cart/catalogo">Seguir Comprando</a>
+{% if current_user.is_authenticated %}
+<span class="dropdown">
+<a aria-expanded="false" class="dropdown-toggle text-decoration-none fw-bold text-white" data-bs-display="static" data-bs-toggle="dropdown" href="#" role="button" style="background: #1565C0; padding: 8px 15px; border-radius: 20px;">
+<i class="fas fa-user-circle me-1"></i> <span>{{ current_user.nombre_usuario }}</span>
+</a>
+<ul class="dropdown-menu shadow-lg" style="margin-top: 15px !important; left: 50% !important; transform: translateX(-50%) !important; right: auto !important; width: max-content; border-radius: 15px; border:none;">
+<li>
+<h6 class="dropdown-header text-primary">{{ current_user.nombre_usuario }}</h6>
+</li>
+<li><a class="dropdown-item" href="/dashboard"><i class="fas fa-tachometer-alt me-2"></i>Ir al Dashboard</a></li>
+<li>
+<hr class="dropdown-divider"/>
+</li>
+<li>
+<form action="/logout" class="m-0" method="post">
+<button class="dropdown-item text-danger fw-bold" type="submit">
+<i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
+                                </button>
+</form>
+</li>
+</ul>
+</span>
+{% endif %}
+</div>
+</div>
+
+{% if not carrito %}
+<div class="text-center py-5">
+<div class="mb-4">
+<i class="fas fa-shopping-basket fa-4x text-muted" style="opacity: 0.5;"></i>
+</div>
+<h3 class="text-muted fw-bold mb-3">Tu carrito está vacío</h3>
+<p class="text-muted mb-4">¡Parece que aún no has agregado nada! Explora nuestro catálogo y encuentra lo que buscas.</p>
+<a class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm" href="/cart/catalogo" style="background: #1565C0; border: none;">
+<i class="fas fa-arrow-right me-2"></i>Ir a Comprar
+</a>
+</div>
+{% else %}
+<div>
+<table class="table table-hover">
+<thead>
+<tr>
+<th>Producto</th>
+<th>Precio</th>
+<th>Cantidad</th>
+<th>Subtotal</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+{% for item in carrito %}
+<tr>
+<td style="font-weight: 600;">{{ item.nombre }}</td>
+<td>${{ item.precio }}</td>
+<td>
+<div class="d-flex align-items-center">
+<a class="btn btn-sm btn-outline-danger" href="/cart/decrease/{{ item.id_producto }}" style="border-radius: 50%; width: 30px; height: 30px; padding: 0; display: flex; align-items: center; justify-content: center;">
+<i class="fas fa-minus"></i>
+</a>
+<form action="/cart/set/{{ item.id_producto }}" class="mx-2" method="post">
+<input class="form-control text-center" min="1" name="cantidad" onchange="this.form.submit()" style="width:70px; height:30px; padding:0;" type="number" value="{{ item.cantidad }}"/>
+</form>
+<a class="btn btn-sm btn-outline-success" href="/cart/increase/{{ item.id_producto }}" style="border-radius: 50%; width: 30px; height: 30px; padding: 0; display: flex; align-items: center; justify-content: center;">
+<i class="fas fa-plus"></i>
+</a>
+</div>
+</td>
+<td style="color: #ff9800; font-weight: bold;">${{ item.subtotal }}</td>
+<td class="text-center">
+<a class="btn-delete" href="/cart/remove/{{ item.id_producto }}" title="Eliminar del carrito">
+<i class="fas fa-trash-alt"></i>
+</a>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+<div class="total mb-4 text-center">
+                Total a Pagar: <span style="color: #ff9800;">${{ total }}</span>
+</div>
+<hr/>
+<div class="text-center mb-4">
+<h4 class="mb-3"><i class="fas fa-cash-register me-2"></i>Finalizar Compra</h4>
+</div>
+
+{% if not current_user.is_authenticated %}
+<div class="alert alert-warning">
+<i class="fas fa-lock me-2"></i> Debes <a class="alert-link" href="/login">Inicia Sesión</a> o <a class="alert-link" href="/login">Crear una Cuenta</a> para completar tu compra.
+</div>
+{% else %}
+{% set nombre_completo = '' %}
+{% set doc_identidad = '' %}
+{% if current_user.__class__.__name__ == 'UsuarioCliente' and current_user.cliente %}
+    {% set nombre_completo = current_user.cliente.nombres ~ ' ' ~ current_user.cliente.apellidos %}
+    {% set doc_identidad = current_user.cliente.numero_documento %}
+{% elif current_user.__class__.__name__ == 'Empleado' %}
+    {% set nombre_completo = current_user.nombres ~ ' ' ~ current_user.apellidos %}
+    {% set doc_identidad = current_user.documento_identidad %}
+{% endif %}
+<form action="/cart/checkout" method="post">
+<div class="row g-3">
+<div class="col-md-6">
+<label class="form-label fw-bold">Nombre Completo</label>
+<input class="form-control rounded-pill" id="clienteNombre" name="clienteNombre" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+" placeholder="Ej: Juan Perez" required="" title="Solo letras y espacios" type="text" value="{{ nombre_completo }}"/>
+<div class="error" id="nombreError"></div>
+</div>
+<div class="col-md-6">
+<label class="form-label fw-bold">Documento de Identidad</label>
+<input class="form-control rounded-pill" id="clienteDoc" inputmode="numeric" minlength="10" name="clienteDoc" pattern="\d+" placeholder="Ej: 12345678" required="" title="Solo números, mínimo 10 dígitos" type="text" value="{{ doc_identidad }}"/>
+<div class="error" id="docError"></div>
+</div>
+<div class="col-md-12">
+<label class="form-label fw-bold">Dirección de Residencia / Entrega</label>
+<div class="input-group">
+<span class="input-group-text rounded-start-pill bg-white"><i class="fas fa-map-marker-alt text-danger"></i></span>
+<input class="form-control rounded-end-pill" id="direccion" name="direccion" placeholder="Ej: Calle 123 #45-67" required="" type="text"/>
+</div>
+<div class="error" id="direccionError"></div>
+</div>
+<div class="col-md-12">
+<hr class="my-3" style="border-top: 2px dashed #1565C0;"/>
+</div>
+<div class="col-md-6">
+<label class="form-label fw-bold">Método de Pago</label>
+<select class="form-select rounded-pill" id="metodoPago" name="metodoPago" onchange="togglePaymentFields()" required="">
+<option disabled="" selected="" value="">Selecciona una opción...</option>
+<option value="Nequi">Nequi</option>
+<option value="DaviPlata">DaviPlata</option>
+<option value="Bancolombia">Bancolombia</option>
+<option value="TarjetaCredito">Tarjeta de Crédito</option>
+</select>
+</div>
+<div class="col-md-6 dynamic-field" id="fieldDynamic" style="display:none;">
+<label class="form-label fw-bold">Número</label>
+<div class="input-group">
+<span class="input-group-text rounded-start-pill bg-white"><i class="fas fa-credit-card text-primary" id="iconDynamic"></i></span>
+<input class="form-control rounded-end-pill" id="accountNumber" inputmode="numeric" name="accountNumber" placeholder="" type="text"/>
+</div>
+<div class="error" id="accountError"></div>
+</div>
+<div class="col-md-12 text-start my-3">
+    <label class="form-label fw-bold">Observaciones o Notas</label>
+    <textarea class="form-control rounded" name="observaciones" placeholder="Ej: Entregar en la portería"></textarea>
+</div>
+</div>
+<div class="mt-5 text-center">
+<a class="btn btn-continue me-2" href="/cart/catalogo">
+<i class="fas fa-arrow-left me-2"></i>Seguir Comprando
+</a>
+<button class="btn btn-payment btn-lg" type="submit">
+<i class="fas fa-check-circle me-2"></i> Pagar Ahora
+</button>
+</div>
+</form>
+{% endif %}
+</div>
+{% endif %}
+</div>
+
+<script>
+        function togglePaymentFields() {
+            const metodo = document.getElementById('metodoPago').value;
+            const fieldDynamic = document.getElementById('fieldDynamic');
+            const inputDynamic = fieldDynamic.querySelector('input');
+            const labelDynamic = fieldDynamic.querySelector('label');
+            const iconDynamic = document.getElementById('iconDynamic');
+            const errorDiv = document.getElementById('accountError');
+
+            fieldDynamic.style.display = 'block';
+
+            if (metodo === 'Nequi') {
+                labelDynamic.innerText = 'Número de Celular (Nequi)';
+                iconDynamic.className = 'fas fa-mobile-alt text-primary';
+                inputDynamic.setAttribute('placeholder', 'Ej: 3001234567');
+                inputDynamic.setAttribute('required', 'true');
+                inputDynamic.setAttribute('pattern', '\\d{10}');
+                inputDynamic.setAttribute('maxlength', '10');
+                inputDynamic.setAttribute('minlength', '10');
+                inputDynamic.setAttribute('title', 'Debe tener exactamente 10 dígitos numéricos');
+                inputDynamic.oninput = function() {
+                   if(this.value && this.value.length !== 10) {
+                       this.setCustomValidity('El celular de Nequi debe tener 10 dígitos');
+                       errorDiv.textContent = "⚠️ El celular de Nequi debe tener 10 dígitos";
+                       errorDiv.style.color = "#dc3545";
+                       this.style.borderColor = "#dc3545";
+                   } else if(this.value.length === 10) {
+                       this.setCustomValidity('');
+                       errorDiv.textContent = "✓ Celular válido";
+                       errorDiv.style.color = "#28a745";
+                       this.style.borderColor = "#28a745";
+                   } else {
+                       this.setCustomValidity('Campo obligatorio');
+                       errorDiv.textContent = "";
+                       this.style.borderColor = "#ddd";
+                   }
+                };
+            } else if (metodo === 'Bancolombia' || metodo === 'TarjetaCredito' || metodo === 'DaviPlata') {
+                labelDynamic.innerText = 'Número de Cuenta / Tarjeta (' + metodo + ')';
+                iconDynamic.className = 'fas fa-credit-card text-primary';
+                inputDynamic.setAttribute('placeholder', '0000000000000000');
+                inputDynamic.setAttribute('required', 'true');
+                inputDynamic.setAttribute('pattern', '\\d{16}');
+                inputDynamic.setAttribute('maxlength', '16');
+                inputDynamic.setAttribute('minlength', '16');
+                inputDynamic.setAttribute('title', 'Debe tener exactamente 16 dígitos numéricos');
+                inputDynamic.oninput = function() {
+                   if(this.value && this.value.length !== 16) {
+                       this.setCustomValidity('La cuenta/tarjeta debe tener 16 dígitos');
+                       errorDiv.textContent = "⚠️ La cuenta debe tener 16 dígitos";
+                       errorDiv.style.color = "#dc3545";
+                       this.style.borderColor = "#dc3545";
+                   } else if(this.value.length === 16) {
+                       this.setCustomValidity(''); 
+                       errorDiv.textContent = "✓ Cuenta/Tarjeta válida";
+                       errorDiv.style.color = "#28a745";
+                       this.style.borderColor = "#28a745";
+                   } else {
+                       this.setCustomValidity('Campo obligatorio');
+                       errorDiv.textContent = "";
+                       this.style.borderColor = "#ddd";
+                   }
+                };
+            } else {
+                fieldDynamic.style.display = 'none';
+                inputDynamic.removeAttribute('required');
+                errorDiv.textContent = "";
+            }
+        }
+
+        // Additional validation for Nombre, Doc, Direccion
+        document.getElementById('clienteNombre')?.addEventListener('input', function() {
+            const errorDiv = document.getElementById('nombreError');
+            if (this.value.length > 0 && !/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(this.value)) {
+                this.setCustomValidity("El nombre solo debe contener letras");
+                errorDiv.textContent = "⚠️ El nombre solo debe contener letras";
+                errorDiv.style.color = "#dc3545";
+                this.style.borderColor = "#dc3545";
+            } else if (this.value.length > 0) {
+                this.setCustomValidity("");
+                errorDiv.textContent = "✓ Nombre válido";
+                errorDiv.style.color = "#28a745";
+                this.style.borderColor = "#28a745";
+            } else {
+                this.setCustomValidity("Campo obligatorio");
+                errorDiv.textContent = "";
+                this.style.borderColor = "#ddd";
+            }
+        });
+
+        document.getElementById('clienteDoc')?.addEventListener('input', function() {
+            const errorDiv = document.getElementById('docError');
+            if (this.value.length > 0 && !/^[0-9]+$/.test(this.value)) {
+                this.setCustomValidity("Solo se permiten números");
+                errorDiv.textContent = "⚠️ Solo se permiten números";
+                errorDiv.style.color = "#dc3545";
+                this.style.borderColor = "#dc3545";
+            } else if (this.value.length > 0 && this.value.length < 10) {
+                this.setCustomValidity("Mínimo 10 caracteres");
+                errorDiv.textContent = "⚠️ Mínimo 10 caracteres";
+                errorDiv.style.color = "#dc3545";
+                this.style.borderColor = "#dc3545";
+            } else if (this.value.length >= 10) {
+                this.setCustomValidity("");
+                errorDiv.textContent = "✓ Documento válido";
+                errorDiv.style.color = "#28a745";
+                this.style.borderColor = "#28a745";
+            } else {
+                this.setCustomValidity("Campo obligatorio");
+                errorDiv.textContent = "";
+                this.style.borderColor = "#ddd";
+            }
+        });
+
+        document.getElementById('direccion')?.addEventListener('input', function() {
+            const errorDiv = document.getElementById('direccionError');
+            if (this.value.length > 0 && this.value.length < 5) {
+                this.setCustomValidity("Dirección muy corta");
+                errorDiv.textContent = "⚠️ Dirección muy corta";
+                errorDiv.style.color = "#dc3545";
+                this.style.borderColor = "#dc3545";
+            } else if (this.value.length >= 5) {
+                this.setCustomValidity("");
+                errorDiv.textContent = "✓ Dirección válida";
+                errorDiv.style.color = "#28a745";
+                this.style.borderColor = "#28a745";
+            } else {
+                this.setCustomValidity("Campo obligatorio");
+                errorDiv.textContent = "";
+                this.style.borderColor = "#ddd";
+            }
+        });
+
+    </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

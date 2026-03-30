@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="{{ url_for('static', filename='images/logo_happychildren.jpg') }}" rel="icon" type="image/jpg"/>
+<title>Dashboard Admin - Happy Children</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+<style>
+        :root {
+            --primary-blue: #1565C0;
+            --primary-orange: #ff9800;
+            --bg-light: #f4f7f9;
+            --text-dark: #2c3e50;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+        }
+
+        header {
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .header-logo img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .header-logo:hover img {
+            transform: scale(1.1) rotate(-5deg);
+        }
+
+        .header-logo h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            font-weight: 800;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            letter-spacing: -1px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            color: white;
+        }
+
+        .header-logo h1 span {
+            color: var(--primary-orange);
+            margin-left: 2px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .section-title {
+            color: var(--primary-blue);
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 35px;
+            text-align: left;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 60px;
+            height: 4px;
+            background-color: var(--primary-orange);
+            border-radius: 2px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 992px) {
+            .dashboard-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 480px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #dcdcdc;
+            border-radius: 10px;
+            padding: 30px 20px;
+            text-align: center;
+            text-decoration: none !important;
+            color: var(--text-dark);
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            height: 100%;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(21, 101, 192, 0.1);
+            border-color: var(--primary-blue);
+        }
+
+        .card i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--primary-blue);
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover i {
+            transform: scale(1.1);
+        }
+
+        .card h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #333;
+        }
+
+        .badge {
+            background-color: var(--primary-orange);
+            color: white;
+            padding: 3px 9px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        /* Logout Card Special Style */
+        .card-logout {
+            border-color: #ffebee;
+        }
+
+        .card-logout i {
+            color: #d32f2f;
+        }
+
+        .card-logout:hover {
+            border-color: #d32f2f;
+            box-shadow: 0 8px 15px rgba(211, 47, 47, 0.1);
+        }
+
+        .card-logout h3 {
+            color: #d32f2f !important;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            margin-top: 40px;
+            color: #7f8c8d;
+            font-size: 0.95rem;
+            border-top: 1px solid #ebedef;
+        }
+
+        button.card-link {
+            background: none;
+            border: none;
+            padding: 0;
+            width: 100%;
+            cursor: pointer;
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body>
+<header>
+<a class="header-logo" href="/">
+<img alt="Logo Happy Children" src="{{ url_for('static', filename='images/logo_happychildren.jpg') }}"/>
+<h1>Happy <span>Children</span></h1>
+</a>
+<p style="margin: 0; opacity: 0.9; font-weight: 500;">Panel de Administración y Gestión</p>
+</header>
+<div class="container">
+<h2 class="section-title">Accesos de Gestión</h2>
+<div class="dashboard-grid">
+
+<a class="card" href="/productos">
+<i class="fas fa-boxes"></i>
+<h3>Productos <span class="badge">{{ cantProductos }}</span></h3>
+</a>
+<a class="card" href="/categorias">
+<i class="fas fa-tags"></i>
+<h3>Categorías</h3>
+</a>
+
+<a class="card" href="/empleados">
+<i class="fas fa-id-badge"></i>
+<h3>Empleados <span class="badge">{{ cantEmpleados }}</span></h3>
+</a>
+
+<a class="card" href="/ventas">
+<i class="fas fa-shopping-cart"></i>
+<h3>Ventas <span class="badge">{{ cantVentas }}</span></h3>
+</a>
+
+<a class="card" href="/roles">
+<i class="fas fa-user-tag"></i>
+<h3>Roles <span class="badge">{{ cantRoles }}</span></h3>
+</a>
+<a class="card" href="/usuarios">
+<i class="fas fa-users-cog"></i>
+<h3>Usuarios</h3>
+</a>
+
+<a class="card" href="/reportes/ventas/pdf" target="_blank">
+<i class="fas fa-file-pdf"></i>
+<h3>Reporte PDF</h3>
+</a>
+
+<!-- Logout Integrated as a Card -->
+<form action="/logout" method="post" style="display: block; height: 100%;">
+<button class="card-link" style="height: 100%; height: stretch; height: -webkit-fill-available;" type="submit">
+<div class="card card-logout" style="height: 100%;">
+<i class="fas fa-sign-out-alt"></i>
+<h3>Cerrar Sesión</h3>
+</div>
+</button>
+</form>
+</div>
+<!-- Nueva Sección: Gráficas de Rendimiento -->
+<div class="row mt-5">
+<div class="col-md-7">
+<div class="card shadow-sm border-0 rounded-4 h-100" style="display: block;">
+<div class="card-body p-4">
+<h3 class="section-title mb-4" style="font-size: 1.4rem;"><i class="fas fa-chart-bar me-2"></i>
+                            Ventas Mensuales</h3>
+<canvas id="salesChart"></canvas>
+</div>
+</div>
+</div>
+<div class="col-md-5">
+<div class="card shadow-sm border-0 rounded-4 h-100" style="display: block;">
+<div class="card-body p-4">
+<h3 class="section-title mb-4" style="font-size: 1.4rem;"><i class="fas fa-chart-pie me-2"></i>
+                            Categorías</h3>
+<canvas id="categoryChart"></canvas>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Modal para registro de empleado -->
+<div aria-hidden="true" aria-labelledby="registroModalLabel" class="modal fade" id="registroEmpleadoModal" tabindex="-1">
+<div class="modal-dialog modal-lg modal-dialog-centered">
+<div class="modal-content shadow-lg border-0 rounded-4">
+<div class="modal-header bg-primary text-white border-0 py-3">
+<h5 class="modal-title" id="registroModalLabel"><i class="fas fa-user-plus me-2"></i> Registrar
+                        Nuevo Empleado</h5>
+<button aria-label="Close" class="btn-close btn-close-white" data-bs-dismiss="modal" type="button"></button>
+</div>
+<div class="modal-body p-4">
+<form action="/empleados/guardar" method="post">
+<input name="fromDashboard" type="hidden" value="true"/>
+<div class="row g-3">
+<div class="col-md-6">
+<label class="form-label fw-bold font-primary">Nombres</label>
+<input class="form-control" name="nombres" placeholder="Nombres" required="" type="text"/>
+</div>
+<div class="col-md-6">
+<label class="form-label fw-bold">Apellidos</label>
+<input class="form-control" name="apellidos" placeholder="Apellidos" required="" type="text"/>
+</div>
+<div class="col-md-4">
+<label class="form-label fw-bold">Tipo Docto.</label>
+<select class="form-select" name="tipo_documento" required="">
+<option value="CC">Cédula</option>
+<option value="CE">Cédula Extranjería</option>
+</select>
+</div>
+<div class="col-md-8">
+<label class="form-label fw-bold">Número de Documento</label>
+<input class="form-control" name="documento_identidad" placeholder="Documento" required="" type="text"/>
+</div>
+<div class="col-md-12">
+<label class="form-label fw-bold">Email Institucional</label>
+<input class="form-control" name="email" placeholder="correo@happychildren.com" required="" type="email"/>
+</div>
+<div class="col-md-6">
+<label class="form-label fw-bold">Nombre de Usuario</label>
+<input class="form-control" name="nombre_usuario" placeholder="usuario" required="" type="text"/>
+</div>
+<div class="col-md-6">
+<label class="form-label fw-bold">Asignar Rol</label>
+<select class="form-select" name="rol.id_rol" required="">
+<option value="">Seleccione...</option>
+{% for r in listaRoles %}<option value="{{ r.id_rol }}">{{ r.nombre_rol }}</option>{% endfor %}
+</select>
+</div>
+<div class="col-md-12">
+<label class="form-label fw-bold">Contraseña Temporal</label>
+<input class="form-control" name="contrasena_hash" placeholder="Mín. 5 caracteres" required="" type="password"/>
+</div>
+</div>
+<div class="mt-4 text-end">
+<button class="btn btn-secondary rounded-pill px-4 me-2" data-bs-dismiss="modal" type="button">Cancelar</button>
+<button class="btn btn-primary rounded-pill px-4" type="submit">
+<i class="fas fa-save me-1"></i> Guardar Empleado
+                            </button>
+</div>
+</form>
+</div>
+</div>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+        // Datos de Ventas Mensuales
+        const salesLabels = ["Ene", "Feb", "Mar", "Abr", "May", "Jun"];
+        const salesValues = [1500, 2300, 1800, 2900, 2100, 3400];
+
+        // Datos de Distribución de Categorías
+        const categoryLabels = ["Cumpleaños", "Baby Shower", "Bautizo", "Fiesta Temática"];
+        const categoryValues = [45, 20, 15, 20];
+
+        // Configuración Gráfica de Barras (Ventas)
+        const ctxSales = document.getElementById('salesChart').getContext('2d');
+        new Chart(ctxSales, {
+            type: 'bar',
+            data: {
+                labels: salesLabels,
+                datasets: [{
+                    label: 'Ventas por Mes ($)',
+                    data: salesValues,
+                    backgroundColor: 'rgba(21, 101, 192, 0.7)',
+                    borderColor: 'rgba(21, 101, 192, 1)',
+                    borderWidth: 1,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function (value) { return '$' + value; }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Configuración Gráfica de Pastel (Categorías)
+        const ctxCategory = document.getElementById('categoryChart').getContext('2d');
+        new Chart(ctxCategory, {
+            type: 'doughnut',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    data: categoryValues,
+                    backgroundColor: [
+                        '#1565C0', '#FF9800', '#4CAF50', '#E91E63', '#9C27B0', '#00BCD4'
+                    ],
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    </script>
+<footer>
+<p>© 2025 Happy Children - Sistema de Gestión de Piñatería</p>
+</footer>
+</body>
+</html>

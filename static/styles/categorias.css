@@ -1,0 +1,91 @@
+/* Fondo piñatería colorido */
+body {
+    background-image: url('/img/pinata-fondo.jpg'); /* Cambia por tu imagen */
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+    backdrop-filter: blur(2px);
+    padding-bottom: 40px;
+}
+
+/* Contenedor principal */
+.container {
+    background: rgba(255, 255, 255, 0.85);
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0px 4px 20px rgba(0,0,0,0.2);
+}
+
+/* Título */
+h2 {
+    font-family: 'Comic Sans MS', cursive;
+    font-size: 32px;
+    color: #ff2d75;
+    text-shadow: 2px 2px 3px rgba(0,0,0,0.2);
+}
+
+/* Bordes y formularios */
+form {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px !important;
+    box-shadow: 0px 3px 10px rgba(0,0,0,0.1);
+}
+
+/* Inputs */
+input, textarea, select {
+    border-radius: 8px !important;
+}
+
+/* Botón guardar estilo piñatería */
+.btn-success {
+    background-color: #28c76f;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.btn-success:hover {
+    background-color: #20a85b;
+}
+
+/* Tabla */
+table {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* Encabezado tabla */
+thead {
+    background: linear-gradient(90deg, #ff2d75, #ff7a18);
+    color: white;
+    font-size: 16px;
+}
+
+/* Botón editar */
+.btn-warning {
+    background-color: #ffba08;
+    border: none;
+    border-radius: 10px;
+    padding: 5px 10px;
+    font-weight: bold;
+}
+
+.btn-warning:hover {
+    background-color: #e0a200;
+}
+
+/* Botón eliminar */
+.btn-danger {
+    background-color: #ff4d4d;
+    border: none;
+    border-radius: 10px;
+    padding: 5px 10px;
+    font-weight: bold;
+}
+
+.btn-danger:hover {
+    background-color: #e04343;
+}

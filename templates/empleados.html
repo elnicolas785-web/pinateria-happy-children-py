@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html lang="es" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8"/>
+<link href="/images/logo_happychildren.jpg" rel="icon" type="image/jpg"/>
+<title>Gestión de Empleados</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            margin-bottom: 20px;
+        }
+
+        .logo-container img {
+            height: 60px;
+            width: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 12px;
+            border: 2px solid white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-text {
+            font-size: 1.8rem;
+            font-weight: 800;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            letter-spacing: -1px;
+        }
+
+        .logo-text .happy {
+            color: #1565C0;
+        }
+
+        .logo-text .children {
+            color: #ff9800;
+            margin-left: 2px;
+        }
+
+        .container {
+            margin-top: 30px;
+            background: white;
+            padding: 3rem;
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: #1565C0;
+            /* Blue matching index header */
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            font-weight: bold;
+            padding: 1rem;
+        }
+
+        .btn-action {
+            margin-right: 5px;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #e3f2fd;
+            /* Light blue hover */
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #1565C0;
+        }
+
+        .badge {
+            border-radius: 30px;
+            padding: 0.5em 1em;
+        }
+
+        h2 {
+            color: #1565C0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="container mb-5">
+<a class="logo-container" href="/dashboard">
+<img alt="Logo" src="/images/logo_happychildren.jpg"/>
+<div class="logo-text">
+<span class="happy">Happy</span><span class="children">Children</span>
+</div>
+</a>
+<div class="d-flex justify-content-between align-items-center mb-4">
+<h2 class="mb-0"><i class="fas fa-id-badge me-2"></i>Gestión de Empleados</h2>
+<a class="btn btn-primary rounded-pill px-4 shadow-sm" href="/dashboard"><i class="fas fa-arrow-left me-1"></i> Volver</a>
+</div>
+<div class="card mb-4">
+{% if error %}<div class="alert alert-danger mx-3 mt-3 rounded-4" role="alert">
+<i class="fas fa-exclamation-triangle me-2"></i> <span>{{ error }}</span>
+</div>{% endif %}
+{% if success %}<div class="alert alert-success mx-3 mt-3 rounded-4" role="alert">
+<i class="fas fa-check-circle me-2"></i> <span>{{ success }}</span>
+</div>{% endif %}
+<div class="card-header">
+<i class="fas fa-user-tie me-2"></i>
+<span>(readonly ? 'Detalles del Empleado' : 'Editar Empleado') if {{ empleado.id_empleado != None else 'Nuevo Empleado' }}</span>
+</div>
+<div class="card-body p-4">
+<form action="/empleados/guardar" method="post" th:object="${empleado}">
+<input th:field="*{id_empleado}" type="hidden"/>
+<input th:field="*{fecha_creacion}" type="hidden"/>
+<div class="row g-4">
+<div class="col-md-2">
+<label class="form-label">Código</label>
+<input class="form-control" placeholder="Autogenerado" readonly="" th:field="*{codigo}" type="text"/>
+</div>
+<div class="col-md-2">
+<label class="form-label">Tipo de Documento</label>
+<select class="form-select" th:disabled="${readonly}" th:field="*{tipo_documento}">
+<option value="CC">Cédula</option>
+<option value="CE">Cédula Extranjería</option>
+</select>
+</div>
+<div class="col-md-3">
+<label class="form-label">Documento</label>
+<input class="form-control" placeholder="Número de documento" required="" th:disabled="${readonly}" th:field="*{documento_identidad}" type="text"/>
+</div>
+<div class="col-md-3">
+<label class="form-label">Nombres</label>
+<input class="form-control" required="" th:disabled="${readonly}" th:field="*{nombres}" type="text"/>
+</div>
+<div class="col-md-3">
+<label class="form-label">Apellidos</label>
+<input class="form-control" required="" th:disabled="${readonly}" th:field="*{apellidos}" type="text"/>
+</div>
+</div>
+<div class="row g-3 mt-2">
+<div class="col-md-4">
+<label class="form-label">Email</label>
+<input class="form-control" required="" th:disabled="${readonly}" th:field="*{email}" type="email"/>
+</div>
+<div class="col-md-4">
+<label class="form-label">Rol</label>
+<select class="form-select" name="rol.id_rol" required="" th:disabled="${readonly}">
+<option value="">Seleccione...</option>
+{% for r in listaRoles %}<option th:selected="${empleado.rol != null and empleado.rol.id_rol == r.id_rol}" value="{{ r.id_rol }}">{{ r.nombre_rol }}</option>{% endfor %}
+</select>
+</div>
+{% if empleado.id_empleado != None %}<div class="col-md-4">
+<label class="form-label">Estado</label>
+<select class="form-select" th:disabled="${readonly}" th:field="*{estado}">
+<option value="Activo">Activo</option>
+<option value="Inactivo">Inactivo</option>
+</select>
+</div>{% endif %}
+</div>
+<div class="row g-3 mt-2">
+<div class="col-md-4">
+<label class="form-label">Usuario</label>
+<input class="form-control" required="" th:disabled="${readonly}" th:field="*{nombre_usuario}" type="text"/>
+</div>
+<div class="col-md-4">
+<label class="form-label">Contraseña</label>
+<input class="form-control" placeholder="Dejar vacío si no desea cambiar" th:disabled="${readonly}" th:field="*{contrasena_hash}" type="password"/>
+</div>
+<input th:field="*{fecha_contratacion}" type="hidden">
+<!-- Fecha Registro (Sync with Products) -->
+<div class="col-md-4">
+<label class="form-label">Fecha Registro</label>
+<input class="form-control" readonly="" required="" th:field="*{fecha_creacion}" type="date"/>
+</div>
+</input></div>
+<div class="mt-4 text-end">
+{% if empleado.id_empleado != None %}<a class="btn btn-secondary me-2" href="/empleados">Cancelar / Nuevo</a>{% endif %}
+{% if not readonly %}<button class="btn btn-success" type="submit">
+<i class="fas fa-save"></i> Guardar
+                        </button>{% endif %}
+</div>
+</form>
+</div>
+</div>
+<form action="/empleados/buscar" class="mb-4" method="get">
+<div class="input-group">
+<input class="form-control" name="busqueda" placeholder="Buscar empleado..." required="" type="text"/>
+<button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Buscar</button>
+</div>
+</form>
+<div class="card">
+<div class="card-header">
+<i class="fas fa-list me-2"></i> Listado de Empleados
+            </div>
+<div class="card-body p-0">
+<div class="table-responsive">
+<table class="table table-hover table-striped mb-0">
+<thead style="background-color: #1565C0; color: white;">
+<tr>
+<th>Código</th>
+<th>Documento</th>
+<th>Nombre Completo</th>
+<th>Usuario</th>
+<th>Rol</th>
+<th>Estado</th>
+<th class="text-center">Acciones</th>
+</tr>
+</thead>
+<tbody>
+{% for e in listaEmpleados %}<tr>
+<td>{{ e.codigo }}</td>
+<td>{{ e.documento_identidad }}</td>
+<td>{{ e.nombres + ' ' + e.apellidos }}</td>
+<td>{{ e.nombre_usuario }}</td>
+<td>{{ e.rol.nombre_rol }}</td>
+<td>
+{% if e.estado == 'Activo' %}<span class="badge bg-success">Activo</span>{% endif %}
+{% if e.estado == 'Inactivo' %}<span class="badge bg-danger">Inactivo</span>{% endif %}
+</td>
+<td class="text-center">
+<a class="btn btn-sm btn-info text-white btn-action" href="/empleados/ver/{id}(id=${e.id_empleado})" sec:authorize="hasRole('EMPLEADO')" title="Ver">
+<i class="fas fa-eye"></i>
+</a>
+<a class="btn btn-sm btn-warning btn-action" href="/empleados/editar/{id}(id=${e.id_empleado})" title="Editar">
+<i class="fas fa-edit"></i>
+</a>
+<a class="btn btn-sm btn-action" href="/empleados/cambiarEstado/{id}(id=${e.id_empleado})" th:classappend="${e.estado == 'Activo' ? 'btn-danger' : 'btn-success'}" th:onclick="return confirm([[${e.estado == 'Activo' ? '¿Seguro que desea desactivar este empleado?' : '¿Seguro que desea activar este empleado?'}]] )" th:title="${e.estado == 'Activo' ? 'Desactivar' : 'Activar'}">
+<i class="fas" th:classappend="${e.estado == 'Activo' ? 'fa-ban' : 'fa-check-circle'}"></i>
+</a>
+</td>
+</tr>{% endfor %}
+{% if not listaEmpleados %}<tr>
+<td class="text-center text-muted p-4" colspan="7">No hay empleados registrados.</td>
+</tr>{% endif %}
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
