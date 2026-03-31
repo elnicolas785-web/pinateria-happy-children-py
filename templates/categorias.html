@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-
-<html lang="es" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
+<html lang="es">
 <head>
 <meta charset="utf-8"/>
 <link href="/images/logo_happychildren.jpg" rel="icon" type="image/jpg"/>
@@ -110,39 +109,43 @@
 <div class="card mb-4">
 <div class="card-header">
 <i class="fas fa-edit me-2"></i>
-<span>{{ ('Detalles de Categoría' if readonly else 'Editar Categoría') if categoria.id_categoria != None else 'Nueva Categoría' }}</span>
+<span>{{ ('Detalles de Categoría' if readonly else 'Editar Categoría') if categoria and categoria.id_categoria else 'Nueva Categoría' }}</span>
 </div>
 <div class="card-body">
-<form action="/categorias/guardar" method="post" th:object="${categoria}">
-<input th:field="*{id_categoria}" type="hidden"/>
+<form action="/categorias/guardar" method="post">
+<input name="id_categoria" value="{{ categoria.id_categoria or '' }}" type="hidden"/>
 <div class="row g-3">
 <div class="col-md-4">
 <label class="form-label">Código</label>
-<input class="form-control" placeholder="Autogenerado" readonly="" th:field="*{codigo}" type="text"/>
+<input class="form-control" name="codigo" value="{{ categoria.codigo or '' }}" placeholder="Autogenerado" readonly="" type="text"/>
 </div>
 <div class="col-md-4">
 <label class="form-label">Nombre</label>
-<input class="form-control" required="" th:disabled="${readonly}" th:field="*{nombre}" type="text"/>
+<input class="form-control" name="nombre" value="{{ categoria.nombre or '' }}" required="" {{ 'readonly' if readonly else '' }} type="text"/>
 </div>
-{% if categoria.id_categoria != None %}<div class="col-md-4">
+{% if categoria and categoria.id_categoria %}
+<div class="col-md-4">
 <label class="form-label">Estado</label>
-<select class="form-select" th:disabled="${readonly}" th:field="*{activo}">
-<option value="Activo">Activo</option>
-<option value="Inactivo">Inactivo</option>
+<select class="form-select" name="activo" {{ 'disabled' if readonly else '' }}>
+<option value="Activo" {% if categoria.activo == 'Activo' %}selected{% endif %}>Activo</option>
+<option value="Inactivo" {% if categoria.activo == 'Inactivo' %}selected{% endif %}>Inactivo</option>
 </select>
-</div>{% endif %}
+</div>
+{% endif %}
 </div>
 <div class="row g-3 mt-2">
 <div class="col-md-12">
 <label class="form-label">Descripción</label>
-<textarea class="form-control" rows="2" th:disabled="${readonly}" th:field="*{descripcion}"></textarea>
+<textarea class="form-control" name="descripcion" rows="2" {{ 'readonly' if readonly else '' }}>{{ categoria.descripcion or '' }}</textarea>
 </div>
 </div>
 <div class="mt-4 text-end">
-{% if categoria.id_categoria != None %}<a class="btn btn-secondary me-2" href="/categorias">Cancelar / Nueva</a>{% endif %}
-{% if not readonly %}<button class="btn btn-success" type="submit">
+{% if categoria and categoria.id_categoria %}<a class="btn btn-secondary me-2" href="/categorias">Cancelar / Nueva</a>{% endif %}
+{% if not readonly %}
+<button class="btn btn-success" type="submit">
 <i class="fas fa-save"></i> Guardar
-                        </button>{% endif %}
+</button>
+{% endif %}
 </div>
 </form>
 </div>
@@ -179,14 +182,15 @@
 {% if cat.activo == 'Inactivo' %}<span class="badge bg-danger">Inactivo</span>{% endif %}
 </td>
 <td class="text-center">
-<a class="btn btn-sm btn-info text-white btn-action" href="/categorias/ver/{id}(id=${cat.id_categoria})" sec:authorize="hasRole('EMPLEADO')" title="Ver">
+<a class="btn btn-sm btn-info text-white btn-action" href="/categorias/ver/{{ cat.id_categoria }}" title="Ver">
 <i class="fas fa-eye"></i>
 </a>
-<a class="btn btn-sm btn-warning btn-action" href="/categorias/editar/{id}(id=${cat.id_categoria})" title="Editar">
+<a class="btn btn-sm btn-warning btn-action" href="/categorias/editar/{{ cat.id_categoria }}" title="Editar">
 <i class="fas fa-edit"></i>
 </a>
-<a class="btn btn-sm btn-action" href="/categorias/cambiarEstado/{id}(id=${cat.id_categoria})" th:classappend="${cat.activo == 'Activo' ? 'btn-danger' : 'btn-success'}" th:onclick="return confirm([[${cat.activo == 'Activo' ? '¿Seguro que desea desactivar esta categoría?' : '¿Seguro que desea activar esta categoría?'}]] )" th:title="${cat.activo == 'Activo' ? 'Desactivar' : 'Activar'}">
-<i class="fas" th:classappend="${cat.activo == 'Activo' ? 'fa-ban' : 'fa-check-circle'}"></i>
+{% set confirm_msg = '¿Seguro que desea desactivar esta categoría?' if cat.activo == 'Activo' else '¿Seguro que desea activar esta categoría?' %}
+<a class="btn btn-sm btn-action {{ 'btn-danger' if cat.activo == 'Activo' else 'btn-success' }}" href="/categorias/cambiarEstado/{{ cat.id_categoria }}" onclick="return confirm('{{ confirm_msg }}');" title="{{ 'Desactivar' if cat.activo == 'Activo' else 'Activar' }}">
+<i class="fas {{ 'fa-ban' if cat.activo == 'Activo' else 'fa-check-circle' }}"></i>
 </a>
 </td>
 </tr>{% endfor %}

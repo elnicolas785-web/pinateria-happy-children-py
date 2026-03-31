@@ -229,7 +229,7 @@
 </a>
 <a class="card" href="/categorias">
 <i class="fas fa-tags"></i>
-<h3>Categorías</h3>
+<h3>Categorías <span class="badge">{{ cantCategorias }}</span></h3>
 </a>
 
 <a class="card" href="/empleados">
@@ -248,7 +248,7 @@
 </a>
 <a class="card" href="/usuarios">
 <i class="fas fa-users-cog"></i>
-<h3>Usuarios</h3>
+<h3>Usuarios <span class="badge">{{ cantUsuarios }}</span></h3>
 </a>
 
 <a class="card" href="/reportes/ventas/pdf" target="_blank">
@@ -359,8 +359,10 @@
         const salesValues = [1500, 2300, 1800, 2900, 2100, 3400];
 
         // Datos de Distribución de Categorías
-        const categoryLabels = ["Cumpleaños", "Baby Shower", "Bautizo", "Fiesta Temática"];
-        const categoryValues = [45, 20, 15, 20];
+        const catDataStr = '{"labels": {{ catLabels | tojson }}, "values": {{ catValues | tojson }} }';
+        const catData = JSON.parse(catDataStr);
+        const categoryLabels = catData.labels;
+        const categoryValues = catData.values;
 
         // Configuración Gráfica de Barras (Ventas)
         const ctxSales = document.getElementById('salesChart').getContext('2d');

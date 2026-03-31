@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-
-<html lang="es" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
+<html lang="es">
 <head>
 <meta charset="utf-8"/>
 <link href="/images/logo_happychildren.jpg" rel="icon" type="image/jpg"/>
@@ -121,30 +120,39 @@
 </div>{% endif %}
 <div class="card-header">
 <i class="fas fa-edit me-2"></i>
-<span>(readonly ? 'Detalles del Rol' : 'Editar Rol') if {{ rol.id_rol != None else 'Nuevo Rol' }}</span>
+<span>{{ ('Detalles del Rol' if readonly else 'Editar Rol') if rol and rol.id_rol else 'Nuevo Rol' }}</span>
 </div>
 <div class="card-body">
-<form action="/roles/guardar" method="post" th:object="${rol}">
-<input th:field="*{id_rol}" type="hidden"/>
+<form action="/roles/guardar" method="post">
+<input name="id_rol" value="{{ rol.id_rol or '' }}" type="hidden"/>
 <div class="row g-3">
 <div class="col-md-6">
-<label class="form-label">Nombre del Rol</label>
-<input class="form-control" required="" th:disabled="${readonly}" th:field="*{nombre_rol}" type="text"/>
+<label class="form-label">Código del Rol</label>
+<input class="form-control" name="codigo" value="{{ rol.codigo or '' }}" placeholder="Autogenerado" readonly="" type="text"/>
 </div>
-{% if rol.id_rol != None %}<div class="col-md-6">
+<div class="col-md-6">
+<label class="form-label">Nombre del Rol</label>
+<input class="form-control" name="nombre_rol" value="{{ rol.nombre_rol or '' }}" required="" {{ 'readonly' if readonly else '' }} type="text"/>
+</div>
+{% if rol and rol.id_rol != None %}
+<div class="col-md-6">
 <label class="form-label">Estado</label>
-<select class="form-select" th:disabled="${readonly}" th:field="*{estado}">
-<option value="Activo">Activo</option>
-<option value="Inactivo">Inactivo</option>
+<select class="form-select" name="estado" {{ 'disabled' if readonly else '' }}>
+<option value="Activo" {% if rol.estado == 'Activo' %}selected{% endif %}>Activo</option>
+<option value="Inactivo" {% if rol.estado == 'Inactivo' %}selected{% endif %}>Inactivo</option>
 </select>
-</div>{% endif %}
+</div>
+{% endif %}
 </div>
 <div class="mt-4 text-end">
-{% if rol.id_rol != None %}<a class="btn btn-secondary me-2" href="/roles">Cancelar /
-                            Nuevo</a>{% endif %}
-{% if not readonly %}<button class="btn btn-success" type="submit">
+{% if rol and rol.id_rol != None %}
+<a class="btn btn-secondary me-2" href="/roles">Cancelar / Nuevo</a>
+{% endif %}
+{% if not readonly %}
+<button class="btn btn-success" type="submit">
 <i class="fas fa-save"></i> Guardar
-                        </button>{% endif %}
+</button>
+{% endif %}
 </div>
 </form>
 </div>
@@ -181,19 +189,20 @@
 {% if r.estado == 'Inactivo' %}<span class="badge bg-danger">Inactivo</span>{% endif %}
 </td>
 <td class="text-center">
-<a class="btn btn-sm btn-info text-white btn-action" href="/roles/ver/{id}(id=${r.id_rol})" sec:authorize="hasRole('EMPLEADO')" title="Ver">
+<a class="btn btn-sm btn-info text-white btn-action" href="/roles/ver/{{ r.id_rol }}" title="Ver">
 <i class="fas fa-eye"></i>
 </a>
-<a class="btn btn-sm btn-warning btn-action" href="/roles/editar/{id}(id=${r.id_rol})" title="Editar">
+<a class="btn btn-sm btn-warning btn-action" href="/roles/editar/{{ r.id_rol }}" title="Editar">
 <i class="fas fa-edit"></i>
 </a>
-<a class="btn btn-sm btn-action" href="/roles/cambiarEstado/{id}(id=${r.id_rol})" th:classappend="${r.estado == 'Activo' ? 'btn-danger' : 'btn-success'}" th:onclick="return confirm([[${r.estado == 'Activo' ? '¿Seguro que desea desactivar este rol?' : '¿Seguro que desea activar este rol?'}]] )" th:title="${r.estado == 'Activo' ? 'Desactivar' : 'Activar'}">
-<i class="fas" th:classappend="${r.estado == 'Activo' ? 'fa-ban' : 'fa-check-circle'}"></i>
+{% set confirm_msg = '¿Seguro que desea desactivar este rol?' if r.estado == 'Activo' else '¿Seguro que desea activar este rol?' %}
+<a class="btn btn-sm btn-action {{ 'btn-danger' if r.estado == 'Activo' else 'btn-success' }}" href="/roles/cambiarEstado/{{ r.id_rol }}" onclick="return confirm('{{ confirm_msg }}');" title="{{ 'Desactivar' if r.estado == 'Activo' else 'Activar' }}">
+<i class="fas {{ 'fa-ban' if r.estado == 'Activo' else 'fa-check-circle' }}"></i>
 </a>
 </td>
 </tr>{% endfor %}
 {% if not listaRoles %}<tr>
-<td class="text-center text-muted p-4" colspan="4">No hay roles registrados.</td>
+<td class="text-center text-muted p-4" colspan="5">No hay roles registrados.</td>
 </tr>{% endif %}
 </tbody>
 </table>

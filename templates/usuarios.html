@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-
-<html lang="es" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
+<html lang="es">
 <head>
 <meta charset="utf-8"/>
 <link href="/images/logo_happychildren.jpg" rel="icon" type="image/jpg"/>
@@ -90,13 +89,13 @@
     </style>
 </head>
 <body>
+<div class="container mb-5">
 <a class="logo-container" href="/dashboard">
 <img alt="Logo" src="/images/logo_happychildren.jpg"/>
 <div class="logo-text">
 <span class="happy">Happy</span><span class="children">Children</span>
 </div>
 </a>
-<div class="container mb-5">
 <div class="d-flex justify-content-between align-items-center mb-4">
 <h2 class="mb-0"><i class="fas fa-users-cog"></i> Gestión de Usuarios</h2>
 <a class="btn btn-primary rounded-pill px-4 shadow-sm" href="/dashboard"><i class="fas fa-arrow-left"></i>
@@ -108,58 +107,70 @@
 </div>{% endif %}
 <div class="card-header">
 <i class="fas fa-edit me-2"></i>
-<span>{{ ('Detalles de Usuario' if readonly else 'Editar Usuario') if usuario.idUsuario != None else 'Nuevo Usuario' }}</span>
+<span>{{ ('Detalles de Usuario' if readonly else 'Editar Usuario') if usuario and usuario.id_usuario else 'Nuevo Usuario' }}</span>
 </div>
 <div class="card-body">
-<form action="/usuarios/guardar" method="post" th:object="${usuario}">
-<input th:field="*{idUsuario}" type="hidden"/>
-<input th:field="*{fechaCreacion}" type="hidden"/>
+<form action="/usuarios/guardar" method="post">
+<input name="id_usuario" value="{{ usuario.id_usuario or '' }}" type="hidden"/>
 <div class="row g-3">
-<div class="col-md-4">
+<div class="col-md-2">
+<label class="form-label">Código</label>
+<input class="form-control" name="codigo" value="{{ usuario.codigo or '' }}" placeholder="Autogenerado" readonly="" type="text"/>
+</div>
+<div class="col-md-3">
 <label class="form-label">Cliente Asociado</label>
-<select class="form-select" name="cliente.id_cliente" required="" th:disabled="${readonly}">
+<select class="form-select" name="id_cliente" required="" {{ 'disabled' if readonly else '' }}>
 <option value="">Seleccione...</option>
-{% for c in listaClientes %}<option th:selected="${usuario.cliente != null and usuario.cliente.id_cliente == c.id_cliente}" value="{{ c.id_cliente }}">{{ c.nombres + ' ' + c.apellidos }}</option>{% endfor %}
+{% for c in listaClientes %}
+<option value="{{ c.id_cliente }}" {% if usuario.id_cliente == c.id_cliente %}selected{% endif %}>{{ c.nombres ~ ' ' ~ c.apellidos }}</option>
+{% endfor %}
 </select>
 </div>
-<div class="col-md-4">
+<div class="col-md-3">
 <label class="form-label">Nombre de Usuario</label>
-<input class="form-control" required="" th:disabled="${readonly}" th:field="*{nombreUsuario}" type="text"/>
+<input class="form-control" name="nombreUsuario" value="{{ usuario.nombre_usuario or '' }}" required="" {{ 'readonly' if readonly else '' }} type="text"/>
 </div>
 <div class="col-md-4">
 <label class="form-label">Contraseña</label>
-<input class="form-control" placeholder="Dejar vacío si no cambia" th:disabled="${readonly}" th:field="*{contrasena}" type="password"/>
+<input class="form-control" name="contrasena" placeholder="Dejar vacío si no cambia" {{ 'readonly' if readonly else '' }} type="password"/>
 </div>
 </div>
 <div class="row g-3 mt-2">
 <div class="col-md-6">
 <label class="form-label">Rol</label>
-<select class="form-select" name="rol.id_rol" required="" th:disabled="${readonly}">
+<select class="form-select" name="id_rol" required="" {{ 'disabled' if readonly else '' }}>
 <option value="">Seleccione...</option>
-{% for r in listaRoles %}<option th:selected="${usuario.rol != null and usuario.rol.id_rol == r.id_rol}" value="{{ r.id_rol }}">{{ r.nombre_rol }}</option>{% endfor %}
+{% for r in listaRoles %}
+<option value="{{ r.id_rol }}" {% if usuario.id_rol == r.id_rol %}selected{% endif %}>{{ r.nombre_rol }}</option>
+{% endfor %}
 </select>
 </div>
-{% if usuario.idUsuario != None %}<div class="col-md-6">
+{% if usuario and usuario.id_usuario %}
+<div class="col-md-6">
 <label class="form-label">Estado</label>
-<select class="form-select" th:disabled="${readonly}" th:field="*{estado}">
-<option value="Activo">Activo</option>
-<option value="Inactivo">Inactivo</option>
+<select class="form-select" name="estado" {{ 'disabled' if readonly else '' }}>
+<option value="Activo" {% if usuario.estado == 'Activo' %}selected{% endif %}>Activo</option>
+<option value="Inactivo" {% if usuario.estado == 'Inactivo' %}selected{% endif %}>Inactivo</option>
 </select>
-</div>{% endif %}
+</div>
+{% endif %}
 </div>
 <div class="mt-4 text-end">
-{% if usuario.idUsuario != None %}<a class="btn btn-secondary me-2" href="/usuarios">Cancelar
-                            / Nuevo</a>{% endif %}
-{% if not readonly %}<button class="btn btn-success" type="submit">
+{% if usuario and usuario.id_usuario %}
+<a class="btn btn-secondary me-2" href="/usuarios">Cancelar / Nuevo</a>
+{% endif %}
+{% if not readonly %}
+<button class="btn btn-success" type="submit">
 <i class="fas fa-save"></i> Guardar
-                        </button>{% endif %}
+</button>
+{% endif %}
 </div>
 </form>
 </div>
 </div>
 <form action="/usuarios/buscar" class="mb-4" method="get">
 <div class="input-group">
-<input class="form-control" name="busqueda" placeholder="Buscar por usuario..." required="" type="text"/>
+<input class="form-control" name="busqueda" placeholder="Buscar por nombre de usuario..." required="" type="text"/>
 <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Buscar</button>
 </div>
 </form>
@@ -183,22 +194,23 @@
 <tbody>
 {% for u in listaUsuarios %}<tr>
 <td>{{ u.codigo }}</td>
-<td>{{ u.nombreUsuario }}</td>
-<td>{{ u.cliente.nombres + ' ' + u.cliente.apellidos }}</td>
+<td>{{ u.nombre_usuario }}</td>
+<td>{{ u.cliente.nombres ~ ' ' ~ u.cliente.apellidos }}</td>
 <td>{{ u.rol.nombre_rol }}</td>
 <td>
 {% if u.estado == 'Activo' %}<span class="badge bg-success">Activo</span>{% endif %}
 {% if u.estado == 'Inactivo' %}<span class="badge bg-danger">Inactivo</span>{% endif %}
 </td>
 <td class="text-center">
-<a class="btn btn-sm btn-info text-white btn-action" href="/usuarios/ver/{id}(id=${u.idUsuario})" sec:authorize="hasRole('EMPLEADO')" title="Ver">
+<a class="btn btn-sm btn-info text-white btn-action" href="/usuarios/ver/{{ u.id_usuario }}" title="Ver">
 <i class="fas fa-eye"></i>
 </a>
-<a class="btn btn-sm btn-warning btn-action" href="/usuarios/editar/{id}(id=${u.idUsuario})" title="Editar">
+<a class="btn btn-sm btn-warning btn-action" href="/usuarios/editar/{{ u.id_usuario }}" title="Editar">
 <i class="fas fa-edit"></i>
 </a>
-<a class="btn btn-sm btn-action" href="/usuarios/cambiarEstado/{id}(id=${u.idUsuario})" th:classappend="${u.estado == 'Activo' ? 'btn-danger' : 'btn-success'}" th:onclick="return confirm([[${u.estado == 'Activo' ? '¿Seguro que desea desactivar este usuario?' : '¿Seguro que desea activar este usuario?'}]] )" th:title="${u.estado == 'Activo' ? 'Desactivar' : 'Activar'}">
-<i class="fas" th:classappend="${u.estado == 'Activo' ? 'fa-ban' : 'fa-check-circle'}"></i>
+{% set confirm_msg = '¿Seguro que desea desactivar este usuario?' if u.estado == 'Activo' else '¿Seguro que desea activar este usuario?' %}
+<a class="btn btn-sm btn-action {{ 'btn-danger' if u.estado == 'Activo' else 'btn-success' }}" href="/usuarios/cambiarEstado/{{ u.id_usuario }}" onclick="return confirm('{{ confirm_msg }}');" title="{{ 'Desactivar' if u.estado == 'Activo' else 'Activar' }}">
+<i class="fas {{ 'fa-ban' if u.estado == 'Activo' else 'fa-check-circle' }}"></i>
 </a>
 </td>
 </tr>{% endfor %}
