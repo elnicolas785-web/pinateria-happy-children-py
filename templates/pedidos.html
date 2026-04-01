@@ -1,13 +1,13 @@
 <!DOCTYPE html>
+<html lang="es">
 
-<html lang="es" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="utf-8"/>
-<link href="{{ url_for('static', filename='images/logo_happychildren.jpg') }}" rel="icon" type="image/jpg"/>
-<title>Gestión de Pedidos</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
-<style>
+    <meta charset="utf-8" />
+    <link href="{{ url_for('static', filename='images/logo_happychildren.jpg') }}" rel="icon" type="image/jpg" />
+    <title>Gestión de Pedidos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -67,7 +67,6 @@
 
         .card-header {
             background: #1565C0;
-            /* Blue matching index header */
             color: white;
             border-radius: 15px 15px 0 0 !important;
             font-weight: bold;
@@ -80,7 +79,6 @@
 
         .table-hover tbody tr:hover {
             background-color: #e3f2fd;
-            /* Light blue hover */
         }
 
         .form-label {
@@ -99,185 +97,209 @@
         }
     </style>
 </head>
+
 <body>
-<div class="container mb-5">
-<a class="logo-container" href="/dashboard">
-<img alt="Logo" src="{{ url_for('static', filename='images/logo_happychildren.jpg') }}"/>
-<div class="logo-text">
-<span class="happy">Happy</span><span class="children">Children</span>
-</div>
-</a>
-<div class="d-flex justify-content-between align-items-center mb-4">
-<h2 class="mb-0"><i class="fas fa-boxes"></i> Gestión de Pedidos</h2>
-<a class="btn btn-primary rounded-pill px-4 shadow-sm" href="/dashboard"><i class="fas fa-arrow-left"></i>
-                Volver</a>
-</div>
-<div class="card mb-4">
-<div class="card-header">
-<i class="fas fa-clipboard-list me-2"></i>
-<span>(readonly ? 'Detalles del Pedido' : 'Editar Pedido') if {{ pedido.id_pedido != None else 'Nuevo Pedido' }}</span>
-</div>
-<div class="card-body">
-<form action="/pedidos/guardar" method="post" th:object="${pedido}">
-<input th:field="*{id_pedido}" type="hidden"/>
-<div class="row g-3">
-<div class="col-md-3">
-<label class="form-label">Pedido #</label>
-<input class="form-control" placeholder="Autogenerado" readonly="" th:field="*{numero_pedido}" type="text"/>
-</div>
-<div class="col-md-3">
-<label class="form-label">Cliente</label>
-{% if pedido.cliente != None %}<input class="form-control" readonly="" type="text" value="{{ pedido.cliente.nombres + ' ' + pedido.cliente.apellidos }}"/>{% endif %}
-{% if pedido.cliente != None %}<input name="cliente.id_cliente" type="hidden" value="{{ pedido.cliente.id_cliente }}"/>{% endif %}
-<!-- Para nuevos pedidos -->
-{% if pedido.cliente == None %}<select class="form-select" name="cliente.id_cliente" required="">
-<option value="">Seleccione...</option>
-{% for c in listaClientes %}<option value="{{ c.id_cliente }}">{{ c.nombres + ' ' + c.apellidos }}</option>{% endfor %}
-</select>{% endif %}
-</div>
-<div class="col-md-3">
-<label class="form-label">Fecha Pedido</label>
-<input class="form-control" readonly="" required="" th:field="*{fecha_pedido}" type="date"/>
-</div>
-<div class="col-md-3">
-<label class="form-label">Entrega Esperada</label>
-<input class="form-control" id="fecha_entrega_esperada" th:disabled="${readonly}" th:field="*{fecha_entrega_esperada}" type="date"/>
-</div>
-</div>
-<div class="row g-3 mt-2">
-<div class="col-md-4">
-<label class="form-label">Dirección Entrega</label>
-<!-- Use readonly explicitly for edits, or let it work for new ones -->
-<input class="form-control" required="" th:field="*{direccion_entrega}" th:readonly="${pedido.id_pedido != null}" type="text"/>
-</div>
-<div class="col-md-2">
-<label class="form-label">Subtotal</label>
-<input class="form-control" required="" step="0.01" th:field="*{subtotal}" th:readonly="${pedido.id_pedido != null}" type="number"/>
-</div>
-<div class="col-md-2">
-<label class="form-label">Total</label>
-<input class="form-control" required="" step="0.01" th:field="*{total}" th:readonly="${pedido.id_pedido != null}" type="number"/>
-</div>
-<div class="col-md-4">
-<label class="form-label">Estado</label>
-<select class="form-select" th:disabled="${readonly}" th:field="*{estado}">
-<option value="Pendiente">Pendiente</option>
-<option value="En Preparación">En Preparación</option>
-<option value="Enviado">Enviado</option>
-<option value="Entregado">Entregado</option>
-<option value="Cancelado">Cancelado</option>
-</select>
-</div>
-</div>
-{% if pedido.id_pedido != None %}<div class="row g-3 mt-2">
-<div class="col-md-12">
-<label class="form-label text-success"><i class="fas fa-money-bill-wave"></i> Referencia de Pago</label>
-<!-- Visual extraction from observes -->
-<input class="form-control bg-light text-success fw-bold" readonly="" type="text" value="{{ pedido.observaciones.split('|')[1] if pedido.observaciones and '|' in pedido.observaciones else 'Pendiente / Efectivo' }}"/>
-</div>
-</div>{% endif %}
-<div class="row g-3 mt-2">
-<div class="col-md-12">
-<label class="form-label">Observaciones</label>
-<textarea class="form-control" name="observaciones" rows="2" th:disabled="${readonly}"></textarea>
-</div>
-</div>
-<div class="mt-4 text-end">
-{% if pedido.id_pedido != None %}<a class="btn btn-secondary me-2" href="/pedidos">Cancelar /
-                            Nuevo</a>{% endif %}
-{% if not readonly %}<button class="btn btn-success" type="submit">
-<i class="fas fa-save"></i> Guardar
-                        </button>{% endif %}
-</div>
-</form>
-<!-- TABLA DE DETALLES (Solo visible en modo VER) -->
-{% if readonly and detalles != None %}<div class="mt-4">
-<h5 class="border-bottom pb-2">📦 Productos en este Pedido</h5>
-<div class="table-responsive">
-<table class="table table-sm table-bordered">
-<thead class="table-light">
-<tr>
-<th>Producto</th>
-<th>Cantidad</th>
-<th>Precio Unit.</th>
-<th>Subtotal</th>
-</tr>
-</thead>
-<tbody>
-{% for d in detalles %}<tr>
-<td>{{ d.producto.nombre }}</td>
-<td>{{ d.cantidad }}</td>
-<td>{{ d.precio_unitario }}</td>
-<td>{{ d.subtotal }}</td>
-</tr>{% endfor %}
-{% if not detalles %}<tr>
-<td class="text-center text-muted" colspan="4">No hay detalles registrados.</td>
-</tr>{% endif %}
-</tbody>
-</table>
-</div>
-</div>{% endif %}
-</div>
-</div>
-<form action="/pedidos/buscar" class="mb-4" method="get">
-<div class="input-group">
-<input class="form-control" name="busqueda" placeholder="Buscar por número o cliente..." required="" type="text"/>
-<button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Buscar</button>
-</div>
-</form>
-<div class="card">
-<div class="card-header">
-<i class="fas fa-list me-2"></i> Listado de Pedidos
+    <div class="container mb-5">
+        <a class="logo-container" href="/dashboard">
+            <img alt="Logo" src="{{ url_for('static', filename='images/logo_happychildren.jpg') }}" />
+            <div class="logo-text">
+                <span class="happy">Happy</span><span class="children">Children</span>
             </div>
-<div class="card-body p-0">
-<div class="table-responsive">
-<table class="table table-hover table-striped mb-0">
-<thead style="background-color: #1565C0; color: white;">
-<tr>
-<th>ID</th>
-<th>Pedido #</th>
-<th>Cliente</th>
-<th>Fecha</th>
-<th>Entrega</th>
-<th>Total</th>
-<th>Estado</th>
-<th class="text-center">Acciones</th>
-</tr>
-</thead>
-<tbody>
-{% for p in listaPedidos %}<tr>
-<td>{{ p.id_pedido }}</td>
-<td>{{ p.numero_pedido }}</td>
-<td>{{ p.cliente.nombres + ' ' + p.cliente.apellidos }}</td>
-<td>{{ p.fecha_pedido }}</td>
-<td>{{ p.fecha_entrega_esperada }}</td>
-<td>{{ p.total }}</td>
-<td>
-<span class="badge bg-warning text-dark">{{ p.estado }}</span>
-</td>
-<td class="text-center">
-<a class="btn btn-sm btn-info text-white btn-action" href="/pedidos/ver/{id}(id=${p.id_pedido})" sec:authorize="hasRole('EMPLEADO')" title="Ver">
-<i class="fas fa-eye"></i>
-</a>
-<a class="btn btn-sm btn-warning btn-action" href="/pedidos/editar/{id}(id=${p.id_pedido})" title="Editar">
-<i class="fas fa-edit"></i>
-</a>
-<a class="btn btn-sm btn-action" href="/pedidos/cambiarEstado/{id}(id=${p.id_pedido})" th:classappend="${p.estado == 'Cancelado' ? 'btn-success' : 'btn-danger'}" th:onclick="return confirm([[${p.estado == 'Cancelado' ? '¿Seguro que desea reactivar este pedido?' : '¿Seguro que desea cancelar este pedido?'}]] )" th:title="${p.estado == 'Cancelado' ? 'Reactivar/Activar' : 'Desactivar/Cancelar'}">
-<i class="fas" th:classappend="${p.estado == 'Cancelado' ? 'fa-check-circle' : 'fa-ban'}"></i>
-</a>
-</td>
-</tr>{% endfor %}
-{% if not listaPedidos %}<tr>
-<td class="text-center text-muted p-4" colspan="8">No hay pedidos registrados.</td>
-</tr>{% endif %}
-</tbody>
-</table>
-</div>
-</div>
-</div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
+        </a>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0"><i class="fas fa-boxes"></i> Gestión de Pedidos</h2>
+            <a class="btn btn-primary rounded-pill px-4 shadow-sm" href="/dashboard"><i class="fas fa-arrow-left"></i>
+                Volver</a>
+        </div>
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-clipboard-list me-2"></i>
+                <span>{{ ('Detalles del Pedido' if readonly else 'Editar Pedido') if pedido and pedido.id_pedido else 'Nuevo Pedido' }}</span>
+            </div>
+            <div class="card-body">
+                <form action="/pedidos/guardar" method="post">
+                    <input name="id_pedido" type="hidden" value="{{ pedido.id_pedido if pedido else '' }}" />
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Pedido #</label>
+                            <input class="form-control" name="numero_pedido" placeholder="Autogenerado" readonly
+                                value="{{ pedido.numero_pedido if pedido else '' }}" type="text" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Cliente</label>
+                            <select class="form-select" name="cliente.id_cliente" required {{ 'disabled' if readonly or (pedido and pedido.id_pedido) else '' }} {% if readonly or (pedido and pedido.id_pedido) %}style="background-color: white; opacity: 1;"{% endif %}>
+                                <option value="">Seleccione...</option>
+                                {% for c in listaClientes %}<option {% if pedido and pedido.cliente and
+                                    pedido.cliente.id_cliente==c.id_cliente %}selected{% endif %}
+                                    value="{{ c.id_cliente }}">{{ c.nombres + ' ' + c.apellidos }}</option>{% endfor %}
+                            </select>
+                            {% if pedido and pedido.id_pedido %}
+                            <input type="hidden" name="cliente.id_cliente" value="{{ pedido.id_cliente }}" />
+                            {% endif %}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Fecha Pedido</label>
+                            <input class="form-control" name="fecha_pedido" readonly required
+                                value="{{ pedido.fecha_pedido if pedido else '' }}" type="date" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Entrega Esperada</label>
+                            <input class="form-control" id="fecha_entrega_esperada" name="fecha_entrega_esperada"
+                                value="{{ pedido.fecha_entrega_esperada if pedido else '' }}" {{ 'disabled' if readonly }} type="date" />
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-4">
+                            <label class="form-label"><i class="fas fa-map-marker-alt"></i> Dirección Entrega</label>
+                            <input class="form-control" name="direccion_entrega" value="{{ pedido.direccion_entrega if pedido else '' }}" required {{ 'readonly' if readonly or (pedido and pedido.id_pedido) else '' }} {% if readonly or (pedido and pedido.id_pedido) %}style="background-color: white;"{% endif %} type="text" placeholder="Dirección para entregar..." />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Subtotal</label>
+                            <input class="form-control" name="subtotal" value="{{ pedido.subtotal if pedido else '' }}" required step="0.01" {{ 'readonly' if readonly or (pedido and pedido.id_pedido) else '' }} {% if readonly or (pedido and pedido.id_pedido) %}style="background-color: white;"{% endif %} type="number" />
+                            {% if pedido and pedido.id_pedido %}
+                            <input type="hidden" name="subtotal" value="{{ pedido.subtotal }}">
+                            {% endif %}
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Total</label>
+                            <input class="form-control" name="total" value="{{ pedido.total if pedido else '' }}" required step="0.01" {{ 'readonly' if readonly or (pedido and pedido.id_pedido) else '' }} {% if readonly or (pedido and pedido.id_pedido) %}style="background-color: white;"{% endif %} type="number" />
+                            {% if pedido and pedido.id_pedido %}
+                            <input type="hidden" name="total" value="{{ pedido.total }}">
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Estado</label>
+                            <select class="form-select" {{ 'disabled' if readonly }} name="estado">
+                                <option value="Pendiente" {% if pedido and pedido.estado=='Pendiente' %}selected{% endif %}>Pendiente</option>
+                                <option value="En Preparación" {% if pedido and pedido.estado=='En Preparación' %}selected{% endif %}>En Preparación</option>
+                                <option value="Enviado" {% if pedido and pedido.estado=='Enviado' %}selected{% endif %}>Enviado</option>
+                                <option value="Entregado" {% if pedido and pedido.estado=='Entregado' %}selected{% endif %}>Entregado</option>
+                                <option value="Cancelado" {% if pedido and pedido.estado=='Cancelado' %}selected{% endif %}>Cancelado</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-12">
+                            <label class="form-label">Observaciones</label>
+                            <textarea class="form-control" name="observaciones" rows="1" {{ 'disabled' if readonly }}>{{ pedido.observaciones if pedido else '' }}</textarea>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-end">
+                        {% if pedido and pedido.id_pedido %}<a class="btn btn-secondary me-2" href="/pedidos">Cancelar /
+                            Nuevo</a>{% endif %}
+                        {% if not readonly %}
+                        <button class="btn btn-success" type="submit">
+                            <i class="fas fa-save"></i> Guardar
+                        </button>
+                        {% endif %}
+                    </div>
+                </form>
+                <!-- TABLA DE DETALLES -->
+                {% if readonly and detalles %}
+                <div class="mt-4">
+                    <h5 class="border-bottom pb-2">📦 Productos en este Pedido</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio Unit.</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for d in detalles %}<tr>
+                                    <td>{{ d.producto.nombre if d.producto else 'Desconocido' }}</td>
+                                    <td>{{ d.cantidad }}</td>
+                                    <td>{{ d.precio_unitario }}</td>
+                                    <td>{{ d.subtotal }}</td>
+                                </tr>{% endfor %}
+                                {% if not detalles %}<tr>
+                                    <td class="text-center text-muted" colspan="4">No hay detalles registrados.</td>
+                                </tr>{% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <form action="/pedidos/buscar" class="mb-4" method="get">
+            <div class="input-group">
+                <input class="form-control" name="busqueda" placeholder="Buscar por número o cliente..." required=""
+                    type="text" />
+                <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Buscar</button>
+            </div>
+        </form>
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-list me-2"></i> Listado de Pedidos
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead style="background-color: #1565C0; color: white;">
+                            <tr>
+                                <th>ID</th>
+                                <th>Pedido #</th>
+                                <th>Cliente</th>
+                                <th>Fecha</th>
+                                <th>Entrega</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in listaPedidos %}<tr>
+                                <td>{{ p.id_pedido }}</td>
+                                <td>{{ p.numero_pedido }}</td>
+                                <td>{{ p.cliente.nombres + ' ' + p.cliente.apellidos if p.cliente else 'N/A' }}</td>
+                                <td>{{ p.fecha_pedido }}</td>
+                                <td>{{ p.fecha_entrega_esperada if p.fecha_entrega_esperada else 'Pendiente' }}</td>
+                                <td>{{ p.total }}</td>
+                                <td>
+                                    <span class="badge bg-warning text-dark">{{ p.estado }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <a class="btn btn-sm btn-info text-white btn-action"
+                                        href="/pedidos/ver/{{ p.id_pedido }}" title="Ver">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if current_user and current_user.rol and current_user.rol.nombre_rol.upper() in
+                                    ['ADMINISTRADOR', 'ADMIN', 'EMPLEADO'] %}
+                                    <a class="btn btn-sm btn-warning btn-action" href="/pedidos/editar/{{ p.id_pedido }}"
+                                        title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% if p.estado == 'Cancelado' %}
+                                    <a class="btn btn-sm btn-success btn-action"
+                                        href="/pedidos/cambiarEstado/{{ p.id_pedido }}"
+                                        onclick="return confirm('¿Seguro que desea reactivar este pedido?')" title="Reactivar">
+                                        <i class="fas fa-check-circle"></i>
+                                    </a>
+                                    {% else %}
+                                    <a class="btn btn-sm btn-danger btn-action"
+                                        href="/pedidos/cambiarEstado/{{ p.id_pedido }}"
+                                        onclick="return confirm('¿Seguro que desea cancelar este pedido?')" title="Cancelar">
+                                        <i class="fas fa-ban"></i>
+                                    </a>
+                                    {% endif %}
+                                    {% endif %}
+                                </td>
+                            </tr>{% endfor %}
+                            {% if not listaPedidos %}<tr>
+                                <td class="text-center text-muted p-4" colspan="8">No hay pedidos registrados.</td>
+                            </tr>{% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
         document.addEventListener('DOMContentLoaded', function () {
             const entregaInput = document.getElementById('fecha_entrega_esperada');
             if (entregaInput && !entregaInput.disabled) {
@@ -297,4 +319,5 @@
         });
     </script>
 </body>
+
 </html>

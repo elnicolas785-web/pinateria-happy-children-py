@@ -23,6 +23,7 @@ class Cliente(db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False)
     telefono = db.Column(db.String(20))
     estado = db.Column(db.String(20), nullable=False, default='Activo')
+    direccion = db.Column(db.String(255))
     fecha_registro = db.Column(db.Date, nullable=False, default=datetime.date.today)
     password = db.Column(db.String(255))
 
@@ -141,6 +142,7 @@ class Venta(db.Model):
     total = db.Column(db.Numeric(10, 2), nullable=False)
     estado = db.Column(db.String(20), nullable=False)
     metodo_pago = db.Column(db.String(30), nullable=False)
+    direccion_entrega = db.Column(db.String(255))
     observaciones = db.Column(db.String(255))
 
     cliente = db.relationship('Cliente')

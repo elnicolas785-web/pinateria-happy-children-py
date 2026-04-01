@@ -1,13 +1,13 @@
 <!DOCTYPE html>
+<html lang="es">
 
-<html lang="es" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="utf-8"/>
-<link href="{{ url_for('static', filename='images/logo_happychildren.jpg') }}" rel="icon" type="image/jpg"/>
-<title>Gestión de Ventas</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
-<style>
+    <meta charset="utf-8" />
+    <link href="{{ url_for('static', filename='images/logo_happychildren.jpg') }}" rel="icon" type="image/jpg" />
+    <title>Gestión de Ventas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -67,7 +67,6 @@
 
         .card-header {
             background: #1565C0;
-            /* Blue matching index header */
             color: white;
             border-radius: 15px 15px 0 0 !important;
             font-weight: bold;
@@ -80,7 +79,6 @@
 
         .table-hover tbody tr:hover {
             background-color: #e3f2fd;
-            /* Light blue hover */
         }
 
         .form-label {
@@ -99,184 +97,253 @@
         }
     </style>
 </head>
+
 <body>
-<div class="container mb-5">
-<a class="logo-container" href="/dashboard">
-<img alt="Logo" src="{{ url_for('static', filename='images/logo_happychildren.jpg') }}"/>
-<div class="logo-text">
-<span class="happy">Happy</span><span class="children">Children</span>
-</div>
-</a>
-<div class="d-flex justify-content-between align-items-center mb-4">
-<h2 class="mb-0"><i class="fas fa-shopping-cart"></i> Gestión de Ventas</h2>
-<a class="btn btn-primary rounded-pill px-4 shadow-sm" href="/dashboard"><i class="fas fa-arrow-left"></i>
-                Volver</a>
-</div>
-<div class="card mb-4">
-{% if error %}<div class="alert alert-danger mx-3 mt-3" role="alert">
-<i class="fas fa-exclamation-triangle me-2"></i> <span>{{ error }}</span>
-</div>{% endif %}
-{% if success %}<div class="alert alert-success mx-3 mt-3" role="alert">
-<i class="fas fa-check-circle me-2"></i> <span>{{ success }}</span>
-</div>{% endif %}
-<div class="card-header">
-<i class="fas fa-file-invoice-dollar me-2"></i>
-<span>{{ ('Detalles de Venta' if readonly else 'Editar Venta') if venta.id_venta != None else 'Nueva Venta' }}</span>
-</div>
-<div class="card-body">
-<form action="/ventas/guardar" method="post" th:object="${venta}">
-<input th:field="*{id_venta}" type="hidden"/>
-<div class="row g-3">
-<div class="col-md-3">
-<label class="form-label">Factura #</label>
-<input class="form-control" placeholder="Autogenerado" readonly="" th:field="*{numero_factura}" type="text"/>
-</div>
-<div class="col-md-3">
-<label class="form-label">Cliente</label>
-<select class="form-select" name="cliente.id_cliente" required="" th:disabled="${readonly}">
-<option value="">Seleccione...</option>
-{% for c in listaClientes %}<option th:selected="${venta.cliente != null and venta.cliente.id_cliente == c.id_cliente}" value="{{ c.id_cliente }}">{{ c.nombres + ' ' + c.apellidos }}</option>{% endfor %}
-</select>
-</div>
-<div class="col-md-3">
-<label class="form-label">Empleado</label>
-<select class="form-select" name="empleado.id_empleado" required="" th:disabled="${readonly}">
-<option value="">Seleccione...</option>
-{% for e in listaEmpleados %}<option th:selected="${venta.empleado != null and venta.empleado.id_empleado == e.id_empleado}" value="{{ e.id_empleado }}">{{ e.nombres + ' ' + e.apellidos }}</option>{% endfor %}
-</select>
-</div>
-<div class="col-md-3">
-<label class="form-label">Fecha</label>
-<input class="form-control" readonly="" required="" th:field="*{fecha_venta}" type="date"/>
-</div>
-</div>
-<div class="row g-3 mt-2">
-<div class="col-md-4">
-<label class="form-label">Método Pago</label>
-<select class="form-select" th:disabled="${readonly}" th:field="*{metodo_pago}">
-<option value="Efectivo">Efectivo</option>
-<option value="Tarjeta">Tarjeta</option>
-<option value="Nequi">Nequi</option>
-<option value="DaviPlata">DaviPlata</option>
-</select>
-</div>
-<div class="col-md-4">
-<label class="form-label">Subtotal</label>
-<input class="form-control" required="" step="0.01" th:disabled="${readonly}" th:field="*{subtotal}" type="number"/>
-</div>
-<div class="col-md-4">
-<label class="form-label">Total</label>
-<input class="form-control" required="" step="0.01" th:disabled="${readonly}" th:field="*{total}" type="number"/>
-</div>
-<div class="col-md-4">
-<label class="form-label">Estado</label>
-<select class="form-select" th:disabled="${readonly}" th:field="*{estado}">
-<option value="Completada">Completada</option>
-<option value="Pendiente">Pendiente</option>
-<option value="Anulada">Anulada</option>
-</select>
-</div>
-</div>
-<div class="row g-3 mt-2">
-<div class="col-md-12">
-<label class="form-label">Observaciones</label>
-<textarea class="form-control" rows="2" th:disabled="${readonly}" th:field="*{observaciones}"></textarea>
-</div>
-</div>
-<div class="mt-4 text-end">
-{% if venta.id_venta != None %}<a class="btn btn-secondary me-2" href="/ventas">Cancelar /
-                            Nueva</a>{% endif %}
-{% if not readonly %}<button class="btn btn-success" sec:authorize="hasAnyRole('ADMIN', 'ADMINISTRADOR')" type="submit">
-<i class="fas fa-save"></i> Guardar
-                        </button>{% endif %}
-</div>
-</form>
-<!-- TABLA DE DETALLES (Solo visible en modo VER) -->
-{% if readonly and detalles != None %}<div class="mt-4">
-<h5 class="border-bottom pb-2">📦 Productos en esta Venta</h5>
-<div class="table-responsive">
-<table class="table table-sm table-bordered">
-<thead class="table-light">
-<tr>
-<th>Producto</th>
-<th>Cantidad</th>
-<th>Precio Unit.</th>
-<th>Subtotal</th>
-</tr>
-</thead>
-<tbody>
-{% for d in detalles %}<tr>
-<td>{{ d.producto.nombre }}</td>
-<td>{{ d.cantidad }}</td>
-<td>{{ d.precio_unitario }}</td>
-<td>{{ d.subtotal }}</td>
-</tr>{% endfor %}
-{% if not detalles %}<tr>
-<td class="text-center text-muted" colspan="4">No hay detalles registrados.</td>
-</tr>{% endif %}
-</tbody>
-</table>
-</div>
-</div>{% endif %}
-</div>
-</div>
-<form action="/ventas/buscar" class="mb-4" method="get">
-<div class="input-group">
-<input class="form-control" name="busqueda" placeholder="Buscar por factura, cliente o empleado..." required="" type="text"/>
-<button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Buscar</button>
-</div>
-</form>
-<div class="card">
-<div class="card-header">
-<i class="fas fa-list me-2"></i> Historial de Ventas
+    <div class="container mb-5">
+        <a class="logo-container" href="/dashboard">
+            <img alt="Logo" src="{{ url_for('static', filename='images/logo_happychildren.jpg') }}" />
+            <div class="logo-text">
+                <span class="happy">Happy</span><span class="children">Children</span>
             </div>
-<div class="card-body p-0">
-<div class="table-responsive">
-<table class="table table-hover table-striped mb-0">
-<thead style="background-color: #1565C0; color: white;">
-<tr>
-<th>ID</th>
-<th>Factura</th>
-<th>Cliente</th>
-<th>Empleado</th>
-<th>Total</th>
-<th>Fecha</th>
-<th>Estado</th>
-<th class="text-center">Acciones</th>
-</tr>
-</thead>
-<tbody>
-{% for v in listaVentas %}<tr>
-<td>{{ v.id_venta }}</td>
-<td>{{ v.numero_factura }}</td>
-<td>{{ v.cliente.nombres + ' ' + v.cliente.apellidos }}</td>
-<td>{{ v.empleado.nombres }}</td>
-<td>{{ v.total }}</td>
-<td>{{ v.fecha_venta }}</td>
-<td>
-<span class="badge bg-primary">{{ v.estado }}</span>
-</td>
-<td class="text-center">
-<a class="btn btn-sm btn-info text-white btn-action" href="/ventas/ver/{id}(id=${v.id_venta})" sec:authorize="hasRole('EMPLEADO')" title="Ver">
-<i class="fas fa-eye"></i>
-</a>
-<a class="btn btn-sm btn-warning btn-action" href="/ventas/editar/{id}(id=${v.id_venta})" sec:authorize="hasAnyRole('ADMIN', 'ADMINISTRADOR')" title="Editar">
-<i class="fas fa-edit"></i>
-</a>
-<a class="btn btn-sm btn-action" href="/ventas/cambiarEstado/{id}(id=${v.id_venta})" th:classappend="${v.estado == 'Completada' ? 'btn-danger' : 'btn-success'}" th:onclick="return confirm([[${v.estado == 'Completada' ? '¿Seguro que desea anular esta venta?' : '¿Seguro que desea reactivar esta venta?'}]] )" th:title="${v.estado == 'Completada' ? 'Desactivar/Anular' : 'Activar/Completar'}">
-<i class="fas" th:classappend="${v.estado == 'Completada' ? 'fa-ban' : 'fa-check-circle'}"></i>
-</a>
-</td>
-</tr>{% endfor %}
-{% if not listaVentas %}<tr>
-<td class="text-center text-muted p-4" colspan="8">No hay ventas registradas.</td>
-</tr>{% endif %}
-</tbody>
-</table>
-</div>
-</div>
-</div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        </a>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0"><i class="fas fa-shopping-cart"></i> Gestión de Ventas</h2>
+            <a class="btn btn-primary rounded-pill px-4 shadow-sm" href="/dashboard"><i class="fas fa-arrow-left"></i>
+                Volver</a>
+        </div>
+        <div class="card mb-4">
+            {% if error %}<div class="alert alert-danger mx-3 mt-3" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i> <span>{{ error }}</span>
+            </div>{% endif %}
+            {% if success %}<div class="alert alert-success mx-3 mt-3" role="alert">
+                <i class="fas fa-check-circle me-2"></i> <span>{{ success }}</span>
+            </div>{% endif %}
+            <div class="card-header">
+                <i class="fas fa-file-invoice-dollar me-2"></i>
+                <span>{{ ('Detalles de Venta' if readonly else 'Editar Venta') if venta and venta.id_venta else 'Nueva
+                    Venta' }}</span>
+            </div>
+            <div class="card-body">
+                <form action="/ventas/guardar" method="post">
+                    <input name="id_venta" type="hidden" value="{{ venta.id_venta if venta else '' }}" />
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Factura #</label>
+                            <input class="form-control" name="numero_factura" placeholder="Autogenerado" readonly
+                                value="{{ venta.numero_factura if venta else '' }}" type="text" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Cliente</label>
+                            <select class="form-select" name="cliente.id_cliente" required
+                                {{ 'disabled' if readonly or (venta and venta.id_venta) else '' }} {% if readonly or (venta and venta.id_venta) %}style="background-color: white; opacity: 1;"{% endif %}>
+                                <option value="">Seleccione...</option>
+                                {% for c in listaClientes %}<option {% if venta and venta.cliente and
+                                    venta.cliente.id_cliente==c.id_cliente %}selected{% endif %}
+                                    value="{{ c.id_cliente }}">{{ c.nombres + ' ' + c.apellidos }}</option>{% endfor %}
+                            </select>
+                            {% if venta and venta.id_venta %}
+                            <input type="hidden" name="cliente.id_cliente" value="{{ venta.id_cliente }}" />
+                            {% endif %}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Empleado</label>
+                            <select class="form-select" name="empleado.id_empleado" required {{ 'disabled' if readonly
+                                }}>
+                                <option value="">Seleccione...</option>
+                                {% for e in listaEmpleados %}<option {% if venta and venta.empleado and
+                                    venta.empleado.id_empleado==e.id_empleado %}selected{% endif %}
+                                    value="{{ e.id_empleado }}">{{ e.nombres + ' ' + e.apellidos }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Fecha</label>
+                            <input class="form-control" name="fecha_venta" readonly required
+                                value="{{ venta.fecha_venta if venta else current_date }}" type="date" />
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-4">
+                            <label class="form-label">Método Pago</label>
+                            <select class="form-select" {{ 'disabled' if readonly or (venta and venta.id_venta) else '' }} name="metodo_pago" {% if readonly or (venta and venta.id_venta) %}style="background-color: white; opacity: 1;"{% endif %}>
+                                <option value="Efectivo" {% if venta and venta.metodo_pago=='Efectivo' %}selected{%
+                                    endif %}>Efectivo</option>
+                                <option value="Tarjeta" {% if venta and venta.metodo_pago=='Tarjeta' %}selected{% endif
+                                    %}>Tarjeta</option>
+                                <option value="Nequi" {% if venta and venta.metodo_pago=='Nequi' %}selected{% endif %}>
+                                    Nequi</option>
+                                <option value="DaviPlata" {% if venta and venta.metodo_pago=='DaviPlata' %}selected{%
+                                    endif %}>DaviPlata</option>
+                            </select>
+                            {% if venta and venta.id_venta %}
+                            <input type="hidden" name="metodo_pago" value="{{ venta.metodo_pago }}">
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Subtotal</label>
+                            <input class="form-control" name="subtotal" value="{{ venta.subtotal if venta else '' }}"
+                                required step="0.01" {{ 'readonly' if readonly or (venta and venta.id_venta) else '' }} type="number" {% if readonly or (venta and venta.id_venta) %}style="background-color: white;"{% endif %} />
+                            {% if venta and venta.id_venta %}
+                            <input type="hidden" name="subtotal" value="{{ venta.subtotal }}">
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Total</label>
+                            <input class="form-control" name="total" value="{{ venta.total if venta else '' }}" required
+                                step="0.01" {{ 'readonly' if readonly or (venta and venta.id_venta) else '' }} type="number" {% if readonly or (venta and venta.id_venta) %}style="background-color: white;"{% endif %} />
+                            {% if venta and venta.id_venta %}
+                            <input type="hidden" name="total" value="{{ venta.total }}">
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Estado</label>
+                            <select class="form-select" {{ 'disabled' if readonly }} name="estado">
+                                <option value="Completada" {% if venta and venta.estado=='Completada' %}selected{% endif
+                                    %}>Completada</option>
+                                <option value="Pendiente" {% if venta and venta.estado=='Pendiente' %}selected{% endif
+                                    %}>Pendiente</option>
+                                <option value="Anulada" {% if venta and venta.estado=='Anulada' %}selected{% endif %}>
+                                    Anulada</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-6">
+                            <label class="form-label"><i class="fas fa-map-marker-alt"></i> Dirección de Entrega</label>
+                            <input class="form-control" name="direccion_entrega" value="{{ venta.direccion_entrega if venta else '' }}" type="text" placeholder="Ninguna" {{ 'readonly' if readonly or (venta and venta.id_venta) else '' }} {% if readonly or (venta and venta.id_venta) %}style="background-color: white;"{% endif %} />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Observaciones</label>
+                            <textarea class="form-control" name="observaciones" rows="1" {{ 'disabled' if readonly
+                                }}>{{ venta.observaciones if venta else '' }}</textarea>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-end">
+                        {% if venta and venta.id_venta %}<a class="btn btn-secondary me-2" href="/ventas">Cancelar /
+                            Nueva</a>{% endif %}
+                        {% if not readonly and current_user and current_user.rol and current_user.rol.nombre_rol.upper()
+                        in ['ADMINISTRADOR', 'ADMIN', 'EMPLEADO'] %}
+                        <button class="btn btn-success" type="submit">
+                            <i class="fas fa-save"></i> Guardar
+                        </button>
+                        {% endif %}
+                    </div>
+                </form>
+                <!-- TABLA DE DETALLES -->
+                {% if readonly and detalles %}
+                <div class="mt-4">
+                    <h5 class="border-bottom pb-2">📦 Productos en esta Venta</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio Unit.</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for d in detalles %}<tr>
+                                    <td>{{ d.producto.nombre }}</td>
+                                    <td>{{ d.cantidad }}</td>
+                                    <td>{{ d.precio_unitario }}</td>
+                                    <td>{{ d.subtotal }}</td>
+                                </tr>{% endfor %}
+                                {% if not detalles %}<tr>
+                                    <td class="text-center text-muted" colspan="4">No hay detalles registrados.</td>
+                                </tr>{% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <form action="/ventas/buscar" class="mb-4" method="get">
+            <div class="input-group">
+                <input class="form-control" name="busqueda" placeholder="Buscar por factura o estado..." required=""
+                    type="text" />
+                <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Buscar</button>
+            </div>
+        </form>
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-list me-2"></i> Historial de Ventas
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead style="background-color: #1565C0; color: white;">
+                            <tr>
+                                <th>ID</th>
+                                <th>Factura</th>
+                                <th>Cliente</th>
+                                <th>Dirección</th>
+                                <th>Empleado</th>
+                                <th>Total</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for v in listaVentas %}<tr>
+                                <td>{{ v.id_venta }}</td>
+                                <td>{{ v.numero_factura }}</td>
+                                <td>{{ v.cliente.nombres + ' ' + v.cliente.apellidos if v.cliente else 'N/A' }}</td>
+                                <td>
+                                    {% if v.direccion_entrega %}
+                                        {{ v.direccion_entrega }}
+                                    {% else %}
+                                        <span class="text-muted"><i class="fas fa-exclamation-circle"></i> Sin dirección</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ v.empleado.nombres if v.empleado else 'N/A' }}</td>
+                                <td>${{ v.total }}</td>
+                                <td>{{ v.fecha_venta }}</td>
+                                <td>
+                                    <span
+                                        class="badge {% if v.estado == 'Completada' %}bg-success{% elif v.estado == 'Anulada' %}bg-danger{% else %}bg-warning text-dark{% endif %}">{{
+                                        v.estado }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <a class="btn btn-sm btn-info text-white btn-action"
+                                        href="/ventas/ver/{{ v.id_venta }}" title="Ver">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if current_user and current_user.rol and current_user.rol.nombre_rol.upper() in
+                                    ['ADMINISTRADOR', 'ADMIN', 'EMPLEADO'] %}
+                                    <a class="btn btn-sm btn-warning btn-action" href="/ventas/editar/{{ v.id_venta }}"
+                                        title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% if v.estado == 'Completada' %}
+                                    <a class="btn btn-sm btn-danger btn-action"
+                                        href="/ventas/cambiarEstado/{{ v.id_venta }}"
+                                        onclick="return confirm('¿Seguro que desea anular esta venta?')" title="Anular">
+                                        <i class="fas fa-ban"></i>
+                                    </a>
+                                    {% else %}
+                                    <a class="btn btn-sm btn-success btn-action"
+                                        href="/ventas/cambiarEstado/{{ v.id_venta }}"
+                                        onclick="return confirm('¿Seguro que desea marcar esta venta como completada?')"
+                                        title="Completar">
+                                        <i class="fas fa-check-circle"></i>
+                                    </a>
+                                    {% endif %}
+                                    {% endif %}
+                                </td>
+                            </tr>{% endfor %}
+                            {% if not listaVentas %}<tr>
+                                <td class="text-center text-muted p-4" colspan="9">No hay ventas registradas.</td>
+                            </tr>{% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

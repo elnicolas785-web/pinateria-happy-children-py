@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="es" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
+<html lang="es"  >
 <head>
 <meta charset="utf-8"/>
 <link href="{{ url_for('static', filename='images/logo_happychildren.jpg') }}" rel="icon" type="image/jpg"/>
@@ -123,23 +123,23 @@
 <span>{{ ('Detalles del Producto' if readonly else 'Editar Producto') if producto.id_producto != None else 'Nuevo Producto' }}</span>
 </div>
 <div class="card-body">
-<form action="/productos/guardar" method="post" th:object="${producto}">
-<input th:field="*{id_producto}" type="hidden"/>
+<form action="/productos/guardar" method="post" >
+<input name="id_producto" value="{{ producto.id_producto if producto else '' }}" type="hidden"/>
 <div class="row g-3">
 <!-- Código -->
 <div class="col-md-3">
 <label class="form-label">Código</label>
-<input class="form-control" placeholder="Autogenerado" readonly="" th:field="*{codigo}" type="text"/>
+<input class="form-control" placeholder="Autogenerado" readonly="" name="codigo" value="{{ producto.codigo if producto else '' }}" type="text"/>
 </div>
 <!-- Nombre -->
 <div class="col-md-3">
 <label class="form-label">Nombre</label>
-<input class="form-control" required="" th:disabled="${readonly}" th:field="*{nombre}" type="text"/>
+<input class="form-control" required="" {{ 'disabled' if readonly or (producto and producto.id_producto) else '' }} name="nombre" value="{{ producto.nombre if producto else '' }}" type="text"/>
 </div>
 <!-- Categoría -->
 <div class="col-md-3">
 <label class="form-label">Categoría</label>
-<select class="form-select" required="" th:disabled="${readonly}" th:field="*{categoria.id_categoria}">
+<select class="form-select" required="" {{ 'disabled' if readonly or (producto and producto.id_producto) else '' }} name="categoria.id_categoria" value="{{ producto.categoria.id_categoria if producto else '' }}">
 <option value="">Seleccione...</option>
 {% for cat in categorias %}<option value="{{ cat.id_categoria }}">{{ cat.nombre }}</option>{% endfor %}
 </select>
@@ -147,7 +147,7 @@
 <!-- Estado -->
 {% if producto.id_producto != None %}<div class="col-md-3">
 <label class="form-label">Estado</label>
-<select class="form-select" th:disabled="${readonly}" th:field="*{activo}">
+<select class="form-select" {{ 'disabled' if readonly or (producto and producto.id_producto) else '' }} name="activo" value="{{ producto.activo if producto else '' }}">
 <option value="Activo">Activo</option>
 <option value="Inactivo">Inactivo</option>
 </select>
@@ -157,41 +157,41 @@
 <!-- Descripción -->
 <div class="col-md-12">
 <label class="form-label">Descripción</label>
-<textarea class="form-control" rows="2" th:disabled="${readonly}" th:field="*{descripcion}"></textarea>
+<textarea class="form-control" rows="2" {{ 'disabled' if readonly or (producto and producto.id_producto) else '' }} name="descripcion" value="{{ producto.descripcion if producto else '' }}"></textarea>
 </div>
 <!-- Imagen URL -->
 <div class="col-md-12">
 <label class="form-label">URL de Imagen</label>
-<input class="form-control" placeholder="https://ejemplo.com/imagen.jpg" th:disabled="${readonly}" th:field="*{imagenUrl}" type="text"/>
+<input class="form-control" placeholder="https://ejemplo.com/imagen.jpg" {{ 'disabled' if readonly or (producto and producto.id_producto) else '' }} name="imagenUrl" value="{{ producto.imagenUrl if producto else '' }}" type="text"/>
 </div>
 </div>
 <div class="row g-3 mt-2">
 <!-- P. Compra -->
 <div class="col-md-3">
 <label class="form-label">Precio Compra</label>
-<input class="form-control" required="" step="0.01" th:disabled="${readonly}" th:field="*{precio_compra}" type="number"/>
+<input class="form-control" required="" step="0.01" {{ 'disabled' if readonly or (producto and producto.id_producto) else '' }} name="precio_compra" value="{{ producto.precio_compra if producto else '' }}" type="number"/>
 </div>
 <!-- P. Venta -->
 <div class="col-md-3">
 <label class="form-label">Precio Venta</label>
-<input class="form-control" required="" step="0.01" th:disabled="${readonly}" th:field="*{precio_venta}" type="number"/>
+<input class="form-control" required="" step="0.01" {{ 'disabled' if readonly or (producto and producto.id_producto) else '' }} name="precio_venta" value="{{ producto.precio_venta if producto else '' }}" type="number"/>
 </div>
 <!-- Stock -->
 <div class="col-md-3">
 <label class="form-label">Stock Actual</label>
-<input class="form-control" required="" th:disabled="${readonly}" th:field="*{stock_actual}" type="number"/>
+<input class="form-control" required="" {{ 'disabled' if readonly or (producto and producto.id_producto) else '' }} name="stock_actual" value="{{ producto.stock_actual if producto else '' }}" type="number"/>
 </div>
 <!-- Stock Min -->
 <div class="col-md-3">
 <label class="form-label">Stock Mínimo</label>
-<input class="form-control" required="" th:disabled="${readonly}" th:field="*{stock_minimo}" type="number"/>
+<input class="form-control" required="" {{ 'disabled' if readonly or (producto and producto.id_producto) else '' }} name="stock_minimo" value="{{ producto.stock_minimo if producto else '' }}" type="number"/>
 </div>
 </div>
 <div class="row g-3 mt-2">
 <!-- Unidad -->
 <div class="col-md-4">
 <label class="form-label">Unidad de Medida</label>
-<select class="form-select" th:disabled="${readonly}" th:field="*{unidad_medida}">
+<select class="form-select" {{ 'disabled' if readonly or (producto and producto.id_producto) else '' }} name="unidad_medida" value="{{ producto.unidad_medida if producto else '' }}">
 <option value="Unidad">Unidad</option>
 <option value="Paquete">Paquete</option>
 <option value="Docena">Docena</option>
@@ -200,7 +200,7 @@
 <!-- Fecha Creación -->
 <div class="col-md-4">
 <label class="form-label">Fecha Registro</label>
-<input class="form-control" readonly="" required="" th:field="*{fecha_creacion}" type="date"/>
+<input class="form-control" readonly="" required="" name="fecha_creacion" value="{{ producto.fecha_creacion if producto else '' }}" type="date"/>
 </div>
 </div>
 <!-- Botones Formulario -->

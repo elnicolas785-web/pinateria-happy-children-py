@@ -1,7 +1,5 @@
 <!DOCTYPE html>
-
-<html lang="es" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
-
+<html lang="es">
 <head>
     <meta charset="utf-8" />
     <link href="{{ url_for('static', filename='images/logo_happychildren.jpg') }}" rel="icon" type="image/jpg" />
@@ -68,7 +66,6 @@
 
         .card-header {
             background: #1565C0;
-            /* Blue matching index header */
             color: white;
             border-radius: 15px 15px 0 0 !important;
             font-weight: bold;
@@ -81,7 +78,6 @@
 
         .table-hover tbody tr:hover {
             background-color: #e3f2fd;
-            /* Light blue hover */
         }
 
         .form-label {
@@ -123,87 +119,79 @@
             </div>{% endif %}
             <div class="card-header">
                 <i class="fas fa-user-tie me-2"></i>
-                <span>(readonly ? 'Detalles del Empleado' : 'Editar Empleado') if {{ empleado.id_empleado != None else
-                    'Nuevo Empleado' }}</span>
+                <span>{{ 'Detalles del Empleado' if readonly else ('Editar Empleado' if empleado and empleado.id_empleado else 'Nuevo Empleado') }}</span>
             </div>
             <div class="card-body p-4">
-                <form action="/empleados/guardar" method="post" th:object="${empleado}">
-                    <input th:field="*{id_empleado}" type="hidden" />
-                    <input th:field="*{fecha_creacion}" type="hidden" />
+                <form action="/empleados/guardar" method="post">
+                    <input name="id_empleado" type="hidden" value="{{ empleado.id_empleado if empleado else '' }}" />
+                    <input name="fecha_creacion" type="hidden" value="{{ empleado.fecha_creacion if empleado else '' }}" />
                     <div class="row g-4">
                         <div class="col-md-2">
                             <label class="form-label">Código</label>
-                            <input class="form-control" placeholder="Autogenerado" readonly="" th:field="*{codigo}"
+                            <input class="form-control" placeholder="Autogenerado" readonly name="codigo" value="{{ empleado.codigo if empleado else '' }}"
                                 type="text" />
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">Tipo de Documento</label>
-                            <select class="form-select" th:disabled="${readonly}" th:field="*{tipo_documento}">
-                                <option value="CC">Cédula</option>
-                                <option value="CE">Cédula Extranjería</option>
+                            <select class="form-select" {{ 'disabled' if readonly }} name="tipo_documento">
+                                <option value="CC" {% if empleado and empleado.tipo_documento == 'CC' %}selected{% endif %}>Cédula</option>
+                                <option value="CE" {% if empleado and empleado.tipo_documento == 'CE' %}selected{% endif %}>Cédula Extranjería</option>
                             </select>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Documento</label>
-                            <input class="form-control" placeholder="Número de documento" required=""
-                                th:disabled="${readonly}" th:field="*{documento_identidad}" type="text" />
+                            <input class="form-control" name="documento_identidad" placeholder="Número de documento" required
+                                {{ 'disabled' if readonly }} value="{{ empleado.documento_identidad if empleado else '' }}" type="text" />
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Nombres</label>
-                            <input class="form-control" required="" th:disabled="${readonly}" th:field="*{nombres}"
+                            <input class="form-control" required {{ 'disabled' if readonly }} name="nombres" value="{{ empleado.nombres if empleado else '' }}"
                                 type="text" />
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Apellidos</label>
-                            <input class="form-control" required="" th:disabled="${readonly}" th:field="*{apellidos}"
+                            <input class="form-control" required {{ 'disabled' if readonly }} name="apellidos" value="{{ empleado.apellidos if empleado else '' }}"
                                 type="text" />
                         </div>
                     </div>
                     <div class="row g-3 mt-2">
                         <div class="col-md-4">
                             <label class="form-label">Email</label>
-                            <input class="form-control" required="" th:disabled="${readonly}" th:field="*{email}"
+                            <input class="form-control" required {{ 'disabled' if readonly }} name="email" value="{{ empleado.email if empleado else '' }}"
                                 type="email" />
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Rol</label>
-                            <select class="form-select" name="rol.id_rol" required="" th:disabled="${readonly}">
+                            <select class="form-select" name="rol.id_rol" required {{ 'disabled' if readonly }}>
                                 <option value="">Seleccione...</option>
-                                {% for r in listaRoles %}<option
-                                    th:selected="${empleado.rol != null and empleado.rol.id_rol == r.id_rol}"
+                                {% for r in listaRoles %}<option {% if empleado and empleado.rol and empleado.rol.id_rol == r.id_rol %}selected{% endif %}
                                     value="{{ r.id_rol }}">{{ r.nombre_rol }}</option>{% endfor %}
                             </select>
                         </div>
-                        {% if empleado.id_empleado != None %}<div class="col-md-4">
+                        {% if empleado and empleado.id_empleado %}
+                        <div class="col-md-4">
                             <label class="form-label">Estado</label>
-                            <select class="form-select" th:disabled="${readonly}" th:field="*{estado}">
-                                <option value="Activo">Activo</option>
-                                <option value="Inactivo">Inactivo</option>
+                            <select class="form-select" {{ 'disabled' if readonly }} name="estado">
+                                <option value="Activo" {% if empleado.estado == 'Activo' %}selected{% endif %}>Activo</option>
+                                <option value="Inactivo" {% if empleado.estado == 'Inactivo' %}selected{% endif %}>Inactivo</option>
                             </select>
-                        </div>{% endif %}
+                        </div>
+                        {% endif %}
                     </div>
                     <div class="row g-3 mt-2">
                         <div class="col-md-4">
                             <label class="form-label">Usuario</label>
-                            <input class="form-control" required="" th:disabled="${readonly}"
-                                th:field="*{nombre_usuario}" type="text" />
+                            <input class="form-control" required {{ 'disabled' if readonly }} name="nombre_usuario"
+                                value="{{ empleado.nombre_usuario if empleado else '' }}" type="text" />
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Contraseña</label>
-                            <input class="form-control" placeholder="Dejar vacío si no desea cambiar"
-                                th:disabled="${readonly}" th:field="*{contrasena_hash}" type="password" />
+                            <input class="form-control" placeholder="Dejar vacío si no desea cambiar" name="contrasena_hash"
+                                {{ 'disabled' if readonly }} type="password" />
                         </div>
-                        <input th:field="*{fecha_contratacion}" type="hidden">
-                        <!-- Fecha Registro (Sync with Products) -->
-                        <div class="col-md-4">
-                            <label class="form-label">Fecha Registro</label>
-                            <input class="form-control" readonly="" required="" th:field="*{fecha_creacion}"
-                                type="date" />
-                        </div>
-                        </input>
                     </div>
                     <div class="mt-4 text-end">
-                        {% if empleado.id_empleado != None %}<a class="btn btn-secondary me-2"
+                        {% if empleado and empleado.id_empleado %}<a class="btn btn-secondary me-2"
                             href="/empleados">Cancelar / Nuevo</a>{% endif %}
                         {% if not readonly %}<button class="btn btn-success" type="submit">
                             <i class="fas fa-save"></i> Guardar
@@ -245,27 +233,34 @@
                                 <td>{{ e.rol.nombre_rol }}</td>
                                 <td>
                                     {% if e.estado == 'Activo' %}<span class="badge bg-success">Activo</span>{% endif %}
-                                    {% if e.estado == 'Inactivo' %}<span class="badge bg-danger">Inactivo</span>{% endif
-                                    %}
+                                    {% if e.estado == 'Inactivo' %}<span class="badge bg-danger">Inactivo</span>{% endif %}
                                 </td>
                                 <td class="text-center">
                                     <a class="btn btn-sm btn-info text-white btn-action"
-                                        href="/empleados/ver/{id}(id=${e.id_empleado})"
-                                        sec:authorize="hasRole('EMPLEADO')" title="Ver">
+                                        href="/empleados/ver/{{ e.id_empleado }}" title="Ver">
                                         <i class="fas fa-eye"></i>
                                     </a>
+                                    {% if current_user and current_user.rol and current_user.rol.nombre_rol.upper() in ['ADMINISTRADOR', 'ADMIN', 'EMPLEADO'] %}
                                     <a class="btn btn-sm btn-warning btn-action"
-                                        href="/empleados/editar/{id}(id=${e.id_empleado})" title="Editar">
+                                        href="/empleados/editar/{{ e.id_empleado }}" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a class="btn btn-sm btn-action"
-                                        href="/empleados/cambiarEstado/{id}(id=${e.id_empleado})"
-                                        th:classappend="${e.estado == 'Activo' ? 'btn-danger' : 'btn-success'}"
-                                        th:onclick="return confirm([[${e.estado == 'Activo' ? '¿Seguro que desea desactivar este empleado?' : '¿Seguro que desea activar este empleado?'}]] )"
-                                        th:title="${e.estado == 'Activo' ? 'Desactivar' : 'Activar'}">
-                                        <i class="fas"
-                                            th:classappend="${e.estado == 'Activo' ? 'fa-ban' : 'fa-check-circle'}"></i>
+                                    {% if e.estado == 'Activo' %}
+                                    <a class="btn btn-sm btn-danger btn-action"
+                                        href="/empleados/cambiarEstado/{{ e.id_empleado }}"
+                                        onclick="return confirm('¿Seguro que desea desactivar este empleado?')"
+                                        title="Desactivar">
+                                        <i class="fas fa-ban"></i>
                                     </a>
+                                    {% else %}
+                                    <a class="btn btn-sm btn-success btn-action"
+                                        href="/empleados/cambiarEstado/{{ e.id_empleado }}"
+                                        onclick="return confirm('¿Seguro que desea activar este empleado?')"
+                                        title="Activar">
+                                        <i class="fas fa-check-circle"></i>
+                                    </a>
+                                    {% endif %}
+                                    {% endif %}
                                 </td>
                             </tr>{% endfor %}
                             {% if not listaEmpleados %}<tr>
@@ -279,5 +274,4 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>
