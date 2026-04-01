@@ -16,7 +16,7 @@ def login():
         if cliente_u and cliente_u.contrasena == password:
             login_user(cliente_u)
             flash('Bienvenido!', 'success')
-            return redirect(url_for('dashboard.root'))
+            return redirect(url_for('dashboard.dashboard'))
             
         # Validar Empleado
         empleado = Empleado.query.filter_by(nombre_usuario=username).first()
