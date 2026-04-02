@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, flash # type: ignore
+from flask import render_template, request, redirect, url_for, flash, session # type: ignore
 from flask_login import login_user, logout_user # type: ignore
 from routes import auth_bp # type: ignore
 from models import Cliente, UsuarioCliente, Rol, Empleado # type: ignore
@@ -14,6 +14,7 @@ def login():
         # Validar Cliente
         cliente_u = UsuarioCliente.query.filter_by(nombre_usuario=username).first()
         if cliente_u and cliente_u.contrasena == password:
+            session.pop('_flashes', None)
             login_user(cliente_u)
             flash(f'¡Bienvenido {cliente_u.cliente.nombres}!', 'success')
             return redirect(url_for('dashboard.dashboard'))
@@ -21,6 +22,7 @@ def login():
         # Validar Empleado
         empleado = Empleado.query.filter_by(nombre_usuario=username).first()
         if empleado and empleado.contrasena_hash == password:
+            session.pop('_flashes', None)
             login_user(empleado)
             rol_nombre = empleado.rol.nombre_rol.capitalize() if empleado.rol else 'Empleado'
             if rol_nombre.upper() in ['ADMINISTRADOR', 'ADMIN']:

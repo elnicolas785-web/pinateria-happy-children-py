@@ -215,9 +215,10 @@
                                     <a class="btn btn-sm btn-warning btn-action" href="/clientes/editar/{{ c.id_cliente }}" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </a>
+                                {% set confirm_msg = '¿Seguro que desea desactivar este cliente?' if c.estado == 'Activo' else '¿Seguro que desea activar este cliente?' %}
                                     <a class="btn btn-sm btn-action {% if c.estado == 'Activo' %}btn-danger{% else %}btn-success{% endif %}" 
                                        href="/clientes/cambiarEstado/{{ c.id_cliente }}" 
-                                       onclick="return confirm('¿Seguro que desea {% if c.estado == 'Activo' %}desactivar{% else %}activar{% endif %} este cliente?')" 
+                                       onclick="return confirm('{{ confirm_msg }}')" 
                                        title="{% if c.estado == 'Activo' %}Desactivar{% else %}Activar{% endif %}">
                                         <i class="fas {% if c.estado == 'Activo' %}fa-ban{% else %}fa-check-circle{% endif %}"></i>
                                     </a>

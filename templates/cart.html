@@ -215,7 +215,7 @@
     <li><hr class="dropdown-divider"/></li>
     <li><a class="dropdown-item" href="/productos"><i class="fas fa-boxes me-2"></i>Productos</a></li>
     <li><a class="dropdown-item" href="/ventas"><i class="fas fa-shopping-cart me-2"></i>Ventas</a></li>
-    {% if getattr(current_user, 'rol', None) and current_user.rol.nombre_rol.upper() in ['ADMINISTRADOR', 'ADMIN'] %}
+    {% if current_user.is_authenticated and current_user.rol and current_user.rol.nombre_rol.upper() in ['ADMINISTRADOR', 'ADMIN'] %}
     <li><a class="dropdown-item" href="/usuarios"><i class="fas fa-users-cog me-2"></i>Configuración</a></li>
     {% endif %}
 {% else %}
