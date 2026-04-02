@@ -82,7 +82,7 @@
 </div>
 </header>
 <div class="container">
-<h2 class="text-center mb-5">¡Hola, <span>{{ current_user.cliente.nombres if current_user.is_authenticated and current_user.cliente else 'Amigo' }}</span>! 👋</h2>
+<h2 class="text-center mb-5">¡Hola, <span>{{ current_user.nombre_usuario if current_user.is_authenticated else 'Amigo' }}</span>! 👋</h2>
 <div class="row g-4 justify-content-center">
 <div class="col-md-5">
 <div class="card card-cliente">

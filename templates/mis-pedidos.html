@@ -170,35 +170,35 @@
                     <i class="fas fa-arrow-left me-2"></i> VOLVER
                 </a>
             </div>
-            <div class="text-center">
-                <h2 class="fw-bold m-0" style="color: #1565C0; text-shadow: 1px 1px 0 white;">
-                    <i class="fas fa-shopping-bag me-2"></i> Mis Pedidos
-                </h2>
+            <div class="text-right">
+                <h1 class="fw-bold m-0" style="color: #1565C0;">Estado de Entregas</h1>
             </div>
             <div class="dropdown">
                 <div aria-expanded="false" class="user-info-box dropdown-toggle" data-bs-toggle="dropdown" id="profileDropdown" style="cursor: pointer;">
                     {% set nombre_completo = current_user.nombre_usuario %}
-                    {% set correo = '' %}
+                    {% set nombre_real = '' %}
                     {% if current_user.__class__.__name__ == 'UsuarioCliente' and current_user.cliente %}
-                        {% set nombre_completo = current_user.cliente.nombres ~ ' ' ~ current_user.cliente.apellidos %}
-                        {% set correo = current_user.cliente.email %}
+                        {% set nombre_real = current_user.cliente.nombres ~ ' ' ~ current_user.cliente.apellidos %}
                     {% elif current_user.__class__.__name__ == 'Empleado' %}
-                        {% set nombre_completo = current_user.nombres ~ ' ' ~ current_user.apellidos %}
-                        {% set correo = current_user.email %}
+                        {% set nombre_real = current_user.nombres ~ ' ' ~ current_user.apellidos %}
                     {% endif %}
                     <h5 class="mb-1 text-primary"><span>{{ nombre_completo }}</span>
                         <i class="fas fa-user-circle ms-2"></i>
                     </h5>
-                    <p class="mb-0 text-muted small"><span>{{ correo }}</span>
-                        <i class="fas fa-envelope ms-2"></i>
+                    {% if nombre_real %}
+                    <p class="mb-0 text-muted small"><span>{{ nombre_real }}</span>
+                        <i class="fas fa-id-badge ms-2"></i>
                     </p>
+                    {% endif %}
                 </div>
                 <ul aria-labelledby="profileDropdown" class="dropdown-menu dropdown-menu-end shadow border-0 p-2" style="border-radius: 15px;">
+                    {% if current_user.__class__.__name__ == 'Empleado' %}
                     <li>
                         <a class="dropdown-item rounded-3 py-2" href="/pedidos/">
                             <i class="fas fa-shipping-fast me-2 text-primary"></i> Ver Todos Los Pedidos (Admin)
                         </a>
                     </li>
+                    {% endif %}
                     <li>
                         <hr class="dropdown-divider"/>
                     </li>
@@ -213,44 +213,45 @@
             </div>
         </div>
 
-        <div class="total-box">
-            <h5 class="text-muted mb-2">Total Invertido en Diversión 🛍️</h5>
-            <h2 class="display-5 fw-bold text-success m-0">${{ totalGastado }}</h2>
-        </div>
-
-        <div class="table-responsive" style="border-radius: 15px; overflow: hidden; border: 1px solid #eee;">
-            <table class="table table-hover align-middle mb-0">
+        <div class="table-responsive" style="border-radius: 15px; overflow: hidden; border: 1px solid #eee; margin-top: 2rem;">
+            <table class="table align-middle mb-0" style="background: white;">
                 <thead>
-                    <tr>
-                        <th class="px-4 py-3">Código Pedido</th>
-                        <th class="px-4 py-3">Producto</th>
-                        <th class="py-3">Fecha Compra</th>
-                        <th class="py-3 text-center">Cantidad</th>
-                        <th class="py-3">Precio Unit.</th>
-                        <th class="py-3 px-4 text-end">Subtotal</th>
+                    <tr style="border-bottom: 2px solid #eee;">
+                        <th class="px-4 py-3 bg-white" style="color: black; font-weight: bold; border: none;"># Pedido</th>
+                        <th class="py-3 bg-white" style="color: black; font-weight: bold; border: none;">Fecha Pedido</th>
+                        <th class="py-3 bg-white" style="color: black; font-weight: bold; border: none;">Fecha Entrega (Est.)</th>
+                        <th class="py-3 bg-white" style="color: black; font-weight: bold; border: none;">Estado</th>
+                        <th class="py-3 px-4 text-end bg-white" style="color: black; font-weight: bold; border: none;">Monto</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for d in listaDetalles %}
-                    <tr>
-                        <td class="px-4 fw-bold text-secondary">{{ d.pedido.numero_pedido }}</td>
-                        <td class="px-4 fw-bold text-primary">{{ d.producto.nombre }}</td>
-                        <td class="text-muted">{{ d.pedido.fecha_pedido }}</td>
-                        <td class="text-center">
-                            <span class="badge-qty">{{ d.cantidad }}</span>
+                    {% for p in pedidos %}
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td class="px-4 py-3 fw-bold">
+                            <a href="/pedidos/detalle/{{ p.id_pedido }}" style="text-decoration: none; color: #1565C0;">{{ p.numero_pedido }}</a>
                         </td>
-                        <td>${{ d.precio_unitario }}</td>
-                        <td class="fw-bold text-success text-end px-4">${{ d.subtotal }}</td>
+                        <td class="py-3" style="color: #555;">{{ p.fecha_pedido }}</td>
+                        <td class="py-3 fw-bold" style="color: #1565C0;">
+                            <i class="fas fa-calendar-alt me-2"></i>{{ p.fecha_entrega_esperada if p.fecha_entrega_esperada else p.fecha_pedido }}
+                        </td>
+                        <td class="py-3">
+                            <span style="background-color: #ffc107; color: #000; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9em; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                {{ p.estado }}
+                            </span>
+                        </td>
+                        <td class="fw-bold text-success text-end px-4 py-3" style="font-size: 1.1em;">
+                            {{ "{:,.2f}".format(p.total).replace(',', 'X').replace('.', ',').replace('X', '.') }} ¤
+                        </td>
                     </tr>
                     {% endfor %}
                     
-                    {% if not listaDetalles %}
+                    {% if not pedidos %}
                     <tr>
-                        <td class="text-center text-muted p-5" colspan="6">
+                        <td class="text-center text-muted p-5" colspan="5">
                             <div class="mb-3">
                                 <i class="fas fa-shopping-basket fa-4x opacity-25"></i>
                             </div>
-                            <p class="fs-5">Aún no has comprado ningún producto o no hay detalles disponibles.</p>
+                            <p class="fs-5">Aún no tienes pedidos registrados.</p>
                             <a class="btn btn-primary rounded-pill px-4 mt-2" href="/cart/catalogo" style="background: #1565C0; border: none;">
                                 <i class="fas fa-gift me-2"></i>Ir al Catálogo
                             </a>

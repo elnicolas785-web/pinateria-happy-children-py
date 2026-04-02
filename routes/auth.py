@@ -15,14 +15,17 @@ def login():
         cliente_u = UsuarioCliente.query.filter_by(nombre_usuario=username).first()
         if cliente_u and cliente_u.contrasena == password:
             login_user(cliente_u)
-            flash('Bienvenido!', 'success')
+            flash(f'¡Bienvenido {cliente_u.cliente.nombres}!', 'success')
             return redirect(url_for('dashboard.dashboard'))
             
         # Validar Empleado
         empleado = Empleado.query.filter_by(nombre_usuario=username).first()
         if empleado and empleado.contrasena_hash == password:
             login_user(empleado)
-            flash('Iniciaste sesión como empleado.', 'success')
+            rol_nombre = empleado.rol.nombre_rol.capitalize() if empleado.rol else 'Empleado'
+            if rol_nombre.upper() in ['ADMINISTRADOR', 'ADMIN']:
+                rol_nombre = 'Administrador'
+            flash(f'¡Bienvenido {rol_nombre} {empleado.nombres}!', 'success')
             return redirect(url_for('dashboard.dashboard'))
             
         return render_template('login.html', errorGeneral="Usuario o contraseña incorrectos")
@@ -74,6 +77,7 @@ def register():
         db.session.add(usuario)
         db.session.commit()
 
+        flash('¡Registro exitoso! Ya puedes iniciar sesión en tu nueva cuenta.', 'success')
         return redirect(url_for('auth.login', registered=True))
         
     return render_template('registro.html')

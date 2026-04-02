@@ -213,8 +213,8 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Observaciones</label>
-                            <textarea class="form-control" name="observaciones" rows="1" {{ 'disabled' if readonly
-                                }}>{{ venta.observaciones if venta else '' }}</textarea>
+                            <textarea class="form-control" name="observaciones" rows="1"
+                                {{ 'disabled' if readonly }}>{{ venta.observaciones if venta and venta.observaciones else '' }}</textarea>
                         </div>
                     </div>
                     <div class="mt-4 text-end">

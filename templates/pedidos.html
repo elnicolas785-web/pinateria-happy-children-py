@@ -181,7 +181,7 @@
                     <div class="row g-3 mt-2">
                         <div class="col-md-12">
                             <label class="form-label">Observaciones</label>
-                            <textarea class="form-control" name="observaciones" rows="1" {{ 'disabled' if readonly }}>{{ pedido.observaciones if pedido else '' }}</textarea>
+                            <textarea class="form-control" name="observaciones" rows="1" {{ 'disabled' if readonly }}>{{ pedido.observaciones if pedido and pedido.observaciones else '' }}</textarea>
                         </div>
                     </div>
                     <div class="mt-4 text-end">
