@@ -139,4 +139,17 @@ def checkout():
     session['carrito'] = [] # Vaciar carrito
     
     flash('Pedido realizado con éxito', 'success')
-    return redirect(url_for('pedidos.detalle_pedido', id_pedido=nuevo_pedido.id_pedido))
+    return redirect(url_for('cart.compra_exitosa', id_pedido=nuevo_pedido.id_pedido))
+
+@cart_bp.route('/success/<int:id_pedido>')
+@login_required
+def compra_exitosa(id_pedido):
+    pedido = Pedido.query.get_or_404(id_pedido)
+    detalles = DetallePedido.query.filter_by(id_pedido=id_pedido).all()
+    
+    for d in detalles:
+        d.producto = Producto.query.get(d.id_producto)
+    
+    # Renderizamos success.html pasando el pedido como 'venta' 
+    # (la plantilla ha sido ajustada o será ajustada para usar los atributos de pedido)
+    return render_template('success.html', venta=pedido, detalles=detalles)

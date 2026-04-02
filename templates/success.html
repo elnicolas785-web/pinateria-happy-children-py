@@ -139,12 +139,12 @@
 <p class="mt-3">Tu pedido ha sido registrado exitosamente.</p>
 <!-- Case where purchase details are available -->
 {% if venta != None %}<div class="mt-4">
-<div class="mb-3 no-print">
-<button aria-controls="receiptCollapse" aria-expanded="true" class="btn btn-outline-primary rounded-pill px-4 fw-bold shadow-sm" data-bs-target="#receiptCollapse" data-bs-toggle="collapse" id="toggleReceiptBtn" type="button">
-<i class="fas fa-eye-slash me-2"></i>Ocultar Recibo
+<div class="mb-4 no-print">
+<button aria-controls="receiptCollapse" aria-expanded="false" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" data-bs-target="#receiptCollapse" data-bs-toggle="collapse" id="toggleReceiptBtn" type="button">
+<i class="fas fa-eye me-2"></i>Ver Recibo Oficial
                 </button>
 </div>
-<div class="collapse show" id="receiptCollapse">
+<div class="collapse" id="receiptCollapse">
 <div class="card-body p-0">
 <div class="card border-0 shadow-lg mx-auto" style="max-width: 450px; background: #fff; border-radius: 15px; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; border: 1px solid #eee !important;">
 <div class="card-body p-4 position-relative">
@@ -159,24 +159,20 @@
 </div>
 <div class="mb-4">
 <div class="d-flex justify-content-between small">
-<span class="fw-bold">Factura de Venta:</span>
-<span>{{ venta.numero_factura }}</span>
+<span class="fw-bold">No. Pedido:</span>
+<span>{{ venta.numero_pedido }}</span>
 </div>
 <div class="d-flex justify-content-between small">
 <span class="fw-bold">Fecha:</span>
-<span>{{ venta.fecha_venta }}</span>
+<span>{{ venta.fecha_pedido }}</span>
 </div>
-{% if venta.cliente != None %}<div class="d-flex justify-content-between small">
+{% if venta != None %}<div class="d-flex justify-content-between small">
 <span class="fw-bold">Cliente:</span>
-<span>{{ venta.cliente.nombres + ' ' + venta.cliente.apellidos }}</span>
+<span>{{ venta.cliente.nombres ~ ' ' ~ venta.cliente.apellidos }}</span>
 </div>{% endif %}
 {% if venta.cliente != None %}<div class="d-flex justify-content-between small">
 <span class="fw-bold">Documento:</span>
 <span>{{ venta.cliente.numero_documento }}</span>
-</div>{% endif %}
-{% if venta.metodo_pago != None %}<div class="d-flex justify-content-between small">
-<span class="fw-bold">Método de Pago:</span>
-<span>{{ venta.metodo_pago }}</span>
 </div>{% endif %}
 {% if venta.observaciones != None %}<div class="small mt-2 p-2 rounded" style="background-color: #f8f9fa; text-align: left; border: 1px solid #e9ecef;">
 <span class="fw-bold text-primary d-block mb-1"><i class="fas fa-map-marker-alt me-1"></i>Detalles de Envío y Pago:</span>
@@ -195,14 +191,14 @@
 {% for det in detalles %}<tr style="border-bottom: 1px solid #eee;">
 <td class="ps-0 py-2 text-start fw-bold">{{ det.producto.nombre }}</td>
 <td class="text-center py-2">{{ det.cantidad }}</td>
-<td class="text-end pe-0 py-2 fw-bold">{{ '$' + det.subtotal }}</td>
+<td class="text-end pe-0 py-2 fw-bold">${{ det.subtotal }}</td>
 </tr>{% endfor %}
 </tbody>
 </table>
 <div class="pt-3" style="border-top: 2px dashed #ccc;">
 <div class="d-flex justify-content-between fw-bold fs-5 mt-2">
 <span>TOTAL A PAGAR:</span>
-<span>{{ '$' + venta.total }}</span>
+<span>${{ venta.total }}</span>
 </div>
 </div>
 <div class="text-center mt-4">
@@ -223,9 +219,11 @@
 </div>
 </div>{% endif %}
 <!-- Case where purchase details are not available -->
-<div class="mt-4" th:unless="${venta != null}">
+{% if not venta %}
+<div class="mt-4">
 <a class="btn-home" href="/dashboard"><i class="fas fa-tachometer-alt me-2"></i>Volver al Panel</a>
 </div>
+{% endif %}
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 {% if venta != None %}<script>
