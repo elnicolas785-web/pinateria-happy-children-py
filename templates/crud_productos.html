@@ -216,7 +216,7 @@
 <!-- SEARCH BOX -->
 <form action="/productos/buscar" class="mb-4" method="get">
 <div class="input-group">
-<input class="form-control" name="nombre" placeholder="Buscar por nombre..." required="" type="text"/>
+<input class="form-control" name="busqueda" placeholder="Buscar por nombre, código o categoría..." required="" type="text"/>
 <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Buscar</button>
 </div>
 </form>
@@ -252,16 +252,19 @@
 {% if p.activo == 'Activo' %}<span class="badge bg-success">Activo</span>{% endif %}
 {% if p.activo == 'Inactivo' %}<span class="badge bg-danger">Inactivo</span>{% endif %}
 </td>
-<td class="text-center">
-<a class="btn btn-sm btn-info text-white btn-action" href="/productos/ver/{id}(id=${p.id_producto})" sec:authorize="hasRole('EMPLEADO')" title="Ver">
+<td>
+<div class="d-flex justify-content-center gap-1 flex-nowrap">
+<a class="btn btn-sm btn-info text-white" href="/productos/ver/{{ p.id_producto }}" title="Ver">
 <i class="fas fa-eye"></i>
 </a>
-<a class="btn btn-sm btn-warning btn-action" href="/productos/editar/{id}(id=${p.id_producto})" title="Editar">
+<a class="btn btn-sm btn-warning" href="/productos/editar/{{ p.id_producto }}" title="Editar">
 <i class="fas fa-edit"></i>
 </a>
-<a class="btn btn-sm btn-action" href="/productos/cambiarEstado/{id}(id=${p.id_producto})" th:classappend="${p.activo == 'Activo' ? 'btn-danger' : 'btn-success'}" th:onclick="return confirm([[${p.activo == 'Activo' ? '¿Seguro que desea desactivar este producto?' : '¿Seguro que desea activar este producto?'}]] )" th:title="${p.activo == 'Activo' ? 'Desactivar' : 'Activar'}">
-<i class="fas" th:classappend="${p.activo == 'Activo' ? 'fa-ban' : 'fa-check-circle'}"></i>
+{% set confirm_msg = '¿Seguro que desea desactivar este producto?' if p.activo == 'Activo' else '¿Seguro que desea activar este producto?' %}
+<a class="btn btn-sm {{ 'btn-danger' if p.activo == 'Activo' else 'btn-success' }}" href="/productos/cambiarEstado/{{ p.id_producto }}" onclick="return confirm('{{ confirm_msg }}')" title="{{ 'Desactivar' if p.activo == 'Activo' else 'Activar' }}">
+<i class="fas {{ 'fa-ban' if p.activo == 'Activo' else 'fa-check-circle' }}"></i>
 </a>
+</div>
 </td>
 </tr>{% endfor %}
 {% if not listaProductos %}<tr>

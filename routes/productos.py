@@ -1,4 +1,5 @@
 from flask import render_template, request, redirect, url_for # type: ignore
+from flask_login import login_required, current_user
 from routes import productos_bp # type: ignore
 from models import Producto, CategoriaProducto # type: ignore
 from extensions import db # type: ignore
@@ -37,3 +38,25 @@ def guardar():
     db.session.add(nuevo_prod)
     db.session.commit()
     return redirect(url_for('productos.listar_productos'))
+
+
+@productos_bp.route('/buscar', methods=['GET'])
+@login_required
+def buscar():
+    busqueda = request.args.get('busqueda', '')
+    if busqueda:
+        productos = Producto.query.join(CategoriaProducto).filter(
+            db.or_(
+                Producto.nombre.ilike(f'%{busqueda}%'),
+                Producto.codigo.ilike(f'%{busqueda}%'),
+                CategoriaProducto.nombre.ilike(f'%{busqueda}%')
+            )
+        ).all()
+    else:
+        productos = Producto.query.all()
+        
+
+    categorias = CategoriaProducto.query.all()
+    # Provide dummy producto and readonly flag to prevent template errors
+    producto = Producto()
+    return render_template('crud_productos.html', listaProductos=productos, categorias=categorias, producto=producto, readonly=False)

@@ -124,6 +124,8 @@
                     Venta' }}</span>
             </div>
             <div class="card-body">
+                {% set is_empleado = current_user and current_user.rol and current_user.rol.nombre_rol.upper() == 'EMPLEADO' %}
+                {% set campos_bloqueados = readonly or (venta and venta.id_venta and is_empleado) %}
                 <form action="/ventas/guardar" method="post">
                     <input name="id_venta" type="hidden" value="{{ venta.id_venta if venta else '' }}" />
                     <div class="row g-3">
@@ -135,13 +137,13 @@
                         <div class="col-md-3">
                             <label class="form-label">Cliente</label>
                             <select class="form-select" name="cliente.id_cliente" required
-                                {{ 'disabled' if readonly or (venta and venta.id_venta) else '' }} {% if readonly or (venta and venta.id_venta) %}style="background-color: white; opacity: 1;"{% endif %}>
+                                {{ 'disabled' if campos_bloqueados else '' }} {% if campos_bloqueados %}style="background-color: white; opacity: 1;"{% endif %}>
                                 <option value="">Seleccione...</option>
                                 {% for c in listaClientes %}<option {% if venta and venta.cliente and
                                     venta.cliente.id_cliente==c.id_cliente %}selected{% endif %}
                                     value="{{ c.id_cliente }}">{{ c.nombres + ' ' + c.apellidos }}</option>{% endfor %}
                             </select>
-                            {% if venta and venta.id_venta %}
+                            {% if campos_bloqueados and venta and venta.id_venta %}
                             <input type="hidden" name="cliente.id_cliente" value="{{ venta.id_cliente }}" />
                             {% endif %}
                         </div>
@@ -154,6 +156,9 @@
                                     venta.empleado.id_empleado==e.id_empleado %}selected{% endif %}
                                     value="{{ e.id_empleado }}">{{ e.nombres + ' ' + e.apellidos }}</option>{% endfor %}
                             </select>
+                            {% if readonly and venta %}
+                            <input type="hidden" name="empleado.id_empleado" value="{{ venta.id_empleado }}">
+                            {% endif %}
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Fecha</label>
@@ -164,7 +169,7 @@
                     <div class="row g-3 mt-2">
                         <div class="col-md-4">
                             <label class="form-label">Método Pago</label>
-                            <select class="form-select" {{ 'disabled' if readonly or (venta and venta.id_venta) else '' }} name="metodo_pago" {% if readonly or (venta and venta.id_venta) %}style="background-color: white; opacity: 1;"{% endif %}>
+                            <select class="form-select" {{ 'disabled' if campos_bloqueados else '' }} name="metodo_pago" {% if campos_bloqueados %}style="background-color: white; opacity: 1;"{% endif %}>
                                 <option value="Efectivo" {% if venta and venta.metodo_pago=='Efectivo' %}selected{%
                                     endif %}>Efectivo</option>
                                 <option value="Tarjeta" {% if venta and venta.metodo_pago=='Tarjeta' %}selected{% endif
@@ -174,23 +179,23 @@
                                 <option value="DaviPlata" {% if venta and venta.metodo_pago=='DaviPlata' %}selected{%
                                     endif %}>DaviPlata</option>
                             </select>
-                            {% if venta and venta.id_venta %}
+                            {% if campos_bloqueados and venta and venta.id_venta %}
                             <input type="hidden" name="metodo_pago" value="{{ venta.metodo_pago }}">
                             {% endif %}
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Subtotal</label>
                             <input class="form-control" name="subtotal" value="{{ venta.subtotal if venta else '' }}"
-                                required step="0.01" {{ 'readonly' if readonly or (venta and venta.id_venta) else '' }} type="number" {% if readonly or (venta and venta.id_venta) %}style="background-color: white;"{% endif %} />
-                            {% if venta and venta.id_venta %}
+                                required step="0.01" {{ 'readonly' if campos_bloqueados else '' }} type="number" {% if campos_bloqueados %}style="background-color: white;"{% endif %} />
+                            {% if campos_bloqueados and venta and venta.id_venta %}
                             <input type="hidden" name="subtotal" value="{{ venta.subtotal }}">
                             {% endif %}
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Total</label>
                             <input class="form-control" name="total" value="{{ venta.total if venta else '' }}" required
-                                step="0.01" {{ 'readonly' if readonly or (venta and venta.id_venta) else '' }} type="number" {% if readonly or (venta and venta.id_venta) %}style="background-color: white;"{% endif %} />
-                            {% if venta and venta.id_venta %}
+                                step="0.01" {{ 'readonly' if campos_bloqueados else '' }} type="number" {% if campos_bloqueados %}style="background-color: white;"{% endif %} />
+                            {% if campos_bloqueados and venta and venta.id_venta %}
                             <input type="hidden" name="total" value="{{ venta.total }}">
                             {% endif %}
                         </div>
@@ -209,7 +214,7 @@
                     <div class="row g-3 mt-2">
                         <div class="col-md-6">
                             <label class="form-label"><i class="fas fa-map-marker-alt"></i> Dirección de Entrega</label>
-                            <input class="form-control" name="direccion_entrega" value="{{ venta.direccion_entrega if venta else '' }}" type="text" placeholder="Ninguna" {{ 'readonly' if readonly or (venta and venta.id_venta) else '' }} {% if readonly or (venta and venta.id_venta) %}style="background-color: white;"{% endif %} />
+                            <input class="form-control" name="direccion_entrega" value="{{ venta.direccion_entrega if venta else '' }}" type="text" placeholder="Ninguna" {{ 'readonly' if campos_bloqueados else '' }} {% if campos_bloqueados %}style="background-color: white;"{% endif %} />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Observaciones</label>
@@ -306,32 +311,34 @@
                                         class="badge {% if v.estado == 'Completada' %}bg-success{% elif v.estado == 'Anulada' %}bg-danger{% else %}bg-warning text-dark{% endif %}">{{
                                         v.estado }}</span>
                                 </td>
-                                <td class="text-center">
-                                    <a class="btn btn-sm btn-info text-white btn-action"
-                                        href="/ventas/ver/{{ v.id_venta }}" title="Ver">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    {% if current_user and current_user.rol and current_user.rol.nombre_rol.upper() in
-                                    ['ADMINISTRADOR', 'ADMIN', 'EMPLEADO'] %}
-                                    <a class="btn btn-sm btn-warning btn-action" href="/ventas/editar/{{ v.id_venta }}"
-                                        title="Editar">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    {% if v.estado == 'Completada' %}
-                                    <a class="btn btn-sm btn-danger btn-action"
-                                        href="/ventas/cambiarEstado/{{ v.id_venta }}"
-                                        onclick="return confirm('¿Seguro que desea anular esta venta?')" title="Anular">
-                                        <i class="fas fa-ban"></i>
-                                    </a>
-                                    {% else %}
-                                    <a class="btn btn-sm btn-success btn-action"
-                                        href="/ventas/cambiarEstado/{{ v.id_venta }}"
-                                        onclick="return confirm('¿Seguro que desea marcar esta venta como completada?')"
-                                        title="Completar">
-                                        <i class="fas fa-check-circle"></i>
-                                    </a>
-                                    {% endif %}
-                                    {% endif %}
+                                <td>
+                                    <div class="d-flex justify-content-center gap-1 flex-nowrap">
+                                        <a class="btn btn-sm btn-info text-white"
+                                            href="/ventas/ver/{{ v.id_venta }}" title="Ver">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if current_user and current_user.rol and current_user.rol.nombre_rol.upper() in
+                                        ['ADMINISTRADOR', 'ADMIN', 'EMPLEADO'] %}
+                                        <a class="btn btn-sm btn-warning" href="/ventas/editar/{{ v.id_venta }}"
+                                            title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        {% if v.estado == 'Completada' %}
+                                        <a class="btn btn-sm btn-danger"
+                                            href="/ventas/cambiarEstado/{{ v.id_venta }}"
+                                            onclick="return confirm('¿Seguro que desea anular esta venta?')" title="Anular">
+                                            <i class="fas fa-ban"></i>
+                                        </a>
+                                        {% else %}
+                                        <a class="btn btn-sm btn-success"
+                                            href="/ventas/cambiarEstado/{{ v.id_venta }}"
+                                            onclick="return confirm('¿Seguro que desea marcar esta venta como completada?')"
+                                            title="Completar">
+                                            <i class="fas fa-check-circle"></i>
+                                        </a>
+                                        {% endif %}
+                                        {% endif %}
+                                    </div>
                                 </td>
                             </tr>{% endfor %}
                             {% if not listaVentas %}<tr>
