@@ -142,7 +142,6 @@ class Venta(db.Model):
     total = db.Column(db.Numeric(10, 2), nullable=False)
     estado = db.Column(db.String(20), nullable=False)
     metodo_pago = db.Column(db.String(30), nullable=False)
-    direccion_entrega = db.Column(db.String(255))
     observaciones = db.Column(db.String(255))
 
     cliente = db.relationship('Cliente')
