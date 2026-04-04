@@ -69,9 +69,15 @@ def guardar():
     estado = request.form.get('estado', 'Activo')
 
     if id_empleado:
-        # Editar existente
+        # --- LÓGICA PARA EDITAR ---
         empleado = Empleado.query.get(id_empleado)
         if empleado:
+            # Validar que el nuevo email no esté ocupado por OTRO empleado
+            email_duplicado = Empleado.query.filter(Empleado.email == email, Empleado.id_empleado != id_empleado).first()
+            if email_duplicado:
+                flash(f'Error: El correo {email} ya pertenece a otro empleado.', 'danger')
+                return redirect(url_for('empleados.listar_empleados'))
+
             empleado.nombres = nombres
             empleado.apellidos = apellidos
             empleado.tipo_documento = tipo_doc
@@ -80,11 +86,25 @@ def guardar():
             empleado.id_rol = id_rol
             empleado.nombre_usuario = nombre_usuario
             empleado.estado = estado
-            if contrasena_hash:  # Solo actualiza si ingresó una nueva
+            if contrasena_hash:
                 empleado.contrasena_hash = contrasena_hash
+            
+            db.session.commit()
             flash('Empleado actualizado correctamente.', 'success')
     else:
-        # Crear nuevo
+        # --- LÓGICA PARA CREAR NUEVO (Aquí estaba el error) ---
+        
+        # 1. Validar si el email ya existe
+        if Empleado.query.filter_by(email=email).first():
+            flash(f'Error: El correo {email} ya está registrado.', 'danger')
+            return redirect(url_for('empleados.listar_empleados'))
+        
+        # 2. Validar si el documento de identidad ya existe
+        if Empleado.query.filter_by(documento_identidad=doc_id).first():
+            flash(f'Error: El documento {doc_id} ya está registrado.', 'danger')
+            return redirect(url_for('empleados.listar_empleados'))
+
+        # 3. Si todo está bien, crear
         nuevo_codigo = f"EMP-{int(datetime.datetime.now().timestamp() * 1000) % 10000:04d}"
         nuevo_emp = Empleado(
             codigo=nuevo_codigo,
@@ -101,9 +121,8 @@ def guardar():
             contrasena_hash=contrasena_hash if contrasena_hash else '12345'
         )
         db.session.add(nuevo_emp)
+        db.session.commit() # Commit para el nuevo registro
         flash('Empleado creado correctamente.', 'success')
-
-    db.session.commit()
     
     if from_dashboard:
         return redirect(url_for('dashboard.dashboard'))
@@ -129,3 +148,4 @@ def buscar():
     from models import Rol
     roles = Rol.query.all()
     return render_template('empleados.html', listaEmpleados=empleados, listaRoles=roles, empleado=None, readonly=False)
+
