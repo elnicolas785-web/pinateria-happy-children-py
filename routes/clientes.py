@@ -105,3 +105,23 @@ def guardar():
         flash('Ocurrió un error al guardar el cliente.', 'danger')
 
     return redirect(url_for('clientes.listar_clientes'))
+
+
+@clientes_bp.route('/buscar', methods=['GET'])
+@login_required
+def buscar():
+    busqueda = request.args.get('busqueda', '')
+    if busqueda:
+        clientes = Cliente.query.filter(
+            db.or_(
+                Cliente.nombres.ilike(f'%{busqueda}%'),
+                Cliente.apellidos.ilike(f'%{busqueda}%'),
+                (Cliente.nombres + ' ' + Cliente.apellidos).ilike(f'%{busqueda}%'),
+                Cliente.numero_documento.ilike(f'%{busqueda}%'),
+                Cliente.codigo.ilike(f'%{busqueda}%')
+            )
+        ).order_by(Cliente.fecha_registro.desc()).all()
+    else:
+        clientes = Cliente.query.order_by(Cliente.fecha_registro.desc()).all()
+        
+    return render_template('clientes.html', listaClientes=clientes, cliente=None, readonly=False)

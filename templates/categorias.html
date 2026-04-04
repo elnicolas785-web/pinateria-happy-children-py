@@ -6,92 +6,7 @@
 <title>Gestión de Categorías</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
-<style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            background-attachment: fixed;
-            min-height: 100vh;
-            color: #333;
-        }
-
-        .logo-container {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-            margin-bottom: 20px;
-        }
-
-        .logo-container img {
-            height: 60px;
-            width: 60px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-right: 12px;
-            border: 2px solid white;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .logo-text {
-            font-size: 1.8rem;
-            font-weight: 800;
-            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
-            letter-spacing: -1px;
-        }
-
-        .logo-text .happy {
-            color: #1565C0;
-        }
-
-        .logo-text .children {
-            color: #ff9800;
-            margin-left: 2px;
-        }
-
-        .container {
-            margin-top: 30px;
-            background: white;
-            padding: 3rem;
-            border-radius: 30px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-        }
-
-        .card {
-            border-radius: 15px;
-            border: none;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-        .card-header {
-            background: #1565C0;
-            /* Blue matching index header */
-            color: white;
-            border-radius: 15px 15px 0 0 !important;
-            font-weight: bold;
-            padding: 1rem;
-        }
-
-        .btn-action {
-            margin-right: 5px;
-        }
-
-        .table-hover tbody tr:hover {
-            background-color: #e3f2fd;
-            /* Light blue hover */
-        }
-
-        .badge {
-            border-radius: 30px;
-            padding: 0.5em 1em;
-        }
-
-        h2 {
-            color: #1565C0;
-            font-weight: bold;
-        }
-    </style>
+<link href="{{ url_for('static', filename='styles/categorias.css') }}" rel="stylesheet"/>
 </head>
 <body>
 <div class="container mb-5">
@@ -151,9 +66,12 @@
 </div>
 </div>
 <form action="/categorias/buscar" class="mb-4" method="get">
-<div class="input-group">
-<input class="form-control" name="nombre" placeholder="Buscar categoría..." required="" type="text"/>
-<button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Buscar</button>
+<div class="input-group shadow-sm">
+<input class="form-control" name="nombre" placeholder="Buscar categoría..." required="" type="text" value="{{ request.args.get('nombre', '') }}"/>
+<button class="btn btn-primary" type="submit"><i class="fas fa-search me-1"></i> Buscar</button>
+{% if request.args.get('nombre') %}
+<a class="btn btn-outline-secondary" href="/categorias"><i class="fas fa-times me-1"></i> Limpiar</a>
+{% endif %}
 </div>
 </form>
 <div class="card">

@@ -57,7 +57,6 @@ body {
 
 .card-header {
     background: #1565C0;
-    /* Blue matching index header */
     color: white;
     border-radius: 15px 15px 0 0 !important;
     font-weight: bold;
@@ -70,7 +69,11 @@ body {
 
 .table-hover tbody tr:hover {
     background-color: #e3f2fd;
-    /* Light blue hover */
+}
+
+.form-label {
+    font-weight: 600;
+    color: #1565C0;
 }
 
 .badge {

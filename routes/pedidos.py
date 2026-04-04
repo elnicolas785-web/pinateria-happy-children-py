@@ -132,3 +132,23 @@ def guardar_pedido():
 
     db.session.commit()
     return redirect(url_for('pedidos.listar_pedidos'))
+
+
+@pedidos_bp.route('/buscar', methods=['GET'])
+@login_required
+def buscar():
+    busqueda = request.args.get('busqueda', '')
+    if busqueda:
+        pedidos = Pedido.query.join(Cliente).filter(
+            db.or_(
+                Pedido.numero_pedido.ilike(f'%{busqueda}%'),
+                Pedido.estado.ilike(f'%{busqueda}%'),
+                Cliente.nombres.ilike(f'%{busqueda}%'),
+                Cliente.apellidos.ilike(f'%{busqueda}%')
+            )
+        ).order_by(Pedido.fecha_pedido.desc()).all()
+    else:
+        pedidos = Pedido.query.order_by(Pedido.fecha_pedido.desc()).all()
+        
+    clientes = Cliente.query.all()
+    return render_template('pedidos.html', listaPedidos=pedidos, listaClientes=clientes, pedido=None, readonly=False)

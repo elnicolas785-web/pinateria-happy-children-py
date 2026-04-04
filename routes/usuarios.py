@@ -55,7 +55,14 @@ def buscar():
     clientes = Cliente.query.all()
     roles = Rol.query.all()
     if busqueda:
-        usuarios = UsuarioCliente.query.filter(UsuarioCliente.nombre_usuario.ilike(f'%{busqueda}%')).all()
+        usuarios = UsuarioCliente.query.join(Cliente).filter(
+            db.or_(
+                UsuarioCliente.nombre_usuario.ilike(f'%{busqueda}%'),
+                Cliente.nombres.ilike(f'%{busqueda}%'),
+                Cliente.apellidos.ilike(f'%{busqueda}%'),
+                (Cliente.nombres + ' ' + Cliente.apellidos).ilike(f'%{busqueda}%')
+            )
+        ).all()
     else:
         usuarios = UsuarioCliente.query.all()
     return render_template('usuarios.html', listaUsuarios=usuarios, listaClientes=clientes, listaRoles=roles, usuario=UsuarioCliente(), readonly=False)

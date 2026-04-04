@@ -105,3 +105,24 @@ def guardar():
 
     db.session.commit()
     return redirect(url_for('ventas.listar_ventas'))
+
+
+@ventas_bp.route('/buscar', methods=['GET'])
+@login_required
+def buscar():
+    busqueda = request.args.get('busqueda', '')
+    if busqueda:
+        lista_ventas = Venta.query.join(Cliente).filter(
+            db.or_(
+                Venta.numero_factura.ilike(f'%{busqueda}%'),
+                Venta.estado.ilike(f'%{busqueda}%'),
+                Cliente.nombres.ilike(f'%{busqueda}%'),
+                Cliente.apellidos.ilike(f'%{busqueda}%')
+            )
+        ).order_by(Venta.fecha_venta.desc()).all()
+    else:
+        lista_ventas = Venta.query.order_by(Venta.fecha_venta.desc()).all()
+    
+    clientes = Cliente.query.all()
+    empleados = Empleado.query.all()
+    return render_template('ventas.html', listaVentas=lista_ventas, listaClientes=clientes, listaEmpleados=empleados, venta=None, readonly=False)

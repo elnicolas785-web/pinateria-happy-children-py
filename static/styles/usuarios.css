@@ -1,9 +1,8 @@
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     background-attachment: fixed;
+    font-family: 'Segoe UI', sans-serif;
     min-height: 100vh;
-    color: #333;
 }
 
 .logo-container {
@@ -51,17 +50,14 @@ body {
 .card {
     border-radius: 15px;
     border: none;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
 }
 
 .card-header {
     background: #1565C0;
-    /* Blue matching index header */
     color: white;
     border-radius: 15px 15px 0 0 !important;
     font-weight: bold;
-    padding: 1rem;
 }
 
 .btn-action {
@@ -69,13 +65,12 @@ body {
 }
 
 .table-hover tbody tr:hover {
-    background-color: #e3f2fd;
-    /* Light blue hover */
+    background-color: #f1f8ff;
 }
 
-.badge {
-    border-radius: 30px;
-    padding: 0.5em 1em;
+.form-label {
+    font-weight: 600;
+    color: #34495e;
 }
 
 h2 {

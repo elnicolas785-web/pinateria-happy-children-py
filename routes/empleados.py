@@ -108,3 +108,24 @@ def guardar():
     if from_dashboard:
         return redirect(url_for('dashboard.dashboard'))
     return redirect(url_for('empleados.listar_empleados'))
+
+
+@empleados_bp.route('/buscar', methods=['GET'])
+@login_required
+def buscar():
+    busqueda = request.args.get('busqueda', '')
+    if busqueda:
+        empleados = Empleado.query.filter(
+            db.or_(
+                Empleado.nombres.ilike(f'%{busqueda}%'),
+                Empleado.apellidos.ilike(f'%{busqueda}%'),
+                (Empleado.nombres + ' ' + Empleado.apellidos).ilike(f'%{busqueda}%'),
+                Empleado.documento_identidad.ilike(f'%{busqueda}%')
+            )
+        ).order_by(Empleado.fecha_contratacion.desc()).all()
+    else:
+        empleados = Empleado.query.order_by(Empleado.fecha_contratacion.desc()).all()
+        
+    from models import Rol
+    roles = Rol.query.all()
+    return render_template('empleados.html', listaEmpleados=empleados, listaRoles=roles, empleado=None, readonly=False)

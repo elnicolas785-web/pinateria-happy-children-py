@@ -73,6 +73,11 @@ body {
     /* Light blue hover */
 }
 
+.form-label {
+    font-weight: 600;
+    color: #1565C0;
+}
+
 .badge {
     border-radius: 30px;
     padding: 0.5em 1em;

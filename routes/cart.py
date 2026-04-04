@@ -6,6 +6,7 @@ from flask_login import current_user, login_required # type: ignore
 import datetime
 
 @cart_bp.route('/')
+@login_required
 def ver_carrito():
     # Carrito muy simplificado, usando la sesión de Flask
     carrito = session.get('carrito', [])
@@ -24,6 +25,7 @@ def catalogo():
 
 
 @cart_bp.route('/add/<int:id_producto>', methods=['POST'])
+@login_required
 def add_to_cart(id_producto):
     cantidad = int(request.form.get('cantidad', 1))
     producto = Producto.query.get_or_404(id_producto)
@@ -52,6 +54,7 @@ def add_to_cart(id_producto):
     return redirect(url_for('cart.catalogo'))
 
 @cart_bp.route('/increase/<int:id_producto>')
+@login_required
 def increase(id_producto):
     carrito = session.get('carrito', [])
     for item in carrito:
@@ -63,6 +66,7 @@ def increase(id_producto):
     return redirect(url_for('cart.ver_carrito'))
 
 @cart_bp.route('/decrease/<int:id_producto>')
+@login_required
 def decrease(id_producto):
     carrito = session.get('carrito', [])
     for item in carrito:
@@ -77,6 +81,7 @@ def decrease(id_producto):
     return redirect(url_for('cart.ver_carrito'))
 
 @cart_bp.route('/remove/<int:id_producto>')
+@login_required
 def remove(id_producto):
     carrito = session.get('carrito', [])
     carrito = [item for item in carrito if item['id_producto'] != id_producto]
@@ -84,6 +89,7 @@ def remove(id_producto):
     return redirect(url_for('cart.ver_carrito'))
 
 @cart_bp.route('/set/<int:id_producto>', methods=['POST'])
+@login_required
 def set_quantity(id_producto):
     cantidad = int(request.form.get('cantidad', 1))
     carrito = session.get('carrito', [])

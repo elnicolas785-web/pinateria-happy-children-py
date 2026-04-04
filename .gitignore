@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.env/
+bin/
+lib/
+include/
+share/
+pip-selfcheck.json
+.vscode/
+.idea/
+*.sqlite3
+instance/
+.DS_Store

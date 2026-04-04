@@ -5,14 +5,12 @@ body {
     min-height: 100vh;
     color: #333;
 }
-
 .logo-container {
     display: flex;
     align-items: center;
     text-decoration: none;
     margin-bottom: 20px;
 }
-
 .logo-container img {
     height: 60px;
     width: 60px;
@@ -22,23 +20,14 @@ body {
     border: 2px solid white;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
-
 .logo-text {
     font-size: 1.8rem;
     font-weight: 800;
     font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
     letter-spacing: -1px;
 }
-
-.logo-text .happy {
-    color: #1565C0;
-}
-
-.logo-text .children {
-    color: #ff9800;
-    margin-left: 2px;
-}
-
+.logo-text .happy { color: #1565C0; }
+.logo-text .children { color: #ff9800; margin-left: 2px; }
 .container {
     margin-top: 30px;
     background: white;
@@ -47,38 +36,21 @@ body {
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.8);
 }
-
 .card {
     border-radius: 15px;
     border: none;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     overflow: hidden;
 }
-
 .card-header {
     background: #1565C0;
-    /* Blue matching index header */
     color: white;
     border-radius: 15px 15px 0 0 !important;
     font-weight: bold;
     padding: 1rem;
 }
-
-.btn-action {
-    margin-right: 5px;
-}
-
-.table-hover tbody tr:hover {
-    background-color: #e3f2fd;
-    /* Light blue hover */
-}
-
-.badge {
-    border-radius: 30px;
-    padding: 0.5em 1em;
-}
-
-h2 {
-    color: #1565C0;
-    font-weight: bold;
-}
+.btn-action { margin-right: 5px; }
+.table-hover tbody tr:hover { background-color: #e3f2fd; }
+.form-label { font-weight: 600; color: #1565C0; }
+.badge { border-radius: 30px; padding: 0.5em 1em; }
+h2 { color: #1565C0; font-weight: bold; }
