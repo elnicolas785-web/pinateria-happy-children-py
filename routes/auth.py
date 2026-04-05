@@ -44,43 +44,65 @@ def register():
         email = request.form.get('email')
         password = request.form.get('password')
 
-        # Simple validation
-        if not firstname or not email or not password:
+        # Validación de campos obligatorios
+        if not all([firstname, lastname, numeroDocumento, email, password]):
             return render_template('registro.html', errorGeneral="Complete todos los campos requeridos.")
 
-        # Check existing
-        if UsuarioCliente.query.filter_by(nombre_usuario=email).first() or Cliente.query.filter_by(email=email).first():
-            return render_template('registro.html', errorGeneral="El usuario o correo ya existe.")
+        # Validación de duplicados (Crucial para evitar el IntegrityError)
+        # Revisa si el número de documento ya existe en la base de datos
+        doc_existente = Cliente.query.filter_by(numero_documento=numeroDocumento).first()
+        if doc_existente:
+            return render_template('registro.html', errorGeneral="El número de documento ya se encuentra registrado.")
 
-        rol_cliente = Rol.query.filter(Rol.nombre_rol.ilike('CLIENTE')).first()
+        # Revisa si el correo ya existe en Cliente o UsuarioCliente
+        email_en_cliente = Cliente.query.filter_by(email=email).first()
+        email_en_usuario = UsuarioCliente.query.filter_by(nombre_usuario=email).first()
+        
+        if email_en_cliente or email_en_usuario:
+            return render_template('registro.html', errorGeneral="El correo electrónico ya está en uso.")
 
-        cliente = Cliente(
-            nombres=firstname,
-            apellidos=lastname,
-            numero_documento=numeroDocumento,
-            tipo_documento=tipoDocumento,
-            email=email,
-            password=password,
-            estado="Activo",
-            fecha_registro=datetime.date.today(),
-            codigo=f"CLI-{int(datetime.datetime.now().timestamp() * 1000) % 10000:04d}"
-        )
-        db.session.add(cliente)
-        db.session.flush()
+        # Proceso de registro con manejo de errores
+        try:
+            rol_cliente = Rol.query.filter(Rol.nombre_rol.ilike('CLIENTE')).first()
 
-        usuario = UsuarioCliente(
-            id_cliente=cliente.id_cliente,
-            nombre_usuario=email,
-            contrasena=password, # Asumiendo texto plano por ahora (migracion)
-            id_rol=rol_cliente.id_rol if rol_cliente else 1,
-            estado="Activo",
-            codigo=f"USR-{int(datetime.datetime.now().timestamp() * 1000) % 10000:04d}"
-        )
-        db.session.add(usuario)
-        db.session.commit()
+            # Creación del objeto Cliente
+            nuevo_cliente = Cliente(
+                nombres=firstname,
+                apellidos=lastname,
+                numero_documento=numeroDocumento,
+                tipo_documento=tipoDocumento,
+                email=email,
+                password=password, # Considera usar un hash en el futuro
+                estado="Activo",
+                fecha_registro=datetime.date.today(),
+                codigo=f"CLI-{int(datetime.datetime.now().timestamp() * 1000) % 10000:04d}"
+            )
+            db.session.add(nuevo_cliente)
+            # flush() genera el ID del cliente sin cerrar la transacción
+            db.session.flush()
 
-        flash('¡Registro exitoso! Ya puedes iniciar sesión en tu nueva cuenta.', 'success')
-        return redirect(url_for('auth.login', registered=True))
+            # Creación del objeto UsuarioCliente vinculado al cliente
+            nuevo_usuario = UsuarioCliente(
+                id_cliente=nuevo_cliente.id_cliente,
+                nombre_usuario=email,
+                contrasena=password,
+                id_rol=rol_cliente.id_rol if rol_cliente else 1,
+                estado="Activo",
+                codigo=f"USR-{int(datetime.datetime.now().timestamp() * 1000) % 10000:04d}"
+            )
+            db.session.add(nuevo_usuario)
+            
+            # Commit final para guardar ambos registros
+            db.session.commit()
+
+            flash('¡Registro exitoso! Ya puedes iniciar sesión en tu nueva cuenta.', 'success')
+            return redirect(url_for('auth.login', registered=True))
+
+        except Exception as e:
+            # Si algo falla (ej. error de base de datos), limpiamos la sesión
+            db.session.rollback()
+            print(f"Error en el registro: {str(e)}") # Útil para depurar en consola
+            return render_template('registro.html', errorGeneral="Ocurrió un error inesperado al procesar tu registro.")
         
     return render_template('registro.html')
 

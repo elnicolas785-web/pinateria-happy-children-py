@@ -1,116 +1,168 @@
-from flask import render_template, request, redirect, url_for, flash # type: ignore
+from flask import render_template, request, redirect, url_for, flash, abort # type: ignore
 from routes import ventas_bp # type: ignore
-from models import Venta, DetalleVenta, Cliente, Empleado # type: ignore
-from extensions import db, employee_required # Importamos employee_required
+from models import Venta, DetalleVenta, Cliente, Empleado, Producto, Pedido, db # type: ignore
+from extensions import employee_required 
 from flask_login import login_required, current_user # type: ignore
 import datetime
+
+def obtener_historial_combinado():
+    """Función auxiliar para no repetir código de mezcla de tablas"""
+    ventas = Venta.query.all()
+    pedidos = Pedido.query.all()
+    lista = ventas + pedidos
+    # Ordenar por fecha_venta o fecha_pedido según disponibilidad
+    lista.sort(key=lambda x: x.fecha_venta if hasattr(x, 'fecha_venta') else x.fecha_pedido, reverse=True)
+    return lista
 
 @ventas_bp.route('/')
 @employee_required
 def listar_ventas():
-    ventas = Venta.query.order_by(Venta.fecha_venta.desc()).all()
+    lista_combinada = obtener_historial_combinado()
     clientes = Cliente.query.all()
     empleados = Empleado.query.all()
-    return render_template('ventas.html', listaVentas=ventas, listaClientes=clientes, listaEmpleados=empleados, venta=None, readonly=False)
+    productos = Producto.query.filter_by(activo='Activo').all()
+    
+    return render_template('ventas.html', 
+                           listaVentas=lista_combinada, 
+                           listaClientes=clientes, 
+                           listaEmpleados=empleados, 
+                           listaProductos=productos, 
+                           venta=None, 
+                           readonly=False,
+                           es_pedido=False)
 
-@ventas_bp.route('/ver/<int:id>')
+@ventas_bp.route('/ver/<string:tipo>/<int:id>')
 @employee_required
-def ver_venta(id):
-    venta = Venta.query.get_or_404(id)
-    detalles = DetalleVenta.query.filter_by(id_venta=id).all()
-    lista_ventas = Venta.query.order_by(Venta.fecha_venta.desc()).all()
+def ver_venta(tipo, id):
+    # Ahora pasamos el tipo (venta o pedido) en la URL para evitar confusiones
+    es_pedido = (tipo == 'pedido')
+    detalles = []
+    
+    if es_pedido:
+        venta = Pedido.query.get_or_404(id)
+        # Asumiendo que en models.py Pedido tiene una relación 'detalles'
+        detalles = venta.detalles if hasattr(venta, 'detalles') else []
+    else:
+        venta = Venta.query.get_or_404(id)
+        detalles = DetalleVenta.query.filter_by(id_venta=id).all()
+
+    lista_combinada = obtener_historial_combinado()
     clientes = Cliente.query.all()
     empleados = Empleado.query.all()
-    return render_template('ventas.html', listaVentas=lista_ventas, listaClientes=clientes, listaEmpleados=empleados, venta=venta, detalles=detalles, readonly=True)
+    productos = Producto.query.filter_by(activo='Activo').all()
+    
+    return render_template('ventas.html', 
+                           listaVentas=lista_combinada, 
+                           listaClientes=clientes, 
+                           listaEmpleados=empleados, 
+                           listaProductos=productos, 
+                           venta=venta, 
+                           detalles=detalles, 
+                           readonly=True,
+                           es_pedido=es_pedido)
 
-@ventas_bp.route('/editar/<int:id>')
+@ventas_bp.route('/cambiarEstado/<string:tipo>/<int:id>')
 @employee_required
-def editar_venta(id):
-    venta = Venta.query.get_or_404(id)
-    detalles = DetalleVenta.query.filter_by(id_venta=id).all()
-    lista_ventas = Venta.query.order_by(Venta.fecha_venta.desc()).all()
-    clientes = Cliente.query.all()
-    empleados = Empleado.query.all()
-    return render_template('ventas.html', listaVentas=lista_ventas, listaClientes=clientes, listaEmpleados=empleados, venta=venta, detalles=detalles, readonly=False)
+def cambiar_estado(tipo, id):
+    if tipo == 'venta':
+        venta = Venta.query.get_or_404(id)
+        detalles = DetalleVenta.query.filter_by(id_venta=id).all()
+        try:
+            if venta.estado == 'Completada':
+                venta.estado = 'Anulada'
+                for d in detalles:
+                    prod = Producto.query.get(d.id_producto)
+                    if prod: prod.stock_actual += d.cantidad
+                flash('Venta anulada y stock devuelto.', 'warning')
+            else:
+                venta.estado = 'Completada'
+                flash('Venta reactivada.', 'success')
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error: {str(e)}", "danger")
+    else:
+        pedido = Pedido.query.get_or_404(id)
+        pedido.estado = 'Anulado' if pedido.estado != 'Anulado' else 'Completado'
+        db.session.commit()
+        flash('Estado del pedido web actualizado.', 'info')
 
-@ventas_bp.route('/cambiarEstado/<int:id>')
-@employee_required
-def cambiar_estado(id):
-    venta = Venta.query.get_or_404(id)
-    venta.estado = 'Anulada' if venta.estado == 'Completada' else 'Completada'
-    db.session.commit()
-    flash('Estado de la venta actualizado.', 'success')
     return redirect(url_for('ventas.listar_ventas'))
 
 @ventas_bp.route('/guardar', methods=['POST'])
 @employee_required
 def guardar():
     id_venta = request.form.get('id_venta')
-    numero_factura = request.form.get('numero_factura')
-    id_cliente = request.form.get('cliente.id_cliente')
-    id_empleado = request.form.get('empleado.id_empleado')
-    fecha_venta = request.form.get('fecha_venta')
-    metodo_pago = request.form.get('metodo_pago', 'Efectivo')
-    subtotal = request.form.get('subtotal', 0.0)
-    total = request.form.get('total', 0.0)
-    estado = request.form.get('estado', 'Completada')
-    direccion_entrega = request.form.get('direccion_entrega')
-    observaciones = request.form.get('observaciones')
+    id_cliente = request.form.get('id_cliente')
+    id_empleado = request.form.get('id_empleado')
+    total = float(request.form.get('total', 0.0))
+    
+    ids_productos = request.form.getlist('productos[]')
+    cantidades = request.form.getlist('cantidades[]')
 
-    if id_venta:
-        # Editar existente
-        venta = Venta.query.get(id_venta)
-        if venta:
-            if id_cliente:
-                venta.id_cliente = id_cliente
-            venta.id_empleado = id_empleado
-            if fecha_venta:
-                venta.fecha_venta = fecha_venta
-            venta.metodo_pago = metodo_pago
-            venta.direccion_entrega = direccion_entrega
-            venta.subtotal = float(subtotal)
-            venta.total = float(total)
-            venta.estado = estado
-            venta.observaciones = observaciones
-            flash('Venta actualizada correctamente.', 'success')
-    else:
-        # Crear nueva
-        nuevo_num = numero_factura if numero_factura else f"FAC-{int(datetime.datetime.now().timestamp() * 1000) % 100000:05d}"
-        nueva_venta = Venta(
-            numero_factura=nuevo_num,
-            id_cliente=id_cliente,
-            id_empleado=id_empleado,
-            fecha_venta=fecha_venta if fecha_venta else datetime.date.today(),
-            metodo_pago=metodo_pago,
-            direccion_entrega=direccion_entrega,
-            subtotal=float(subtotal),
-            total=float(total),
-            estado=estado,
-            observaciones=observaciones
-        )
-        db.session.add(nueva_venta)
-        flash('Venta guardada correctamente.', 'success')
+    try:
+        if not id_venta:
+            nueva_venta = Venta(
+                numero_factura=f"FAC-{int(datetime.datetime.now().timestamp() * 1000) % 100000:05d}",
+                id_cliente=id_cliente,
+                id_empleado=id_empleado,
+                fecha_venta=datetime.date.today(),
+                metodo_pago=request.form.get('metodo_pago', 'Efectivo'),
+                subtotal=total,
+                total=total,
+                estado='Completada'
+            )
+            db.session.add(nueva_venta)
+            db.session.flush() 
 
-    db.session.commit()
+            for i in range(len(ids_productos)):
+                id_p = int(ids_productos[i])
+                cant = int(cantidades[i])
+                prod = Producto.query.get(id_p)
+                if prod:
+                    if prod.stock_actual < cant:
+                        db.session.rollback()
+                        flash(f"¡STOCK INSUFICIENTE! {prod.nombre} solo tiene {prod.stock_actual}.", "danger")
+                        return redirect(url_for('ventas.listar_ventas'))
+                    
+                    prod.stock_actual -= cant
+                    detalle = DetalleVenta(
+                        codigo=f"DET-{nueva_venta.numero_factura}-{id_p}",
+                        id_venta=nueva_venta.id_venta,
+                        id_producto=id_p,
+                        cantidad=cant,
+                        precio_unitario=prod.precio_venta,
+                        subtotal=cant * float(prod.precio_venta)
+                    )
+                    db.session.add(detalle)
+
+            db.session.commit()
+            flash('Venta registrada con éxito.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error al procesar: {str(e)}', 'danger')
+
     return redirect(url_for('ventas.listar_ventas'))
-
 
 @ventas_bp.route('/buscar', methods=['GET'])
 @employee_required
 def buscar():
     busqueda = request.args.get('busqueda', '')
-    if busqueda:
-        lista_ventas = Venta.query.join(Cliente).filter(
-            db.or_(
-                Venta.numero_factura.ilike(f'%{busqueda}%'),
-                Venta.estado.ilike(f'%{busqueda}%'),
-                Cliente.nombres.ilike(f'%{busqueda}%'),
-                Cliente.apellidos.ilike(f'%{busqueda}%')
-            )
-        ).order_by(Venta.fecha_venta.desc()).all()
-    else:
-        lista_ventas = Venta.query.order_by(Venta.fecha_venta.desc()).all()
+    ventas = Venta.query.join(Cliente).filter(
+        db.or_(Venta.numero_factura.ilike(f'%{busqueda}%'), Cliente.nombres.ilike(f'%{busqueda}%'))
+    ).all()
     
-    clientes = Cliente.query.all()
-    empleados = Empleado.query.all()
-    return render_template('ventas.html', listaVentas=lista_ventas, listaClientes=clientes, listaEmpleados=empleados, venta=None, readonly=False)
+    pedidos = Pedido.query.join(Cliente).filter(
+        db.or_(Pedido.numero_pedido.ilike(f'%{busqueda}%'), Cliente.nombres.ilike(f'%{busqueda}%'))
+    ).all()
+    
+    lista_combinada = ventas + pedidos
+    lista_combinada.sort(key=lambda x: x.fecha_venta if hasattr(x, 'fecha_venta') else x.fecha_pedido, reverse=True)
+    
+    return render_template('ventas.html', 
+                           listaVentas=lista_combinada, 
+                           listaClientes=Cliente.query.all(), 
+                           listaEmpleados=Empleado.query.all(), 
+                           listaProductos=Producto.query.filter_by(activo='Activo').all(),
+                           venta=None, 
+                           readonly=False)
