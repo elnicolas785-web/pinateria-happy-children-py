@@ -77,9 +77,12 @@ body {
 }
 
 .error-img {
-    width: 100%; /* Hero image size */
+    max-width: 80%; /* Reduced size for better visibility */
     height: auto;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
     display: block;
+    margin: 0 auto;
     transition: transform 0.5s ease;
 }
 
