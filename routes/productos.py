@@ -2,9 +2,10 @@ from flask import render_template, request, redirect, url_for # type: ignore
 from flask_login import login_required, current_user
 from routes import productos_bp # type: ignore
 from models import Producto, CategoriaProducto # type: ignore
-from extensions import db # type: ignore
+from extensions import db, employee_required # Importamos employee_required
 
 @productos_bp.route('/')
+@employee_required
 def listar_productos():
     productos = Producto.query.all()
     categorias = CategoriaProducto.query.all()
@@ -13,6 +14,7 @@ def listar_productos():
     return render_template('crud_productos.html', listaProductos=productos, categorias=categorias, producto=producto, readonly=False)
 
 @productos_bp.route('/guardar', methods=['POST'])
+@employee_required
 def guardar():
     # Lógica de guardado simplificada
     codigo = request.form.get('codigo')
@@ -41,7 +43,7 @@ def guardar():
 
 
 @productos_bp.route('/buscar', methods=['GET'])
-@login_required
+@employee_required
 def buscar():
     busqueda = request.args.get('busqueda', '')
     if busqueda:

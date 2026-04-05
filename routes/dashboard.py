@@ -2,7 +2,7 @@ from flask import render_template, redirect, url_for, flash, request, abort # ty
 from routes import dashboard_bp # type: ignore
 from flask_login import login_required, current_user # type: ignore
 from models import Producto, Venta, Cliente, Empleado, Rol, UsuarioCliente, CategoriaProducto, db # type: ignore
-from extensions import admin_required # Importamos tu nuevo "guardaespaldas"
+from extensions import admin_required, employee_required # Importamos los decoradores
 
 @dashboard_bp.route('/')
 def root():
@@ -19,7 +19,6 @@ def dashboard():
         return redirect(url_for('dashboard.cliente_dashboard'))
     
     if isinstance(current_user, Empleado):
-        # Verificamos si el empleado tiene rango de jefe
         rol_nombre = current_user.rol.nombre_rol.upper() if current_user.rol else ""
         if rol_nombre in ['ADMINISTRADOR', 'ADMIN']:
             return redirect(url_for('dashboard.admin_dashboard'))
@@ -29,8 +28,7 @@ def dashboard():
     return redirect(url_for('dashboard.root'))
 
 @dashboard_bp.route('/admin/dashboard')
-@login_required
-@admin_required # Solo permite el paso a Administradores
+@admin_required # Ya incluye @login_required y chequeo de ADMIN
 def admin_dashboard():
     # Consultas para las tarjetas de estadísticas
     cant_productos = Producto.query.count()
@@ -72,21 +70,13 @@ def admin_dashboard():
                           catValues=categorias_conteos)
 
 @dashboard_bp.route('/empleado/dashboard')
-@login_required
+@employee_required # Ya incluye @login_required y chequeo de EMPLEADO
 def empleado_dashboard():
-    """
-    Panel operativo para empleados. 
-    Bloqueamos a Clientes y redirigimos a Admins.
-    """
-    # 1. Seguridad: Si es un Admin, lo mandamos a SU dashboard
+    # Seguridad: Si es un Admin, lo mandamos a SU dashboard (opcional, pero ayuda)
     rol_nombre = current_user.rol.nombre_rol.upper() if current_user.rol else ""
     if rol_nombre in ['ADMINISTRADOR', 'ADMIN']:
         return redirect(url_for('dashboard.admin_dashboard'))
 
-    # 2. Seguridad: Si no es empleado (es cliente), prohibido el paso
-    if not isinstance(current_user, Empleado):
-        abort(403)
-        
     # Datos para la gestión operativa
     lista_empleados = Empleado.query.order_by(Empleado.id_empleado.desc()).all()
     lista_roles = Rol.query.all()
@@ -102,7 +92,7 @@ def empleado_dashboard():
 @dashboard_bp.route('/cliente/dashboard')
 @login_required
 def cliente_dashboard():
-    # Seguridad: Solo clientes reales entran aquí
+    # Seguridad: Solo usuarios del tipo Cliente entran aquí
     if not isinstance(current_user, UsuarioCliente):
         abort(403)
         

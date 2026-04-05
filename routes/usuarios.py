@@ -1,11 +1,12 @@
 from flask import render_template, request, redirect, url_for, flash # type: ignore
 from routes import usuarios_bp # type: ignore
 from models import UsuarioCliente, Cliente, Rol # type: ignore
-from extensions import db # type: ignore
+from extensions import db, admin_required # Importamos admin_required
 import datetime # type: ignore
 import uuid
 
 @usuarios_bp.route('/')
+@admin_required
 def listar_usuarios():
     usuarios = UsuarioCliente.query.all()
     clientes = Cliente.query.all()
@@ -13,6 +14,7 @@ def listar_usuarios():
     return render_template('usuarios.html', listaUsuarios=usuarios, listaClientes=clientes, listaRoles=roles, usuario=UsuarioCliente(), readonly=False)
 
 @usuarios_bp.route('/guardar', methods=['POST'])
+@admin_required
 def guardar():
     id_usuario = request.form.get('id_usuario')
     id_cliente = request.form.get('id_cliente')
@@ -50,6 +52,7 @@ def guardar():
     return redirect(url_for('usuarios.listar_usuarios'))
 
 @usuarios_bp.route('/buscar', methods=['GET'])
+@admin_required
 def buscar():
     busqueda = request.args.get('busqueda', '')
     clientes = Cliente.query.all()
@@ -68,6 +71,7 @@ def buscar():
     return render_template('usuarios.html', listaUsuarios=usuarios, listaClientes=clientes, listaRoles=roles, usuario=UsuarioCliente(), readonly=False)
 
 @usuarios_bp.route('/editar/<int:id>')
+@admin_required
 def editar(id):
     usuario = UsuarioCliente.query.get_or_404(id)
     usuarios = UsuarioCliente.query.all()
@@ -76,6 +80,7 @@ def editar(id):
     return render_template('usuarios.html', listaUsuarios=usuarios, listaClientes=clientes, listaRoles=roles, usuario=usuario, readonly=False)
 
 @usuarios_bp.route('/ver/<int:id>')
+@admin_required
 def ver(id):
     usuario = UsuarioCliente.query.get_or_404(id)
     usuarios = UsuarioCliente.query.all()
@@ -84,6 +89,7 @@ def ver(id):
     return render_template('usuarios.html', listaUsuarios=usuarios, listaClientes=clientes, listaRoles=roles, usuario=usuario, readonly=True)
 
 @usuarios_bp.route('/cambiarEstado/<int:id>')
+@admin_required
 def cambiar_estado(id):
     usuario = UsuarioCliente.query.get_or_404(id)
     if usuario.estado == 'Activo':

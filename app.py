@@ -7,7 +7,7 @@ import sys
 # Ensure the app directory is in the Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from flask import Flask
+from flask import Flask, render_template
 from config import Config
 from extensions import db, login_manager
 from routes import (
@@ -52,6 +52,22 @@ def create_app():
     @flask_app.route('/ping')
     def ping():
         return "Pong! El servidor Flask está funcionando correctamente."
+
+    @flask_app.errorhandler(403)
+    def forbidden(e):
+        return render_template('error.html', 
+                             code=403, 
+                             title="Acceso Denegado", 
+                             icon="fa-lock",
+                             message="Lo sentimos, no tienes los permisos necesarios para acceder a esta página."), 403
+
+    @flask_app.errorhandler(404)
+    def page_not_found(e):
+        return render_template('error.html', 
+                             code=404, 
+                             title="Página no encontrada", 
+                             icon="fa-ghost",
+                             message="¡Oops! La página que buscas parece haber desaparecido en una fiesta mágica."), 404
 
     return flask_app
 

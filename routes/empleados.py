@@ -1,23 +1,19 @@
 from flask import render_template, request, redirect, url_for, flash # type: ignore
 from routes import empleados_bp # type: ignore
 from models import Empleado, Rol # type: ignore
-from extensions import db # type: ignore
+from extensions import db, admin_required # Importamos admin_required
 from flask_login import login_required, current_user # type: ignore
 import datetime
 
 @empleados_bp.route('/')
-@login_required
+@admin_required
 def listar_empleados():
-    if not current_user.rol or current_user.rol.nombre_rol.upper() not in ['ADMINISTRADOR', 'ADMIN', 'EMPLEADO']:
-        flash('Acceso denegado. No eres administrador ni empleado con permisos.', 'danger')
-        return redirect(url_for('dashboard.dashboard'))
-        
     empleados = Empleado.query.all()
     roles = Rol.query.all()
     return render_template('empleados.html', listaEmpleados=empleados, listaRoles=roles, empleado=None, readonly=False)
 
 @empleados_bp.route('/ver/<int:id>')
-@login_required
+@admin_required
 def ver_empleado(id):
     empleado = Empleado.query.get_or_404(id)
     lista_empleados = Empleado.query.all()
@@ -25,24 +21,16 @@ def ver_empleado(id):
     return render_template('empleados.html', listaEmpleados=lista_empleados, listaRoles=roles, empleado=empleado, readonly=True)
 
 @empleados_bp.route('/editar/<int:id>')
-@login_required
+@admin_required
 def editar_empleado(id):
-    if not current_user.rol or current_user.rol.nombre_rol.upper() not in ['ADMINISTRADOR', 'ADMIN', 'EMPLEADO']:
-        flash('Acceso denegado.', 'danger')
-        return redirect(url_for('dashboard.dashboard'))
-        
     empleado = Empleado.query.get_or_404(id)
     lista_empleados = Empleado.query.all()
     roles = Rol.query.all()
     return render_template('empleados.html', listaEmpleados=lista_empleados, listaRoles=roles, empleado=empleado, readonly=False)
 
 @empleados_bp.route('/cambiarEstado/<int:id>')
-@login_required
+@admin_required
 def cambiar_estado(id):
-    if not current_user.rol or current_user.rol.nombre_rol.upper() not in ['ADMINISTRADOR', 'ADMIN', 'EMPLEADO']:
-        flash('Acceso denegado.', 'danger')
-        return redirect(url_for('dashboard.dashboard'))
-        
     empleado = Empleado.query.get_or_404(id)
     empleado.estado = 'Inactivo' if empleado.estado == 'Activo' else 'Activo'
     db.session.commit()
@@ -50,12 +38,8 @@ def cambiar_estado(id):
     return redirect(url_for('empleados.listar_empleados'))
 
 @empleados_bp.route('/guardar', methods=['POST'])
-@login_required
+@admin_required
 def guardar():
-    if not current_user.rol or current_user.rol.nombre_rol.upper() not in ['ADMINISTRADOR', 'ADMIN', 'EMPLEADO']:
-        flash('Acceso denegado.', 'danger')
-        return redirect(url_for('dashboard.dashboard'))
-
     from_dashboard = request.form.get('fromDashboard')
     id_empleado = request.form.get('id_empleado')
     nombres = request.form.get('nombres')
@@ -92,7 +76,7 @@ def guardar():
             db.session.commit()
             flash('Empleado actualizado correctamente.', 'success')
     else:
-        # --- LÓGICA PARA CREAR NUEVO (Aquí estaba el error) ---
+        # --- LÓGICA PARA CREAR NUEVO ---
         
         # 1. Validar si el email ya existe
         if Empleado.query.filter_by(email=email).first():
@@ -130,7 +114,7 @@ def guardar():
 
 
 @empleados_bp.route('/buscar', methods=['GET'])
-@login_required
+@admin_required
 def buscar():
     busqueda = request.args.get('busqueda', '')
     if busqueda:

@@ -1,12 +1,12 @@
 from flask import render_template, request, redirect, url_for, flash # type: ignore
 from routes import ventas_bp # type: ignore
 from models import Venta, DetalleVenta, Cliente, Empleado # type: ignore
-from extensions import db # type: ignore
+from extensions import db, employee_required # Importamos employee_required
 from flask_login import login_required, current_user # type: ignore
 import datetime
 
 @ventas_bp.route('/')
-@login_required
+@employee_required
 def listar_ventas():
     ventas = Venta.query.order_by(Venta.fecha_venta.desc()).all()
     clientes = Cliente.query.all()
@@ -14,7 +14,7 @@ def listar_ventas():
     return render_template('ventas.html', listaVentas=ventas, listaClientes=clientes, listaEmpleados=empleados, venta=None, readonly=False)
 
 @ventas_bp.route('/ver/<int:id>')
-@login_required
+@employee_required
 def ver_venta(id):
     venta = Venta.query.get_or_404(id)
     detalles = DetalleVenta.query.filter_by(id_venta=id).all()
@@ -24,12 +24,8 @@ def ver_venta(id):
     return render_template('ventas.html', listaVentas=lista_ventas, listaClientes=clientes, listaEmpleados=empleados, venta=venta, detalles=detalles, readonly=True)
 
 @ventas_bp.route('/editar/<int:id>')
-@login_required
+@employee_required
 def editar_venta(id):
-    if not current_user.rol or current_user.rol.nombre_rol.upper() not in ['ADMINISTRADOR', 'ADMIN', 'EMPLEADO']:
-        flash('Acceso denegado.', 'danger')
-        return redirect(url_for('dashboard.dashboard'))
-        
     venta = Venta.query.get_or_404(id)
     detalles = DetalleVenta.query.filter_by(id_venta=id).all()
     lista_ventas = Venta.query.order_by(Venta.fecha_venta.desc()).all()
@@ -38,12 +34,8 @@ def editar_venta(id):
     return render_template('ventas.html', listaVentas=lista_ventas, listaClientes=clientes, listaEmpleados=empleados, venta=venta, detalles=detalles, readonly=False)
 
 @ventas_bp.route('/cambiarEstado/<int:id>')
-@login_required
+@employee_required
 def cambiar_estado(id):
-    if not current_user.rol or current_user.rol.nombre_rol.upper() not in ['ADMINISTRADOR', 'ADMIN', 'EMPLEADO']:
-        flash('Acceso denegado.', 'danger')
-        return redirect(url_for('dashboard.dashboard'))
-        
     venta = Venta.query.get_or_404(id)
     venta.estado = 'Anulada' if venta.estado == 'Completada' else 'Completada'
     db.session.commit()
@@ -51,12 +43,8 @@ def cambiar_estado(id):
     return redirect(url_for('ventas.listar_ventas'))
 
 @ventas_bp.route('/guardar', methods=['POST'])
-@login_required
+@employee_required
 def guardar():
-    if not current_user.rol or current_user.rol.nombre_rol.upper() not in ['ADMINISTRADOR', 'ADMIN', 'EMPLEADO']:
-        flash('Acceso denegado.', 'danger')
-        return redirect(url_for('dashboard.dashboard'))
-
     id_venta = request.form.get('id_venta')
     numero_factura = request.form.get('numero_factura')
     id_cliente = request.form.get('cliente.id_cliente')
@@ -108,7 +96,7 @@ def guardar():
 
 
 @ventas_bp.route('/buscar', methods=['GET'])
-@login_required
+@employee_required
 def buscar():
     busqueda = request.args.get('busqueda', '')
     if busqueda:

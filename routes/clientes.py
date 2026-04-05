@@ -1,41 +1,33 @@
 from flask import render_template, request, redirect, url_for, flash
 from routes import clientes_bp
 from models import Cliente
-from extensions import db
+from extensions import db, employee_required # Importamos employee_required
 import datetime
 from flask_login import login_required, current_user
 
 @clientes_bp.route('/')
-@login_required
+@employee_required
 def listar_clientes():
     clientes = Cliente.query.all()
     return render_template('clientes.html', listaClientes=clientes, cliente=None, readonly=False)
 
 @clientes_bp.route('/editar/<int:id>')
-@login_required
+@employee_required
 def editar_cliente(id):
-    if not current_user.rol or current_user.rol.nombre_rol.upper() not in ['ADMINISTRADOR', 'ADMIN', 'EMPLEADO']:
-        flash('Acceso denegado.', 'danger')
-        return redirect(url_for('dashboard.dashboard'))
-        
     cliente = Cliente.query.get_or_404(id)
     clientes = Cliente.query.all()
     return render_template('clientes.html', listaClientes=clientes, cliente=cliente, readonly=False)
 
 @clientes_bp.route('/ver/<int:id>')
-@login_required
+@employee_required
 def ver_cliente(id):
     cliente = Cliente.query.get_or_404(id)
     clientes = Cliente.query.all()
     return render_template('clientes.html', listaClientes=clientes, cliente=cliente, readonly=True)
 
 @clientes_bp.route('/cambiarEstado/<int:id>')
-@login_required
+@employee_required
 def cambiar_estado(id):
-    if not current_user.rol or current_user.rol.nombre_rol.upper() not in ['ADMINISTRADOR', 'ADMIN', 'EMPLEADO']:
-        flash('Acceso denegado.', 'danger')
-        return redirect(url_for('dashboard.dashboard'))
-        
     cliente = Cliente.query.get_or_404(id)
     cliente.estado = 'Inactivo' if cliente.estado == 'Activo' else 'Activo'
     db.session.commit()
@@ -43,12 +35,8 @@ def cambiar_estado(id):
     return redirect(url_for('clientes.listar_clientes'))
 
 @clientes_bp.route('/guardar', methods=['POST'])
-@login_required
+@employee_required
 def guardar():
-    if not current_user.rol or current_user.rol.nombre_rol.upper() not in ['ADMINISTRADOR', 'ADMIN', 'EMPLEADO']:
-        flash('Acceso denegado.', 'danger')
-        return redirect(url_for('dashboard.dashboard'))
-
     id_cliente = request.form.get('id_cliente')
     codigo = request.form.get('codigo')
     nombres = request.form.get('nombres')
@@ -108,7 +96,7 @@ def guardar():
 
 
 @clientes_bp.route('/buscar', methods=['GET'])
-@login_required
+@employee_required
 def buscar():
     busqueda = request.args.get('busqueda', '')
     if busqueda:

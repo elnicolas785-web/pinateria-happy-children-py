@@ -1,12 +1,12 @@
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, abort
 from routes import pedidos_bp
-from models import Pedido, DetallePedido, Cliente, Producto
-from extensions import db
+from models import Pedido, DetallePedido, Cliente, Producto, UsuarioCliente
+from extensions import db, employee_required # Importamos employee_required
 from flask_login import current_user, login_required
 import datetime
 
 @pedidos_bp.route('/')
-@login_required
+@employee_required
 def listar_pedidos():
     pedidos = Pedido.query.order_by(Pedido.fecha_pedido.desc()).all()
     clientes = Cliente.query.all()
@@ -15,8 +15,11 @@ def listar_pedidos():
 @pedidos_bp.route('/mis-pedidos')
 @login_required
 def mis_pedidos():
-    # Asume que el current_user tiene relación con Cliente
-    id_cliente = current_user.id_cliente if hasattr(current_user, 'id_cliente') else None
+    # Solo para Clientes
+    if not isinstance(current_user, UsuarioCliente):
+        abort(403)
+        
+    id_cliente = current_user.cliente.id_cliente if current_user.cliente else None
     pedidos = Pedido.query.filter_by(id_cliente=id_cliente).order_by(Pedido.fecha_pedido.desc()).all() if id_cliente else []
     
     lista_detalles = []
@@ -35,16 +38,18 @@ def mis_pedidos():
 @login_required
 def detalle_pedido(id_pedido):
     pedido = Pedido.query.get_or_404(id_pedido)
+    
+    # Seguridad: Un cliente solo ve SU pedido, empleados ven cualquiera
+    if not hasattr(current_user, 'id_empleado'):
+        if not current_user.cliente or pedido.id_cliente != current_user.cliente.id_cliente:
+            abort(403)
+            
     detalles = DetallePedido.query.filter_by(id_pedido=id_pedido).all()
     return render_template('mis-entregas.html', pedido=pedido, listaDetalles=detalles)
 
 @pedidos_bp.route('/editar/<int:id>')
-@login_required
+@employee_required
 def editar_pedido(id):
-    if not current_user.rol or current_user.rol.nombre_rol.upper() not in ['ADMINISTRADOR', 'ADMIN', 'EMPLEADO']:
-        flash('Acceso denegado.', 'danger')
-        return redirect(url_for('dashboard.dashboard'))
-        
     pedido = Pedido.query.get_or_404(id)
     detalles = DetallePedido.query.filter_by(id_pedido=id).all()
     lista_pedidos = Pedido.query.order_by(Pedido.fecha_pedido.desc()).all()
@@ -56,7 +61,7 @@ def editar_pedido(id):
     return render_template('pedidos.html', listaPedidos=lista_pedidos, listaClientes=clientes, pedido=pedido, detalles=detalles, readonly=False)
 
 @pedidos_bp.route('/ver/<int:id>')
-@login_required
+@employee_required
 def ver_pedido(id):
     pedido = Pedido.query.get_or_404(id)
     detalles = DetallePedido.query.filter_by(id_pedido=id).all()
@@ -69,12 +74,8 @@ def ver_pedido(id):
     return render_template('pedidos.html', listaPedidos=lista_pedidos, listaClientes=clientes, pedido=pedido, detalles=detalles, readonly=True)
 
 @pedidos_bp.route('/cambiarEstado/<int:id>')
-@login_required
+@employee_required
 def cambiar_estado(id):
-    if not current_user.rol or current_user.rol.nombre_rol.upper() not in ['ADMINISTRADOR', 'ADMIN', 'EMPLEADO']:
-        flash('Acceso denegado.', 'danger')
-        return redirect(url_for('dashboard.dashboard'))
-        
     pedido = Pedido.query.get_or_404(id)
     pedido.estado = 'Pendiente' if pedido.estado == 'Cancelado' else 'Cancelado'
     db.session.commit()
@@ -82,12 +83,8 @@ def cambiar_estado(id):
     return redirect(url_for('pedidos.listar_pedidos'))
 
 @pedidos_bp.route('/guardar', methods=['POST'])
-@login_required
+@employee_required
 def guardar_pedido():
-    if not current_user.rol or current_user.rol.nombre_rol.upper() not in ['ADMINISTRADOR', 'ADMIN', 'EMPLEADO']:
-        flash('Acceso denegado.', 'danger')
-        return redirect(url_for('dashboard.dashboard'))
-
     id_pedido = request.form.get('id_pedido')
     numero_pedido = request.form.get('numero_pedido')
     id_cliente = request.form.get('cliente.id_cliente')
@@ -135,7 +132,7 @@ def guardar_pedido():
 
 
 @pedidos_bp.route('/buscar', methods=['GET'])
-@login_required
+@employee_required
 def buscar():
     busqueda = request.args.get('busqueda', '')
     if busqueda:

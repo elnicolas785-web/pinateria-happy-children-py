@@ -4,6 +4,7 @@ import datetime
 from flask import render_template, make_response, send_file, current_app # type: ignore
 from routes import reportes_bp # type: ignore
 from models import Venta, Pedido # type: ignore
+from extensions import admin_required # Importamos admin_required
 
 try:
     from reportlab.lib.pagesizes import letter, landscape # type: ignore
@@ -15,10 +16,12 @@ except ImportError:
     pass
 
 @reportes_bp.route('/ventas/pdf')
+@admin_required
 def exportar_ventas_pdf():
     ventas = Venta.query.all()
     
     buffer = io.BytesIO()
+    # ... (rest of the pdf generation logic remains the same)
     pdf_title = f"Reporte de Ventas - {datetime.date.today().strftime('%Y-%m-%d')}"
     doc = SimpleDocTemplate(
         buffer, 
@@ -144,6 +147,7 @@ def exportar_ventas_pdf():
     )
 
 @reportes_bp.route('/pedidos/pdf')
+@admin_required
 def exportar_pedidos_pdf():
     # Similar functionality for pedidos but out of scope for the screenshot fix
     # Provided as a simple fallback
