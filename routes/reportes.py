@@ -6,14 +6,11 @@ from routes import reportes_bp # type: ignore
 from models import Venta, Pedido # type: ignore
 from extensions import admin_required # Importamos admin_required
 
-try:
-    from reportlab.lib.pagesizes import letter, landscape # type: ignore
-    from reportlab.lib import colors # type: ignore
-    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image # type: ignore
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle # type: ignore
-    from reportlab.lib.enums import TA_CENTER, TA_RIGHT # type: ignore
-except ImportError:
-    pass
+from reportlab.lib.pagesizes import letter, landscape # type: ignore
+from reportlab.lib import colors # type: ignore
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image # type: ignore
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle # type: ignore
+from reportlab.lib.enums import TA_CENTER, TA_RIGHT # type: ignore
 
 @reportes_bp.route('/ventas/pdf')
 @admin_required

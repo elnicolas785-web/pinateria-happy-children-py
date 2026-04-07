@@ -1,205 +1,238 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="utf-8"/>
-<link href="{{ url_for('static', filename='images/logo_happychildren.jpg') }}" rel="icon" type="image/jpg"/>
-<title>Carrito de Compras</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
-<link href="{{ url_for('static', filename='styles/cart.css') }}" rel="stylesheet"/>
+    <meta charset="utf-8" />
+    <link href="{{ url_for('static', filename='images/logo_happychildren.jpg') }}" rel="icon" type="image/jpg" />
+    <title>Carrito de Compras</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='styles/cart.css') }}" rel="stylesheet" />
 </head>
+
 <body>
-<div class="container">
-<a class="logo-container" href="/">
-<img alt="Logo" src="{{ url_for('static', filename='images/logo_happychildren.jpg') }}"/>
-<div class="logo-text">
-<span class="happy">Happy</span><span class="children">Children</span>
-</div>
-</a>
-<div class="d-flex justify-content-between align-items-center mb-4">
-<h2 class="mb-0"><i class="fas fa-shopping-cart text-primary"></i> Tu Carrito</h2>
-<div class="d-flex align-items-center">
-<a class="btn btn-outline-secondary me-3" href="/cart/catalogo">Seguir Comprando</a>
-{% if current_user.is_authenticated %}
-<span class="dropdown">
-<a aria-expanded="false" class="nav-link dropdown-toggle text-primary fw-bold shadow-sm" data-bs-toggle="dropdown" href="#" id="userDropdown" role="button" style="background: rgba(13,110,253,0.1); padding: 8px 15px; border-radius: 25px;">
-<i class="fas fa-user-circle me-1"></i> 
-<span>
-                                {{ current_user.nombre_usuario }}
-                            </span>
-</a>
-<ul class="dropdown-menu shadow-lg" style="margin-top: 15px !important; left: 50% !important; transform: translateX(-50%) !important; right: auto !important; width: max-content; min-width: 200px; border-radius: 15px; border:none;">
-<li>
-<h6 class="dropdown-header text-primary">
-    {% if current_user.__class__.__name__ == 'Empleado' %}
-        {{ current_user.nombres ~ ' ' ~ current_user.apellidos }}
-    {% elif current_user.__class__.__name__ == 'UsuarioCliente' and current_user.cliente %}
-        {{ current_user.cliente.nombres ~ ' ' ~ current_user.cliente.apellidos }}
-    {% endif %}
-</h6>
-</li>
-{% if current_user.__class__.__name__ == 'Empleado' %}
-    <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-tachometer-alt me-2"></i>Ir al Dashboard</a></li>
-    <li><hr class="dropdown-divider"/></li>
-    <li><a class="dropdown-item" href="/productos"><i class="fas fa-boxes me-2"></i>Productos</a></li>
-    <li><a class="dropdown-item" href="/ventas"><i class="fas fa-shopping-cart me-2"></i>Ventas</a></li>
-    {% if current_user.is_authenticated and current_user.rol and current_user.rol.nombre_rol.upper() in ['ADMINISTRADOR', 'ADMIN'] %}
-    <li><a class="dropdown-item" href="/usuarios"><i class="fas fa-users-cog me-2"></i>Configuración</a></li>
-    {% endif %}
-{% else %}
-    <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-tachometer-alt me-2"></i>Ir al Dashboard</a></li>
-    <li><a class="dropdown-item" href="/pedidos/mis-pedidos"><i class="fas fa-shopping-bag me-2"></i>Mis Pedidos</a></li>
-{% endif %}
-<li>
-<hr class="dropdown-divider"/>
-</li>
-<li>
-<form action="/logout" class="m-0" method="post">
-<button class="dropdown-item text-danger fw-bold" type="submit">
-<i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
-                                    </button>
-</form>
-</li>
-</ul>
-</span>
-{% endif %}
-</div>
-</div>
+    <div class="container">
+        <a class="logo-container" href="/">
+            <img alt="Logo" src="{{ url_for('static', filename='images/logo_happychildren.jpg') }}" />
+            <div class="logo-text">
+                <span class="happy">Happy</span><span class="children">Children</span>
+            </div>
+        </a>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0"><i class="fas fa-shopping-cart text-primary"></i> Tu Carrito</h2>
+            <div class="d-flex align-items-center">
+                <a class="btn btn-outline-secondary me-3" href="/cart/catalogo">Seguir Comprando</a>
+                {% if current_user.is_authenticated %}
+                <span class="dropdown">
+                    <a aria-expanded="false" class="nav-link dropdown-toggle text-primary fw-bold shadow-sm"
+                        data-bs-toggle="dropdown" href="#" id="userDropdown" role="button"
+                        style="background: rgba(13,110,253,0.1); padding: 8px 15px; border-radius: 25px;">
+                        <i class="fas fa-user-circle me-1"></i>
+                        <span>
+                            {{ current_user.nombre_usuario }}
+                        </span>
+                    </a>
+                    <ul class="dropdown-menu shadow-lg"
+                        style="margin-top: 15px !important; left: 50% !important; transform: translateX(-50%) !important; right: auto !important; width: max-content; min-width: 200px; border-radius: 15px; border:none;">
+                        <li>
+                            <h6 class="dropdown-header text-primary">
+                                {% if current_user.__class__.__name__ == 'Empleado' %}
+                                {{ current_user.nombres ~ ' ' ~ current_user.apellidos }}
+                                {% elif current_user.__class__.__name__ == 'UsuarioCliente' and current_user.cliente %}
+                                {{ current_user.cliente.nombres ~ ' ' ~ current_user.cliente.apellidos }}
+                                {% endif %}
+                            </h6>
+                        </li>
+                        {% if current_user.__class__.__name__ == 'Empleado' %}
+                        <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-tachometer-alt me-2"></i>Ir al
+                                Dashboard</a></li>
+                        <li>
+                            <hr class="dropdown-divider" />
+                        </li>
+                        <li><a class="dropdown-item" href="/productos"><i class="fas fa-boxes me-2"></i>Productos</a>
+                        </li>
+                        <li><a class="dropdown-item" href="/ventas"><i class="fas fa-shopping-cart me-2"></i>Ventas</a>
+                        </li>
+                        {% if current_user.is_authenticated and current_user.rol and current_user.rol.nombre_rol.upper()
+                        in ['ADMINISTRADOR', 'ADMIN'] %}
+                        <li><a class="dropdown-item" href="/usuarios"><i
+                                    class="fas fa-users-cog me-2"></i>Configuración</a></li>
+                        {% endif %}
+                        {% else %}
+                        <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-tachometer-alt me-2"></i>Ir al
+                                Dashboard</a></li>
+                        <li><a class="dropdown-item" href="/pedidos/mis-pedidos"><i
+                                    class="fas fa-shopping-bag me-2"></i>Mis Pedidos</a></li>
+                        {% endif %}
+                        <li>
+                            <hr class="dropdown-divider" />
+                        </li>
+                        <li>
+                            <form action="/logout" class="m-0" method="post">
+                                <button class="dropdown-item text-danger fw-bold" type="submit">
+                                    <i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </span>
+                {% endif %}
+            </div>
+        </div>
 
-{% if not carrito %}
-<div class="text-center py-5">
-<div class="mb-4">
-<i class="fas fa-shopping-basket fa-4x text-muted" style="opacity: 0.5;"></i>
-</div>
-<h3 class="text-muted fw-bold mb-3">Tu carrito está vacío</h3>
-<p class="text-muted mb-4">¡Parece que aún no has agregado nada! Explora nuestro catálogo y encuentra lo que buscas.</p>
-<a class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm" href="/cart/catalogo" style="background: #1565C0; border: none;">
-<i class="fas fa-arrow-right me-2"></i>Ir a Comprar
-</a>
-</div>
-{% else %}
-<div>
-<table class="table table-hover">
-<thead>
-<tr>
-<th>Producto</th>
-<th>Precio</th>
-<th>Cantidad</th>
-<th>Subtotal</th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-{% for item in carrito %}
-<tr>
-<td style="font-weight: 600;">{{ item.nombre }}</td>
-<td>${{ item.precio }}</td>
-<td>
-<div class="d-flex align-items-center">
-<a class="btn btn-sm btn-outline-danger" href="/cart/decrease/{{ item.id_producto }}" style="border-radius: 50%; width: 30px; height: 30px; padding: 0; display: flex; align-items: center; justify-content: center;">
-<i class="fas fa-minus"></i>
-</a>
-<form action="/cart/set/{{ item.id_producto }}" class="mx-2" method="post">
-<input class="form-control text-center" min="1" name="cantidad" onchange="this.form.submit()" style="width:70px; height:30px; padding:0;" type="number" value="{{ item.cantidad }}"/>
-</form>
-<a class="btn btn-sm btn-outline-success" href="/cart/increase/{{ item.id_producto }}" style="border-radius: 50%; width: 30px; height: 30px; padding: 0; display: flex; align-items: center; justify-content: center;">
-<i class="fas fa-plus"></i>
-</a>
-</div>
-</td>
-<td style="color: #ff9800; font-weight: bold;">${{ item.subtotal }}</td>
-<td class="text-center">
-<a class="btn-delete" href="/cart/remove/{{ item.id_producto }}" title="Eliminar del carrito">
-<i class="fas fa-trash-alt"></i>
-</a>
-</td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
-<div class="total mb-4 text-center">
+        {% if not carrito %}
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i class="fas fa-shopping-basket fa-4x text-muted" style="opacity: 0.5;"></i>
+            </div>
+            <h3 class="text-muted fw-bold mb-3">Tu carrito está vacío</h3>
+            <p class="text-muted mb-4">¡Parece que aún no has agregado nada! Explora nuestro catálogo y encuentra lo que
+                buscas.</p>
+            <a class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm" href="/cart/catalogo"
+                style="background: #1565C0; border: none;">
+                <i class="fas fa-arrow-right me-2"></i>Ir a Comprar
+            </a>
+        </div>
+        {% else %}
+        <div>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Precio</th>
+                        <th>Cantidad</th>
+                        <th>Subtotal</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in carrito %}
+                    <tr>
+                        <td style="font-weight: 600;">{{ item.nombre }}</td>
+                        <td>${{ item.precio }}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <a class="btn btn-sm btn-outline-danger" href="/cart/decrease/{{ item.id_producto }}"
+                                    style="border-radius: 50%; width: 30px; height: 30px; padding: 0; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-minus"></i>
+                                </a>
+                                <form action="/cart/set/{{ item.id_producto }}" class="mx-2" method="post">
+                                    <input class="form-control text-center" min="1" name="cantidad"
+                                        onchange="this.form.submit()" style="width:70px; height:30px; padding:0;"
+                                        type="number" value="{{ item.cantidad }}" />
+                                </form>
+                                <a class="btn btn-sm btn-outline-success" href="/cart/increase/{{ item.id_producto }}"
+                                    style="border-radius: 50%; width: 30px; height: 30px; padding: 0; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-plus"></i>
+                                </a>
+                            </div>
+                        </td>
+                        <td style="color: #ff9800; font-weight: bold;">${{ item.subtotal }}</td>
+                        <td class="text-center">
+                            <a class="btn-delete" href="/cart/remove/{{ item.id_producto }}"
+                                title="Eliminar del carrito">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="total mb-4 text-center">
                 Total a Pagar: <span style="color: #ff9800;">${{ total }}</span>
-</div>
-<hr/>
-<div class="text-center mb-4">
-<h4 class="mb-3"><i class="fas fa-cash-register me-2"></i>Finalizar Compra</h4>
-</div>
+            </div>
+            <hr />
+            <div class="text-center mb-4">
+                <h4 class="mb-3"><i class="fas fa-cash-register me-2"></i>Finalizar Compra</h4>
+            </div>
 
-{% if not current_user.is_authenticated %}
-<div class="alert alert-warning">
-<i class="fas fa-lock me-2"></i> Debes <a class="alert-link" href="/login">Inicia Sesión</a> o <a class="alert-link" href="/login">Crear una Cuenta</a> para completar tu compra.
-</div>
-{% else %}
-{% set nombre_completo = '' %}
-{% set doc_identidad = '' %}
-{% if current_user.__class__.__name__ == 'UsuarioCliente' and current_user.cliente %}
-    {% set nombre_completo = current_user.cliente.nombres ~ ' ' ~ current_user.cliente.apellidos %}
-    {% set doc_identidad = current_user.cliente.numero_documento %}
-{% elif current_user.__class__.__name__ == 'Empleado' %}
-    {% set nombre_completo = current_user.nombres ~ ' ' ~ current_user.apellidos %}
-    {% set doc_identidad = current_user.documento_identidad %}
-{% endif %}
-<form action="/cart/checkout" method="post">
-<div class="row g-3">
-<div class="col-md-6">
-<label class="form-label fw-bold">Nombre Completo</label>
-<input class="form-control rounded-pill" id="clienteNombre" name="clienteNombre" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+" placeholder="Ej: Juan Perez" required="" title="Solo letras y espacios" type="text" value="{{ nombre_completo }}"/>
-<div class="error" id="nombreError"></div>
-</div>
-<div class="col-md-6">
-<label class="form-label fw-bold">Documento de Identidad</label>
-<input class="form-control rounded-pill" id="clienteDoc" inputmode="numeric" minlength="10" name="clienteDoc" pattern="\d+" placeholder="Ej: 12345678" required="" title="Solo números, mínimo 10 dígitos" type="text" value="{{ doc_identidad }}"/>
-<div class="error" id="docError"></div>
-</div>
-<div class="col-md-12">
-<label class="form-label fw-bold">Dirección de Residencia / Entrega</label>
-<div class="input-group">
-<span class="input-group-text rounded-start-pill bg-white"><i class="fas fa-map-marker-alt text-danger"></i></span>
-<input class="form-control rounded-end-pill" id="direccion" name="direccion" placeholder="Ej: Calle 123 #45-67" required="" type="text"/>
-</div>
-<div class="error" id="direccionError"></div>
-</div>
-<div class="col-md-12">
-<hr class="my-3" style="border-top: 2px dashed #1565C0;"/>
-</div>
-<div class="col-md-6">
-<label class="form-label fw-bold">Método de Pago</label>
-<select class="form-select rounded-pill" id="metodoPago" name="metodoPago" onchange="togglePaymentFields()" required="">
-<option disabled="" selected="" value="">Selecciona una opción...</option>
-<option value="Nequi">Nequi</option>
-<option value="DaviPlata">DaviPlata</option>
-<option value="Bancolombia">Bancolombia</option>
-<option value="TarjetaCredito">Tarjeta de Crédito</option>
-</select>
-</div>
-<div class="col-md-6 dynamic-field" id="fieldDynamic" style="display:none;">
-<label class="form-label fw-bold">Número</label>
-<div class="input-group">
-<span class="input-group-text rounded-start-pill bg-white"><i class="fas fa-credit-card text-primary" id="iconDynamic"></i></span>
-<input class="form-control rounded-end-pill" id="accountNumber" inputmode="numeric" name="accountNumber" placeholder="" type="text"/>
-</div>
-<div class="error" id="accountError"></div>
-</div>
-<div class="col-md-12 text-start my-3">
-    <label class="form-label fw-bold">Observaciones o Notas</label>
-    <textarea class="form-control rounded" name="observaciones" placeholder="Ej: Entregar en la portería"></textarea>
-</div>
-</div>
-<div class="mt-5 text-center">
-<a class="btn btn-continue me-2" href="/cart/catalogo">
-<i class="fas fa-arrow-left me-2"></i>Seguir Comprando
-</a>
-<button class="btn btn-payment btn-lg" type="submit">
-<i class="fas fa-check-circle me-2"></i> Pagar Ahora
-</button>
-</div>
-</form>
-{% endif %}
-</div>
-{% endif %}
-</div>
+            {% if not current_user.is_authenticated %}
+            <div class="alert alert-warning">
+                <i class="fas fa-lock me-2"></i> Debes <a class="alert-link" href="/login">Inicia Sesión</a> o <a
+                    class="alert-link" href="/login">Crear una Cuenta</a> para completar tu compra.
+            </div>
+            {% else %}
+            {% set nombre_completo = '' %}
+            {% set doc_identidad = '' %}
+            {% if current_user.__class__.__name__ == 'UsuarioCliente' and current_user.cliente %}
+            {% set nombre_completo = current_user.cliente.nombres ~ ' ' ~ current_user.cliente.apellidos %}
+            {% set doc_identidad = current_user.cliente.numero_documento %}
+            {% elif current_user.__class__.__name__ == 'Empleado' %}
+            {% set nombre_completo = current_user.nombres ~ ' ' ~ current_user.apellidos %}
+            {% set doc_identidad = current_user.documento_identidad %}
+            {% endif %}
+            <form action="/cart/checkout" method="post">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Nombre Completo</label>
+                        <input class="form-control rounded-pill bg-light" id="clienteNombre" name="clienteNombre"
+                            pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+" placeholder="Ej: Juan Perez" readonly required=""
+                            title="Solo letras y espacios" type="text" value="{{ nombre_completo }}" />
+                        <div class="error" id="nombreError"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Documento de Identidad</label>
+                        <input class="form-control rounded-pill bg-light" id="clienteDoc" inputmode="numeric"
+                            minlength="10" name="clienteDoc" pattern="\d+" placeholder="Ej: 12345678" readonly
+                            required="" title="Solo números, mínimo 10 dígitos" type="text"
+                            value="{{ doc_identidad }}" />
+                        <div class="error" id="docError"></div>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">Dirección de Residencia / Entrega</label>
+                        <div class="input-group">
+                            <span class="input-group-text rounded-start-pill bg-white"><i
+                                    class="fas fa-map-marker-alt text-danger"></i></span>
+                            <input class="form-control rounded-end-pill" id="direccion" name="direccion"
+                                placeholder="Ej: Calle 123 #45-67" required="" type="text" />
+                        </div>
+                        <div class="error" id="direccionError"></div>
+                    </div>
+                    <div class="col-md-12">
+                        <hr class="my-3" style="border-top: 2px dashed #1565C0;" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Método de Pago</label>
+                        <select class="form-select rounded-pill" id="metodoPago" name="metodoPago"
+                            onchange="togglePaymentFields()" required="">
+                            <option disabled="" selected="" value="">Selecciona una opción...</option>
+                            <option value="Nequi">Nequi</option>
+                            <option value="DaviPlata">DaviPlata</option>
+                            <option value="Bancolombia">Bancolombia</option>
+                            <option value="TarjetaCredito">Tarjeta de Crédito</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 dynamic-field" id="fieldDynamic" style="display:none;">
+                        <label class="form-label fw-bold">Número</label>
+                        <div class="input-group">
+                            <span class="input-group-text rounded-start-pill bg-white"><i
+                                    class="fas fa-credit-card text-primary" id="iconDynamic"></i></span>
+                            <input class="form-control rounded-end-pill" id="accountNumber" inputmode="numeric"
+                                name="accountNumber" placeholder="" type="text" />
+                        </div>
+                        <div class="error" id="accountError"></div>
+                    </div>
+                    <div class="col-md-12 text-start my-3">
+                        <label class="form-label fw-bold">Observaciones o Notas</label>
+                        <textarea class="form-control rounded" name="observaciones"
+                            placeholder="Ej: Entregar en la portería"></textarea>
+                    </div>
+                </div>
+                <div class="mt-5 text-center">
+                    <a class="btn btn-continue me-2" href="/cart/catalogo">
+                        <i class="fas fa-arrow-left me-2"></i>Seguir Comprando
+                    </a>
+                    <button class="btn btn-payment btn-lg" type="submit">
+                        <i class="fas fa-check-circle me-2"></i> Pagar Ahora
+                    </button>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
 
-<script>
+    <script>
         function togglePaymentFields() {
             const metodo = document.getElementById('metodoPago').value;
             const fieldDynamic = document.getElementById('fieldDynamic');
@@ -210,57 +243,59 @@
 
             fieldDynamic.style.display = 'block';
 
-            if (metodo === 'Nequi') {
-                labelDynamic.innerText = 'Número de Celular (Nequi)';
+            if (metodo === 'Nequi' || metodo === 'DaviPlata') {
+                labelDynamic.innerText = 'Número de Celular (' + metodo + ')';
                 iconDynamic.className = 'fas fa-mobile-alt text-primary';
-                inputDynamic.setAttribute('placeholder', 'Ej: 3001234567');
+                inputDynamic.setAttribute('placeholder', 'Ej: 3001234567 (10 dígitos)');
                 inputDynamic.setAttribute('required', 'true');
                 inputDynamic.setAttribute('pattern', '\\d{10}');
                 inputDynamic.setAttribute('maxlength', '10');
                 inputDynamic.setAttribute('minlength', '10');
                 inputDynamic.setAttribute('title', 'Debe tener exactamente 10 dígitos numéricos');
-                inputDynamic.oninput = function() {
-                   if(this.value && this.value.length !== 10) {
-                       this.setCustomValidity('El celular de Nequi debe tener 10 dígitos');
-                       errorDiv.textContent = "⚠️ El celular de Nequi debe tener 10 dígitos";
-                       errorDiv.style.color = "#dc3545";
-                       this.style.borderColor = "#dc3545";
-                   } else if(this.value.length === 10) {
-                       this.setCustomValidity('');
-                       errorDiv.textContent = "✓ Celular válido";
-                       errorDiv.style.color = "#28a745";
-                       this.style.borderColor = "#28a745";
-                   } else {
-                       this.setCustomValidity('Campo obligatorio');
-                       errorDiv.textContent = "";
-                       this.style.borderColor = "#ddd";
-                   }
+                inputDynamic.oninput = function () {
+                    this.value = this.value.replace(/[^0-9]/g, ''); // Solo números
+                    if (this.value && this.value.length !== 10) {
+                        this.setCustomValidity('El número debe tener exactamente 10 dígitos');
+                        errorDiv.textContent = "⚠️ El número debe tener exactamente 10 dígitos";
+                        errorDiv.style.color = "#dc3545";
+                        this.style.borderColor = "#dc3545";
+                    } else if (this.value.length === 10) {
+                        this.setCustomValidity('');
+                        errorDiv.textContent = "✓ Número válido";
+                        errorDiv.style.color = "#28a745";
+                        this.style.borderColor = "#28a745";
+                    } else {
+                        this.setCustomValidity('Campo obligatorio');
+                        errorDiv.textContent = "";
+                        this.style.borderColor = "#ddd";
+                    }
                 };
-            } else if (metodo === 'Bancolombia' || metodo === 'TarjetaCredito' || metodo === 'DaviPlata') {
+            } else if (metodo === 'Bancolombia' || metodo === 'TarjetaCredito') {
                 labelDynamic.innerText = 'Número de Cuenta / Tarjeta (' + metodo + ')';
                 iconDynamic.className = 'fas fa-credit-card text-primary';
-                inputDynamic.setAttribute('placeholder', '0000000000000000');
+                inputDynamic.setAttribute('placeholder', '0000000000000000 (16 dígitos)');
                 inputDynamic.setAttribute('required', 'true');
                 inputDynamic.setAttribute('pattern', '\\d{16}');
                 inputDynamic.setAttribute('maxlength', '16');
                 inputDynamic.setAttribute('minlength', '16');
                 inputDynamic.setAttribute('title', 'Debe tener exactamente 16 dígitos numéricos');
-                inputDynamic.oninput = function() {
-                   if(this.value && this.value.length !== 16) {
-                       this.setCustomValidity('La cuenta/tarjeta debe tener 16 dígitos');
-                       errorDiv.textContent = "⚠️ La cuenta debe tener 16 dígitos";
-                       errorDiv.style.color = "#dc3545";
-                       this.style.borderColor = "#dc3545";
-                   } else if(this.value.length === 16) {
-                       this.setCustomValidity(''); 
-                       errorDiv.textContent = "✓ Cuenta/Tarjeta válida";
-                       errorDiv.style.color = "#28a745";
-                       this.style.borderColor = "#28a745";
-                   } else {
-                       this.setCustomValidity('Campo obligatorio');
-                       errorDiv.textContent = "";
-                       this.style.borderColor = "#ddd";
-                   }
+                inputDynamic.oninput = function () {
+                    this.value = this.value.replace(/[^0-9]/g, ''); // Solo números
+                    if (this.value && this.value.length !== 16) {
+                        this.setCustomValidity('La cuenta/tarjeta debe tener exactamente 16 dígitos');
+                        errorDiv.textContent = "⚠️ Debe tener exactamente 16 dígitos";
+                        errorDiv.style.color = "#dc3545";
+                        this.style.borderColor = "#dc3545";
+                    } else if (this.value.length === 16) {
+                        this.setCustomValidity('');
+                        errorDiv.textContent = "✓ Cuenta/Tarjeta válida";
+                        errorDiv.style.color = "#28a745";
+                        this.style.borderColor = "#28a745";
+                    } else {
+                        this.setCustomValidity('Campo obligatorio');
+                        errorDiv.textContent = "";
+                        this.style.borderColor = "#ddd";
+                    }
                 };
             } else {
                 fieldDynamic.style.display = 'none';
@@ -270,7 +305,7 @@
         }
 
         // Additional validation for Nombre, Doc, Direccion
-        document.getElementById('clienteNombre')?.addEventListener('input', function() {
+        document.getElementById('clienteNombre')?.addEventListener('input', function () {
             const errorDiv = document.getElementById('nombreError');
             if (this.value.length > 0 && !/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(this.value)) {
                 this.setCustomValidity("El nombre solo debe contener letras");
@@ -289,7 +324,7 @@
             }
         });
 
-        document.getElementById('clienteDoc')?.addEventListener('input', function() {
+        document.getElementById('clienteDoc')?.addEventListener('input', function () {
             const errorDiv = document.getElementById('docError');
             if (this.value.length > 0 && !/^[0-9]+$/.test(this.value)) {
                 this.setCustomValidity("Solo se permiten números");
@@ -313,14 +348,21 @@
             }
         });
 
-        document.getElementById('direccion')?.addEventListener('input', function() {
+        document.getElementById('direccion')?.addEventListener('input', function () {
             const errorDiv = document.getElementById('direccionError');
-            if (this.value.length > 0 && this.value.length < 5) {
-                this.setCustomValidity("Dirección muy corta");
-                errorDiv.textContent = "⚠️ Dirección muy corta";
+            const addressRegex = /^(?=.*[a-zA-ZáéíóúÁÉÍÓÚñÑ])(?=.*\d).+$/; // Al menos una letra y un número
+
+            if (this.value.length > 0 && this.value.length < 10) {
+                this.setCustomValidity("La dirección es muy corta (mínimo 10 caracteres)");
+                errorDiv.textContent = "⚠️ La dirección debe ser más completa (mínimo 10 caracteres)";
                 errorDiv.style.color = "#dc3545";
                 this.style.borderColor = "#dc3545";
-            } else if (this.value.length >= 5) {
+            } else if (this.value.length >= 10 && !addressRegex.test(this.value)) {
+                this.setCustomValidity("La dirección debe incluir letras y números (ej: Calle 123 #45-67)");
+                errorDiv.textContent = "⚠️ Debe incluir letras y números (ej: Calle 123 #45-67)";
+                errorDiv.style.color = "#dc3545";
+                this.style.borderColor = "#dc3545";
+            } else if (this.value.length >= 10) {
                 this.setCustomValidity("");
                 errorDiv.textContent = "✓ Dirección válida";
                 errorDiv.style.color = "#28a745";
@@ -333,6 +375,7 @@
         });
 
     </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

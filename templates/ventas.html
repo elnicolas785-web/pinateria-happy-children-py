@@ -22,8 +22,8 @@
 
         <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
             <h2 class="mb-0"><i class="fas fa-shopping-cart text-primary"></i> Gestión de Ventas</h2>
-            <a class="btn btn-outline-primary rounded-pill px-4" href="/dashboard">
-                <i class="fas fa-arrow-left"></i> Volver al Panel
+            <a class="btn btn-primary rounded-pill px-4 shadow-sm" href="/dashboard">
+                <i class="fas fa-arrow-left me-2"></i> Volver
             </a>
         </div>
 
@@ -40,7 +40,7 @@
         {% endwith %}
 
         <div class="card shadow-sm mb-4 border-0">
-            <div class="card-header bg-primary text-white py-3">
+            <div class="card-header text-white py-3" style="background-color: #1565C0;">
                 <h5 class="mb-0">
                     <i class="fas fa-file-invoice-dollar me-2"></i>
                     {% if es_pedido %}
@@ -124,7 +124,7 @@
                             </div>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-outline-info btn-sm mt-2 fw-bold" id="btn-agregar-producto">
+                    <button type="button" class="btn btn-outline-primary btn-sm mt-2 fw-bold" id="btn-agregar-producto" style="color: #1565C0; border-color: #1565C0;">
                         <i class="fas fa-plus-circle me-1"></i> AGREGAR OTRO PRODUCTO
                     </button>
                     {% endif %}
@@ -183,40 +183,50 @@
             </div>
         </div>
 
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
-                <h6 class="mb-0"><i class="fas fa-history me-2"></i> Historial de Movimientos (Local y Web)</h6>
-                <form action="/ventas/buscar" method="get" class="d-flex" style="max-width: 300px;">
-                    <div class="input-group input-group-sm">
-                        <input class="form-control border-0" name="busqueda" placeholder="Buscar..." type="text">
-                        <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
-                    </div>
-                </form>
+        <form action="/ventas/buscar" method="get" class="mb-4">
+            <div class="input-group shadow-sm">
+                <input class="form-control" name="busqueda" placeholder="Buscar por cliente o número de documento..." type="text" value="{{ request.args.get('busqueda', '') }}">
+                <button class="btn btn-primary px-4" type="submit">
+                    <i class="fas fa-search me-1"></i> Buscar
+                </button>
+                {% if request.args.get('busqueda') %}
+                <a class="btn btn-outline-secondary" href="/ventas">
+                    <i class="fas fa-times me-1"></i> Limpiar
+                </a>
+                {% endif %}
+            </div>
+        </form>
+
+        <div class="card shadow-sm border-0 mb-5 overflow-hidden">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center" style="background-color: #1565C0; border-radius: 12px 12px 0 0;">
+                <h6 class="mb-0 text-white fw-bold"><i class="fas fa-list me-2"></i> Historial de Movimientos (Local y Web)</h6>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light">
-                            <tr>
-                                <th class="ps-3">N° Documento</th>
-                                <th>Cliente</th>
-                                <th>Fecha</th>
-                                <th class="text-end">Total</th>
-                                <th class="text-center">Estado</th>
-                                <th class="text-center pe-3">Acciones</th>
+                    <table class="table table-hover table-striped align-middle mb-0">
+                        <thead class="bg-white">
+                            <tr class="text-uppercase small fw-black border-bottom">
+                                <th class="ps-3 py-3">Código</th>
+                                <th class="py-3">Cliente</th>
+                                <th class="py-3">Categoría / Fecha</th>
+                                <th class="text-end py-3">$/Total</th>
+                                <th class="text-center py-3">Activo / Estado</th>
+                                <th class="text-center pe-3 py-3">Acciones</th>
                             </tr>
                         </thead>
 <tbody>
     {% for v in listaVentas %}
-    {% set es_p = v.numero_pedido is defined or not v.numero_factura %}
+    {% set code = v.numero_factura if v.numero_factura else v.numero_pedido %}
+    {% set is_p_obj = v.id_pedido is defined %}
+    {% set show_web_badge = is_p_obj or (code and (code.startswith('PED-') or code.startswith('WEB-'))) %}
     <tr>
         <td class="ps-3 fw-bold">
-            {{ v.numero_factura if v.numero_factura else v.numero_pedido }}
-            {% if es_p %}<span class="badge bg-info ms-1" style="font-size: 0.6rem;">WEB</span>{% endif %}
+            {{ code }}
+            {% if show_web_badge %}<span class="badge bg-info ms-1 text-white" style="font-size: 0.65rem;">WEB</span>{% endif %}
         </td>
         <td>{{ v.cliente.nombres }} {{ v.cliente.apellidos }}</td>
         <td>
-            {{ (v.fecha_venta.strftime('%d/%m/%Y') if v.fecha_venta else v.fecha_pedido.strftime('%d/%m/%Y')) }}
+            {{ (v.fecha_pedido.strftime('%d/%m/%Y') if is_p_obj else v.fecha_venta.strftime('%d/%m/%Y')) }}
         </td>
         <td class="text-end fw-bold text-primary">${{ v.total }}</td>
         <td class="text-center">
@@ -225,15 +235,25 @@
             </span>
         </td>
         <td class="text-center pe-3">
-            <div class="btn-group">
-                <a class="btn btn-sm btn-outline-secondary border-0" 
-                   href="{{ url_for('ventas.ver_venta', tipo='pedido' if es_p else 'venta', id=v.id_pedido if es_p else v.id_venta) }}">
+            <div class="d-flex justify-content-center gap-1">
+                <a class="btn btn-sm text-white shadow-sm d-flex align-items-center justify-content-center" 
+                   style="background-color: #21d8ff; width: 34px; height: 34px; border-radius: 6px; border: none;"
+                   href="{{ url_for('ventas.ver_venta', tipo='pedido' if is_p_obj else 'venta', id=v.id_pedido if is_p_obj else v.id_venta) }}"
+                   title="Ver">
                     <i class="fas fa-eye"></i>
                 </a>
-                <a class="btn btn-sm btn-outline-danger border-0" 
-                   href="{{ url_for('ventas.cambiar_estado', tipo='pedido' if es_p else 'venta', id=v.id_pedido if es_p else v.id_venta) }}"
-                   onclick="return confirm('¿Desea cambiar el estado?')">
-                    <i class="fas fa-sync-alt"></i>
+                <a class="btn btn-sm shadow-sm d-flex align-items-center justify-content-center" 
+                   style="background-color: #ffc107; color: black; width: 34px; height: 34px; border-radius: 6px; border: none;"
+                   href="{{ url_for('ventas.editar_venta', tipo='pedido' if is_p_obj else 'venta', id=v.id_pedido if is_p_obj else v.id_venta) }}"
+                   title="Editar">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <a class="btn btn-sm text-white shadow-sm d-flex align-items-center justify-content-center" 
+                   style="background-color: #e63946; width: 34px; height: 34px; border-radius: 6px; border: none;"
+                   href="{{ url_for('ventas.cambiar_estado', tipo='pedido' if is_p_obj else 'venta', id=v.id_pedido if is_p_obj else v.id_venta) }}"
+                   onclick="return confirm('¿Desea cambiar el estado?')"
+                   title="Anular / Cambiar Estado">
+                    <i class="fas fa-ban"></i>
                 </a>
             </div>
         </td>

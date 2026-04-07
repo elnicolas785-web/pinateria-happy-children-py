@@ -61,6 +61,32 @@ def ver_venta(tipo, id):
                            readonly=True,
                            es_pedido=es_pedido)
 
+@ventas_bp.route('/editar/<string:tipo>/<int:id>')
+@employee_required
+def editar_venta(id, tipo):
+    es_pedido = (tipo == 'pedido')
+    if es_pedido:
+        venta = Pedido.query.get_or_404(id)
+        detalles = venta.detalles if hasattr(venta, 'detalles') else []
+    else:
+        venta = Venta.query.get_or_404(id)
+        detalles = DetalleVenta.query.filter_by(id_venta=id).all()
+        
+    lista_combinada = obtener_historial_combinado()
+    clientes = Cliente.query.all()
+    empleados = Empleado.query.all()
+    productos = Producto.query.filter_by(activo='Activo').all()
+    
+    return render_template('ventas.html', 
+                           listaVentas=lista_combinada, 
+                           listaClientes=clientes, 
+                           listaEmpleados=empleados, 
+                           listaProductos=productos, 
+                           venta=venta, 
+                           detalles=detalles,
+                           readonly=False,
+                           es_pedido=es_pedido)
+
 @ventas_bp.route('/cambiarEstado/<string:tipo>/<int:id>')
 @employee_required
 def cambiar_estado(tipo, id):
@@ -149,11 +175,21 @@ def guardar():
 def buscar():
     busqueda = request.args.get('busqueda', '')
     ventas = Venta.query.join(Cliente).filter(
-        db.or_(Venta.numero_factura.ilike(f'%{busqueda}%'), Cliente.nombres.ilike(f'%{busqueda}%'))
+        db.or_(
+            Venta.numero_factura.ilike(f'%{busqueda}%'), 
+            Cliente.nombres.ilike(f'%{busqueda}%'),
+            Cliente.apellidos.ilike(f'%{busqueda}%'),
+            (Cliente.nombres + ' ' + Cliente.apellidos).ilike(f'%{busqueda}%')
+        )
     ).all()
     
     pedidos = Pedido.query.join(Cliente).filter(
-        db.or_(Pedido.numero_pedido.ilike(f'%{busqueda}%'), Cliente.nombres.ilike(f'%{busqueda}%'))
+        db.or_(
+            Pedido.numero_pedido.ilike(f'%{busqueda}%'), 
+            Cliente.nombres.ilike(f'%{busqueda}%'),
+            Cliente.apellidos.ilike(f'%{busqueda}%'),
+            (Cliente.nombres + ' ' + Cliente.apellidos).ilike(f'%{busqueda}%')
+        )
     ).all()
     
     lista_combinada = ventas + pedidos
