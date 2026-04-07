@@ -1,9 +1,11 @@
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, current_app
 from routes import clientes_bp
 from models import Cliente
-from extensions import db, employee_required # Importamos employee_required
+from extensions import mail, db, employee_required
 import datetime
+import time 
 from flask_login import login_required, current_user
+from flask_mail import Message
 
 @clientes_bp.route('/')
 @employee_required
@@ -52,22 +54,14 @@ def guardar():
         if id_cliente:
             cliente = Cliente.query.get(id_cliente)
             if cliente:
-                if codigo:
-                    cliente.codigo = codigo
-                if nombres:
-                    cliente.nombres = nombres
-                if apellidos:
-                    cliente.apellidos = apellidos
-                if tipo_doc:
-                    cliente.tipo_documento = tipo_doc
-                if num_doc:
-                    cliente.numero_documento = num_doc
-                if email:
-                    cliente.email = email
-                if telefono is not None:
-                    cliente.telefono = telefono
-                if direccion is not None:
-                    cliente.direccion = direccion
+                if codigo: cliente.codigo = codigo
+                if nombres: cliente.nombres = nombres
+                if apellidos: cliente.apellidos = apellidos
+                if tipo_doc: cliente.tipo_documento = tipo_doc
+                if num_doc: cliente.numero_documento = num_doc
+                if email: cliente.email = email
+                if telefono is not None: cliente.telefono = telefono
+                if direccion is not None: cliente.direccion = direccion
                 cliente.estado = estado
                 flash('Cliente actualizado correctamente.', 'success')
         else:
@@ -94,7 +88,6 @@ def guardar():
 
     return redirect(url_for('clientes.listar_clientes'))
 
-
 @clientes_bp.route('/buscar', methods=['GET'])
 @employee_required
 def buscar():
@@ -113,3 +106,66 @@ def buscar():
         clientes = Cliente.query.order_by(Cliente.fecha_registro.desc()).all()
         
     return render_template('clientes.html', listaClientes=clientes, cliente=None, readonly=False)
+
+# --- RUTA DE ENVÍO MASIVO CON DISEÑO "BONITO" Y FILTRO DE ACTIVOS ---
+@clientes_bp.route('/enviar-publicidad-masiva')
+@employee_required
+def enviar_publicidad():
+    """Envía un correo HTML profesional solo a clientes con estado 'Activo'."""
+    clientes = Cliente.query.all()
+    
+    if not clientes:
+        flash('No hay clientes registrados.', 'warning')
+        return redirect(url_for('clientes.listar_clientes'))
+
+    enviados = 0
+    errores = 0
+
+    try:
+        with mail.connect() as conn:
+            for cliente in clientes:
+                # Solo envía si el estado es 'Activo'
+                if cliente.estado == 'Activo' and cliente.email:
+                    try:
+                        msg = Message(
+                            subject="🎈 ¡Novedades en Happy Children!",
+                            sender="hchildren815@gmail.com",
+                            recipients=[cliente.email]
+                        )
+                        
+                        # EL MENSAJE BONITO (HTML)
+                        msg.html = f"""
+                        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 15px; overflow: hidden;">
+                            <div style="background-color: #1565C0; padding: 20px; text-align: center;">
+                                <h1 style="color: white; margin: 0;">Happy Children 🎈</h1>
+                            </div>
+                            <div style="padding: 30px; color: #333;">
+                                <h2 style="color: #1565C0;">¡Hola, {cliente.nombres}!</h2>
+                                <p style="font-size: 16px; line-height: 1.6;">
+                                    En <strong>Happy Children</strong> queremos que tus celebraciones sean mágicas. 
+                                    Tenemos nuevas piñatas personalizadas, globos y todo lo que necesitas para tu fiesta.
+                                </p>
+                                <div style="background-color: #f8f9fa; border-left: 4px solid #1565C0; padding: 15px; margin: 20px 0;">
+                                    <p style="margin: 0; font-weight: bold;">🎁 ¡Regalo Especial!</p>
+                                    <p style="margin: 5px 0 0;">Muestra este correo en tu próxima compra y recibe un 10% de descuento.</p>
+                                </div>
+                                <p style="font-size: 14px; color: #666;">Te esperamos en nuestra tienda física para asesorarte con la mejor decoración.</p>
+                            </div>
+                            <div style="background-color: #f1f1f1; padding: 15px; text-align: center; font-size: 12px; color: #888;">
+                                <p style="margin: 0;">&copy; 2026 Piñatería Happy Children | Gestión de Clientes</p>
+                            </div>
+                        </div>
+                        """
+                        
+                        conn.send(msg)
+                        enviados += 1
+                        time.sleep(0.5) 
+                    except Exception as e:
+                        print(f"Error enviando a {cliente.email}: {e}")
+                        errores += 1
+
+        flash(f'Éxito: {enviados} correos enviados con diseño profesional a clientes activos.', 'success')
+    except Exception as e:
+        flash(f'Error al conectar con el servidor: {str(e)}', 'danger')
+
+    return redirect(url_for('clientes.listar_clientes'))

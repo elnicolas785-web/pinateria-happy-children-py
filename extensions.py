@@ -2,10 +2,12 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user
 from functools import wraps
 from flask import abort, redirect, url_for
+from flask_mail import Mail
 
 db = SQLAlchemy()
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
+mail = Mail()
 
 # --- AQUÍ AGREGAMOS LOS DECORADORES DE SEGURIDAD ---
 

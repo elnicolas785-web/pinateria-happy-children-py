@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from flask import Flask, render_template
 from config import Config
-from extensions import db, login_manager
+from extensions import db, login_manager, mail
 from routes import (
     auth_bp, dashboard_bp, productos_bp, clientes_bp,
     categorias_bp, empleados_bp, roles_bp, usuarios_bp,
@@ -26,6 +26,7 @@ def create_app():
     # Inicializar extensiones
     db.init_app(flask_app)
     login_manager.init_app(flask_app)
+    mail.init_app(flask_app)
 
     # Registrar blueprints (rutas)
     flask_app.register_blueprint(auth_bp)
