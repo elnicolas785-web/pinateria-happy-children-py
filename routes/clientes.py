@@ -40,7 +40,6 @@ def cambiar_estado(id):
 @employee_required
 def guardar():
     id_cliente = request.form.get('id_cliente')
-    codigo = request.form.get('codigo')
     nombres = request.form.get('nombres')
     apellidos = request.form.get('apellidos')
     tipo_doc = request.form.get('tipo_documento')
@@ -52,21 +51,36 @@ def guardar():
 
     try:
         if id_cliente:
+            # --- EDITAR CLIENTE ---
             cliente = Cliente.query.get(id_cliente)
             if cliente:
-                if codigo: cliente.codigo = codigo
-                if nombres: cliente.nombres = nombres
-                if apellidos: cliente.apellidos = apellidos
-                if tipo_doc: cliente.tipo_documento = tipo_doc
-                if num_doc: cliente.numero_documento = num_doc
-                if email: cliente.email = email
-                if telefono is not None: cliente.telefono = telefono
-                if direccion is not None: cliente.direccion = direccion
+                cliente.nombres = nombres
+                cliente.apellidos = apellidos
+                cliente.tipo_documento = tipo_doc
+                cliente.numero_documento = num_doc
+                cliente.email = email
+                cliente.telefono = telefono
+                cliente.direccion = direccion
                 cliente.estado = estado
                 flash('Cliente actualizado correctamente.', 'success')
         else:
+            # --- CREAR CLIENTE NUEVO (Autogenerar Código) ---
+            
+            ultimo_cliente = Cliente.query.order_by(Cliente.id_cliente.desc()).first()
+            
+            if ultimo_cliente and ultimo_cliente.codigo:
+                try:
+                    numero_actual = int(ultimo_cliente.codigo.replace('CLI', ''))
+                    nuevo_numero = numero_actual + 1
+                except:
+                    nuevo_numero = 1
+            else:
+                nuevo_numero = 1
+            
+            nuevo_codigo = f"CLI{str(nuevo_numero).zfill(3)}"
+
             nuevo_cliente = Cliente(
-                codigo=codigo,
+                codigo=nuevo_codigo, 
                 nombres=nombres,
                 apellidos=apellidos,
                 tipo_documento=tipo_doc,
@@ -78,7 +92,7 @@ def guardar():
                 fecha_registro=datetime.date.today()
             )
             db.session.add(nuevo_cliente)
-            flash('Cliente creado correctamente.', 'success')
+            flash(f'Cliente creado con código {nuevo_codigo}.', 'success')
             
         db.session.commit()
     except Exception as e:
@@ -107,7 +121,7 @@ def buscar():
         
     return render_template('clientes.html', listaClientes=clientes, cliente=None, readonly=False)
 
-# --- RUTA DE ENVÍO MASIVO CON DISEÑO "BONITO" Y FILTRO DE ACTIVOS ---
+
 @clientes_bp.route('/enviar-publicidad-masiva')
 @employee_required
 def enviar_publicidad():
@@ -164,7 +178,7 @@ def enviar_publicidad():
                         print(f"Error enviando a {cliente.email}: {e}")
                         errores += 1
 
-        flash(f'Éxito: {enviados} correos enviados con diseño profesional a clientes activos.', 'success')
+        flash(f'Éxito: {enviados} correos enviados a clientes activos.', 'success')
     except Exception as e:
         flash(f'Error al conectar con el servidor: {str(e)}', 'danger')
 

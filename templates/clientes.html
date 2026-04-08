@@ -49,7 +49,7 @@
                 <div class="row g-4">
                     <div class="col-md-2">
                         <label class="form-label">Código</label>
-                        <input class="form-control" placeholder="CLI001" required {{ 'disabled' if readonly }} name="codigo" value="{{ cliente.codigo if cliente else '' }}" type="text"/>
+                        <input class="form-control" name="codigo" placeholder="Auto-generado" readonly value="{{ cliente.codigo if cliente else 'Autogenerado' }}" type="text"/>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Tipo de Documento</label>
