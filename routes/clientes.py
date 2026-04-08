@@ -1,11 +1,15 @@
 from flask import render_template, request, redirect, url_for, flash, current_app
-from routes import clientes_bp
-from models import Cliente
-from extensions import mail, db, employee_required
+from flask_mail import Message
+from flask_login import login_required, current_user
 import datetime
 import time 
-from flask_login import login_required, current_user
-from flask_mail import Message
+
+from routes import clientes_bp
+
+from models import Cliente, Venta
+from extensions import mail, db, employee_required
+from .mailer import send_styled_email
+from .pdf_utils import generar_recibo_pdf
 
 @clientes_bp.route('/')
 @employee_required
@@ -121,11 +125,10 @@ def buscar():
         
     return render_template('clientes.html', listaClientes=clientes, cliente=None, readonly=False)
 
-
 @clientes_bp.route('/enviar-publicidad-masiva')
 @employee_required
 def enviar_publicidad():
-    """Envía un correo HTML profesional solo a clientes con estado 'Activo'."""
+    """Envía un correo premium solo a clientes con estado 'Activo' con su último recibo en PDF."""
     clientes = Cliente.query.all()
     
     if not clientes:
@@ -135,51 +138,81 @@ def enviar_publicidad():
     enviados = 0
     errores = 0
 
-    try:
-        with mail.connect() as conn:
-            for cliente in clientes:
-                # Solo envía si el estado es 'Activo'
-                if cliente.estado == 'Activo' and cliente.email:
-                    try:
-                        msg = Message(
-                            subject="🎈 ¡Novedades en Happy Children!",
-                            sender="hchildren815@gmail.com",
-                            recipients=[cliente.email]
-                        )
-                        
-                        # EL MENSAJE BONITO (HTML)
-                        msg.html = f"""
-                        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 15px; overflow: hidden;">
-                            <div style="background-color: #1565C0; padding: 20px; text-align: center;">
-                                <h1 style="color: white; margin: 0;">Happy Children 🎈</h1>
-                            </div>
-                            <div style="padding: 30px; color: #333;">
-                                <h2 style="color: #1565C0;">¡Hola, {cliente.nombres}!</h2>
-                                <p style="font-size: 16px; line-height: 1.6;">
-                                    En <strong>Happy Children</strong> queremos que tus celebraciones sean mágicas. 
-                                    Tenemos nuevas piñatas personalizadas, globos y todo lo que necesitas para tu fiesta.
-                                </p>
-                                <div style="background-color: #f8f9fa; border-left: 4px solid #1565C0; padding: 15px; margin: 20px 0;">
-                                    <p style="margin: 0; font-weight: bold;">🎁 ¡Regalo Especial!</p>
-                                    <p style="margin: 5px 0 0;">Muestra este correo en tu próxima compra y recibe un 10% de descuento.</p>
-                                </div>
-                                <p style="font-size: 14px; color: #666;">Te esperamos en nuestra tienda física para asesorarte con la mejor decoración.</p>
-                            </div>
-                            <div style="background-color: #f1f1f1; padding: 15px; text-align: center; font-size: 12px; color: #888;">
-                                <p style="margin: 0;">&copy; 2026 Piñatería Happy Children | Gestión de Clientes</p>
-                            </div>
-                        </div>
-                        """
-                        
-                        conn.send(msg)
-                        enviados += 1
-                        time.sleep(0.5) 
-                    except Exception as e:
-                        print(f"Error enviando a {cliente.email}: {e}")
-                        errores += 1
+    for cliente in clientes:
+        # Solo envía si el estado es 'Activo'
+        if cliente.estado == 'Activo' and cliente.email:
+            try:
+                # Buscar su última venta
+                ultima_venta = Venta.query.filter_by(id_cliente=cliente.id_cliente).order_by(Venta.fecha_venta.desc()).first()
+                
+                items_recibo = []
+                total_recibo = 0
+                adjuntos = []
+                
+                if ultima_venta:
+                    total_recibo = ultima_venta.total
+                    # 1. Preparar items para la tabla HTML
+                    for detalle in ultima_venta.detalles_venta.all():
+                        items_recibo.append({
+                            'nombre': detalle.producto.nombre if detalle.producto else "Producto",
+                            'cantidad': detalle.cantidad,
+                            'precio': float(detalle.precio_unitario),
+                            'subtotal': float(detalle.subtotal)
+                        })
+                    
+                    # 2. Generar el PDF adjunto
+                    pdf_data = generar_recibo_pdf(ultima_venta)
+                    adjuntos.append((f"Recibo_{ultima_venta.numero_factura}.pdf", "application/pdf", pdf_data))
 
-        flash(f'Éxito: {enviados} correos enviados a clientes activos.', 'success')
-    except Exception as e:
-        flash(f'Error al conectar con el servidor: {str(e)}', 'danger')
+                # Datos del correo
+                asunto = "🎈 ¡Novedades y sorpresas en Happy Children!"
+                titulo = f"¡Hola, {cliente.nombres}!"
+                mensaje_body = f"""
+                En <strong>Happy Children</strong> queremos que tus celebraciones sean mágicas. 
+                Tenemos nuevas piñatas personalizadas, globos y todo lo que necesitas para tu fiesta.
+                <br><br>
+                Te recordamos que te esperamos en nuestra tienda física para asesorarte con la mejor decoración.
+                """
+                
+                if ultima_venta:
+                    mensaje_body += f"<p>Adjunto a este correo encontrarás el recibo de tu última compra (<b>{ultima_venta.numero_factura}</b>) para tu control personal.</p>"
+                else:
+                    mensaje_body += """
+                    <div style="background-color: #ebf5ff; border-left: 4px solid #1E88E5; padding: 15px; margin: 20px 0; border-radius: 8px;">
+                        <p style="margin: 0; font-weight: bold; color: #1565C0;">🎁 ¡Regalo de Bienvenida!</p>
+                        <p style="margin: 5px 0 0;">Muestra este correo en tu primera compra y recibe un <strong>10% de descuento</strong>.</p>
+                    </div>
+                    """
 
+                # Datos para el diseño estilo PDF en el cuerpo del correo
+                info_cliente = {
+                    'num_pedido': ultima_venta.numero_factura if ultima_venta else 'N/A',
+                    'fecha': ultima_venta.fecha_venta.strftime('%Y-%m-%d') if ultima_venta else 'N/A',
+                    'cliente': f"{cliente.nombres} {cliente.apellidos}",
+                    'documento': cliente.numero_documento
+                }
+
+                # Enviar usando la utilidad premium con adjuntos y diseño de recibo
+                exito = send_styled_email(
+                    recipient=cliente.email,
+                    subject=asunto,
+                    title=titulo,
+                    body_text=mensaje_body,
+                    items=items_recibo,
+                    total=total_recibo,
+                    attachments=adjuntos,
+                    client_info=info_cliente if ultima_venta else None
+                )
+                
+                if exito:
+                    enviados += 1
+                else:
+                    errores += 1
+                
+                time.sleep(0.5) 
+            except Exception as e:
+                print(f"Error enviando a {cliente.email}: {e}")
+                errores += 1
+
+    flash(f'Éxito: {enviados} correos enviados. Errores: {errores}', 'success' if errores == 0 else 'warning')
     return redirect(url_for('clientes.listar_clientes'))

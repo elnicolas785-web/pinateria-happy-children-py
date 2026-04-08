@@ -4,6 +4,7 @@ from models import Producto, Pedido, DetallePedido, CategoriaProducto, db # type
 from extensions import db # type: ignore
 from flask_login import current_user, login_required # type: ignore
 import datetime
+from .mailer import send_styled_email
 
 @cart_bp.route('/')
 @login_required
@@ -117,6 +118,9 @@ def checkout():
     observaciones = request.form.get('observaciones', '')
     direccion = request.form.get('direccionEntrega', '')
     
+    # Respaldo del carrito para el email (ya que se limpia después)
+    items_para_email = list(carrito)
+    
     try:
         # 1. Crear el Pedido
         num_pedido = f"PED-{int(datetime.datetime.now().timestamp() * 1000) % 10000:04d}"
@@ -159,12 +163,60 @@ def checkout():
                 )
                 db.session.add(detalle)
 
+        # 4. ENVÍO DE RECIBO POR CORREO (¡Compra Exitosa!)
+        # Detectamos el correo según el tipo de usuario (Cliente o Empleado)
+        email_destino = None
+        nombre_destino = "Cliente"
+        doc_destino = "N/A"
+        
+        if hasattr(current_user, 'cliente') and current_user.cliente:
+            email_destino = current_user.cliente.email
+            nombre_destino = f"{current_user.cliente.nombres} {current_user.cliente.apellidos}"
+            doc_destino = current_user.cliente.numero_documento
+        elif hasattr(current_user, 'email'):
+            email_destino = current_user.email
+            nombre_destino = f"{current_user.nombres} {current_user.apellidos}"
+            doc_destino = getattr(current_user, 'documento_identidad', 'N/A')
+
+        if email_destino:
+            try:
+                from .pdf_utils import generar_recibo_pdf
+                
+                asunto = "🎉 ¡Compra Exitosa! - Happy Children"
+                titulo = "¡Compra Exitosa!"
+                mensaje = f"¡Felicidades <strong>{nombre_destino}</strong>! Tu pedido <strong>{num_pedido}</strong> ha sido recibido con éxito. Estamos preparando todo para que tu celebración sea inolvidable."
+                
+                # Generar PDF para el nuevo pedido
+                pdf_data = generar_recibo_pdf(nuevo_pedido)
+                adjuntos = [(f"Recibo_Compra_{num_pedido}.pdf", "application/pdf", pdf_data)]
+                
+                # Datos para el diseño del recibo en el cuerpo del correo
+                info_cliente = {
+                    'num_pedido': num_pedido,
+                    'fecha': datetime.datetime.now().strftime('%Y-%m-%d'),
+                    'cliente': nombre_destino,
+                    'documento': doc_destino
+                }
+                
+                send_styled_email(
+                    recipient=email_destino,
+                    subject=asunto,
+                    title=titulo,
+                    body_text=mensaje,
+                    items=items_para_email,
+                    total=total,
+                    attachments=adjuntos,
+                    client_info=info_cliente
+                )
+            except Exception as e:
+                print(f"Error al enviar correo de compra exitosa: {e}")
+
         # 3. Guardar cambios definitivos
         db.session.commit()
         session['carrito'] = [] 
         session.modified = True
         
-        flash('¡Pedido realizado con éxito! El inventario ha sido actualizado.', 'success')
+        flash('¡Compra exitosa! El recibo detallado ha sido enviado a tu correo.', 'success')
         return redirect(url_for('cart.compra_exitosa', id_pedido=nuevo_pedido.id_pedido))
 
     except Exception as e:

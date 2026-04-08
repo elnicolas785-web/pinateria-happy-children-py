@@ -154,15 +154,30 @@
             {% else %}
             {% set nombre_completo = '' %}
             {% set doc_identidad = '' %}
+            {% set email_usuario = '' %}
             {% if current_user.__class__.__name__ == 'UsuarioCliente' and current_user.cliente %}
             {% set nombre_completo = current_user.cliente.nombres ~ ' ' ~ current_user.cliente.apellidos %}
             {% set doc_identidad = current_user.cliente.numero_documento %}
+            {% set email_usuario = current_user.cliente.email %}
             {% elif current_user.__class__.__name__ == 'Empleado' %}
             {% set nombre_completo = current_user.nombres ~ ' ' ~ current_user.apellidos %}
             {% set doc_identidad = current_user.documento_identidad %}
+            {% set email_usuario = current_user.email %}
             {% endif %}
             <form action="/cart/checkout" method="post">
                 <div class="row g-3">
+                    <!-- Sección de Correo Electrónico y Aviso PDF -->
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">Correo Electrónico de Notificación</label>
+                        <div class="input-group">
+                            <span class="input-group-text rounded-start-pill bg-light"><i class="fas fa-envelope text-primary"></i></span>
+                            <input class="form-control rounded-end-pill bg-light" readonly type="email" value="{{ email_usuario }}" />
+                        </div>
+                        <div class="form-text text-primary">
+                            <i class="fas fa-info-circle me-1"></i> Se enviará un correo electrónico a esta dirección con el recibo de su compra en formato PDF.
+                        </div>
+                    </div>
+
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Nombre Completo</label>
                         <input class="form-control rounded-pill bg-light" id="clienteNombre" name="clienteNombre"
