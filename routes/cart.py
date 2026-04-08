@@ -30,7 +30,7 @@ def add_to_cart(id_producto):
     cantidad = int(request.form.get('cantidad', 1))
     producto = Producto.query.get_or_404(id_producto)
     
-    # VALIDACIÓN: Usamos 'stock_actual' como definiste en tu modelo
+    
     if producto.stock_actual < cantidad:
         flash(f"Stock insuficiente para {producto.nombre}. Disponible: {producto.stock_actual}", "warning")
         return redirect(url_for('cart.catalogo'))
@@ -40,7 +40,7 @@ def add_to_cart(id_producto):
     encontrado = False
     for item in carrito:
         if item['id_producto'] == id_producto:
-            # Validar que la suma no supere el stock_actual
+          
             if producto.stock_actual < (item['cantidad'] + cantidad):
                 flash(f"No puedes agregar más de las {producto.stock_actual} unidades disponibles.", "warning")
                 return redirect(url_for('cart.catalogo'))
@@ -118,7 +118,6 @@ def checkout():
     observaciones = request.form.get('observaciones', '')
     direccion = request.form.get('direccionEntrega', '')
     
-    # Respaldo del carrito para el email (ya que se limpia después)
     items_para_email = list(carrito)
     
     try:
@@ -132,13 +131,13 @@ def checkout():
             total=total,
             observaciones=observaciones,
             direccion_entrega=direccion,
-            # Vinculamos al cliente desde el UsuarioCliente logueado
+         
             id_cliente=current_user.cliente.id_cliente if hasattr(current_user, 'cliente') and current_user.cliente else None
         )
         db.session.add(nuevo_pedido)
         db.session.flush() 
 
-        # 2. Descontar STOCK_ACTUAL y crear Detalles
+       
         for item in carrito:
             prod = Producto.query.get(item['id_producto'])
             
@@ -163,8 +162,8 @@ def checkout():
                 )
                 db.session.add(detalle)
 
-        # 4. ENVÍO DE RECIBO POR CORREO (¡Compra Exitosa!)
-        # Detectamos el correo según el tipo de usuario (Cliente o Empleado)
+        # 4. ENVÍO DE RECIBO POR CORREO 
+        # Detecta el correo según el tipo de usuario (Cliente o Empleado)
         email_destino = None
         nombre_destino = "Cliente"
         doc_destino = "N/A"
@@ -211,7 +210,7 @@ def checkout():
             except Exception as e:
                 print(f"Error al enviar correo de compra exitosa: {e}")
 
-        # 3. Guardar cambios definitivos
+        # Guardar cambios 
         db.session.commit()
         session['carrito'] = [] 
         session.modified = True

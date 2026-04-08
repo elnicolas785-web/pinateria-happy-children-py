@@ -16,7 +16,7 @@ def enviar_email_restablecimiento(usuario, tipo):
     user_id = usuario.id_cliente if tipo == 'cliente' else usuario.id_empleado
     token = s.dumps({'user_id': user_id, 'tipo': tipo}, salt='pw-reset')
     
-    # IMPORTANTE: Verifica que ambos modelos tengan el atributo .email
+    #Verifica que ambos modelos tengan el atributo .email
     destinatario = usuario.email 
     
     print(f"DEBUG: Intentando enviar correo de recuperación a: {destinatario}")
@@ -151,7 +151,7 @@ def logout_success():
 
 import re
 
-# PASO 1: Página para pedir el correo (La que va en el Login)
+# Página para pedir el correo (La que va en el Login)
 @auth_bp.route("/reset_password", methods=['GET', 'POST'])
 def reset_request():
     if request.method == 'POST':
@@ -172,7 +172,7 @@ def reset_request():
             
     return render_template('reset_request.html')
 
-# PASO 2: Página para poner la clave nueva (La que llega por correo)
+# Página para poner la clave nueva (La que llega por correo)
 @auth_bp.route("/reset_password/<token>", methods=['GET', 'POST'])
 def restablecer_token(token):
     s = Serializer(current_app.config['SECRET_KEY'])
