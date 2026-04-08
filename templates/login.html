@@ -49,9 +49,9 @@
 <a href="/register" style="color: #1565C0; font-weight: 800; font-size: 1.1rem; display: block; margin-bottom: 15px; border: 2px solid #1565C0; padding: 12px; border-radius: 50px; text-transform: uppercase; transition: all 0.3s ease;">
 <i class="fas fa-user-plus me-2"></i> Registrarse
             </a>
-<a href="/olvido-password" style="color: #666; font-size: 0.9rem; margin-top: 5px;">
-<i class="fas fa-key me-1"></i> ¿Olvidaste tu contraseña?
-            </a>
+<a href="{{ url_for('auth.reset_request') }}" class="text-muted" style="text-decoration:none;">
+    <i class="fas fa-key me-1"></i> ¿Olvidaste tu contraseña?
+</a>
 </div>
 <div class="btn-home-container">
 <a class="btn-home-custom" href="/">
