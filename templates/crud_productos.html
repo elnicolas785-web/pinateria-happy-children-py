@@ -1,199 +1,170 @@
 <!DOCTYPE html>
-
-<html lang="es"  >
+<html lang="es">
 <head>
-<meta charset="utf-8"/>
-<link href="{{ url_for('static', filename='images/logo_happychildren.jpg') }}" rel="icon" type="image/jpg"/>
-<title>Gestión de Productos</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
-<link href="{{ url_for('static', filename='styles/crud_productos.css') }}" rel="stylesheet"/>
+    <meta charset="utf-8"/>
+    <link href="{{ url_for('static', filename='images/logo_happychildren.jpg') }}" rel="icon" type="image/jpg"/>
+    <title>Gestión de Productos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+    <link href="{{ url_for('static', filename='styles/crud_productos.css') }}" rel="stylesheet"/>
 </head>
 <body>
 <div class="container mb-5">
-<a class="logo-container" href="/dashboard">
-<img alt="Logo" src="{{ url_for('static', filename='images/logo_happychildren.jpg') }}"/>
-<div class="logo-text">
-<span class="happy">Happy</span><span class="children">Children</span>
-</div>
-</a>
-<!-- Header y Botones de Navegación -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-<div>
-<h2 class="mb-0"><i class="fas fa-boxes"></i> Gestión de Productos</h2>
-<div class="mt-2">
-<a class="btn btn-sm btn-outline-primary rounded-pill me-2" href="/categorias"><i class="fas fa-tags"></i> Ir a Categorías</a>
-<a class="btn btn-sm btn-outline-primary rounded-pill" href="/ventas"><i class="fas fa-shopping-cart"></i> Ir a Ventas</a>
-</div>
-</div>
-<a class="btn btn-primary rounded-pill px-4 shadow-sm" href="/dashboard"><i class="fas fa-arrow-left"></i>
-                Volver</a>
-</div>
-<!-- Alertas de Error (Opcional) -->
-{% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
-<!-- CARD FORMULARIO -->
-<div class="card mb-4">
-<div class="card-header">
-<i class="fas fa-edit me-2"></i>
-<span>{{ ('Detalles del Producto' if readonly else 'Editar Producto') if producto.id_producto != None else 'Nuevo Producto' }}</span>
-</div>
-<div class="card-body">
-<form action="/productos/guardar" method="post" >
-<input name="id_producto" value="{{ producto.id_producto if producto else '' }}" type="hidden"/>
-<div class="row g-3">
-<!-- Código -->
-<div class="col-md-3">
-<label class="form-label">Código</label>
-<input class="form-control" placeholder="Autogenerado" readonly="" name="codigo" value="{{ producto.codigo if producto else '' }}" type="text"/>
-</div>
-<!-- Nombre -->
-<div class="col-md-3">
-<label class="form-label">Nombre</label>
-<input class="form-control" required="" {{ 'disabled' if readonly or (producto and producto.id_producto) else '' }} name="nombre" value="{{ producto.nombre if producto else '' }}" type="text"/>
-</div>
-<!-- Categoría -->
-<div class="col-md-3">
-<label class="form-label">Categoría</label>
-<select class="form-select" required="" {{ 'disabled' if readonly or (producto and producto.id_producto) else '' }} name="categoria.id_categoria" value="{{ producto.categoria.id_categoria if producto else '' }}">
-<option value="">Seleccione...</option>
-{% for cat in categorias %}<option value="{{ cat.id_categoria }}">{{ cat.nombre }}</option>{% endfor %}
-</select>
-</div>
-<!-- Estado -->
-{% if producto.id_producto != None %}<div class="col-md-3">
-<label class="form-label">Estado</label>
-<select class="form-select" {{ 'disabled' if readonly or (producto and producto.id_producto) else '' }} name="activo" value="{{ producto.activo if producto else '' }}">
-<option value="Activo">Activo</option>
-<option value="Inactivo">Inactivo</option>
-</select>
-</div>{% endif %}
-</div>
-<div class="row g-3 mt-2">
-<!-- Descripción -->
-<div class="col-md-12">
-<label class="form-label">Descripción</label>
-<textarea class="form-control" rows="2" {{ 'disabled' if readonly or (producto and producto.id_producto) else '' }} name="descripcion" value="{{ producto.descripcion if producto else '' }}"></textarea>
-</div>
-<!-- Imagen URL -->
-<div class="col-md-12">
-<label class="form-label">URL de Imagen</label>
-<input class="form-control" placeholder="https://ejemplo.com/imagen.jpg" {{ 'disabled' if readonly or (producto and producto.id_producto) else '' }} name="imagenUrl" value="{{ producto.imagenUrl if producto else '' }}" type="text"/>
-</div>
-</div>
-<div class="row g-3 mt-2">
-<!-- P. Compra -->
-<div class="col-md-3">
-<label class="form-label">Precio Compra</label>
-<input class="form-control" required="" step="0.01" {{ 'disabled' if readonly or (producto and producto.id_producto) else '' }} name="precio_compra" value="{{ producto.precio_compra if producto else '' }}" type="number"/>
-</div>
-<!-- P. Venta -->
-<div class="col-md-3">
-<label class="form-label">Precio Venta</label>
-<input class="form-control" required="" step="0.01" {{ 'disabled' if readonly or (producto and producto.id_producto) else '' }} name="precio_venta" value="{{ producto.precio_venta if producto else '' }}" type="number"/>
-</div>
-<!-- Stock -->
-<div class="col-md-3">
-<label class="form-label">Stock Actual</label>
-<input class="form-control" required="" {{ 'disabled' if readonly or (producto and producto.id_producto) else '' }} name="stock_actual" value="{{ producto.stock_actual if producto else '' }}" type="number"/>
-</div>
-<!-- Stock Min -->
-<div class="col-md-3">
-<label class="form-label">Stock Mínimo</label>
-<input class="form-control" required="" {{ 'disabled' if readonly or (producto and producto.id_producto) else '' }} name="stock_minimo" value="{{ producto.stock_minimo if producto else '' }}" type="number"/>
-</div>
-</div>
-<div class="row g-3 mt-2">
-<!-- Unidad -->
-<div class="col-md-4">
-<label class="form-label">Unidad de Medida</label>
-<select class="form-select" {{ 'disabled' if readonly or (producto and producto.id_producto) else '' }} name="unidad_medida" value="{{ producto.unidad_medida if producto else '' }}">
-<option value="Unidad">Unidad</option>
-<option value="Paquete">Paquete</option>
-<option value="Docena">Docena</option>
-</select>
-</div>
-<!-- Fecha Creación -->
-<div class="col-md-4">
-<label class="form-label">Fecha Registro</label>
-<input class="form-control" readonly="" required="" name="fecha_creacion" value="{{ producto.fecha_creacion if producto else '' }}" type="date"/>
-</div>
-</div>
-<!-- Botones Formulario -->
-<div class="mt-4 text-end">
-{% if producto.id_producto != None %}<a class="btn btn-secondary me-2" href="/productos">Cancelar / Nuevo</a>{% endif %}
-{% if not readonly %}<button class="btn btn-success" type="submit">
-<i class="fas fa-save"></i> Guardar
-                        </button>{% endif %}
-</div>
-</form>
-</div>
-</div>
-<!-- SEARCH BOX -->
-<form action="/productos/buscar" class="mb-4" method="get">
-<div class="input-group shadow-sm">
-<input class="form-control" name="busqueda" placeholder="Buscar por nombre, código o categoría..." required="" type="text" value="{{ request.args.get('busqueda', '') }}"/>
-<button class="btn btn-primary" type="submit"><i class="fas fa-search me-1"></i> Buscar</button>
-{% if request.args.get('busqueda') %}
-<a class="btn btn-outline-secondary" href="/productos"><i class="fas fa-times me-1"></i> Limpiar</a>
-{% endif %}
-</div>
-</form>
-<!-- TABLA Listado -->
-<div class="card">
-<div class="card-header">
-<i class="fas fa-list me-2"></i> Listado de Productos
+    <a class="logo-container" href="/dashboard">
+        <img alt="Logo" src="{{ url_for('static', filename='images/logo_happychildren.jpg') }}"/>
+        <div class="logo-text">
+            <span class="happy">Happy</span><span class="children">Children</span>
+        </div>
+    </a>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0"><i class="fas fa-boxes"></i> Gestión de Productos</h2>
+            <div class="mt-2">
+                <a class="btn btn-sm btn-outline-primary rounded-pill me-2" href="/categorias"><i class="fas fa-tags"></i> Ir a Categorías</a>
+                <a class="btn btn-sm btn-outline-primary rounded-pill" href="/ventas"><i class="fas fa-shopping-cart"></i> Ir a Ventas</a>
             </div>
-<div class="card-body p-0">
-<div class="table-responsive">
-<table class="table table-hover table-striped mb-0">
-<thead style="background-color: #1565C0; color: white;">
-<tr>
-<th>Código</th>
-<th>Nombre</th>
-<th>Categoría</th>
-<th>$/Compra</th>
-<th>$/Venta</th>
-<th>Stock</th>
-<th>Activo</th>
-<th class="text-center">Acciones</th>
-</tr>
-</thead>
-<tbody>
-{% for p in listaProductos %}<tr>
-<td>{{ p.codigo }}</td>
-<td>{{ p.nombre }}</td>
-<td>{{ p.categoria.nombre }}</td>
-<td>{{ p.precio_compra }}</td>
-<td>{{ p.precio_venta }}</td>
-<td>{{ p.stock_actual }}</td>
-<td>
-{% if p.activo == 'Activo' %}<span class="badge bg-success">Activo</span>{% endif %}
-{% if p.activo == 'Inactivo' %}<span class="badge bg-danger">Inactivo</span>{% endif %}
-</td>
-<td>
-<div class="d-flex justify-content-center gap-1 flex-nowrap">
-<a class="btn btn-sm btn-info text-white" href="/productos/ver/{{ p.id_producto }}" title="Ver">
-<i class="fas fa-eye"></i>
-</a>
-<a class="btn btn-sm btn-warning" href="/productos/editar/{{ p.id_producto }}" title="Editar">
-<i class="fas fa-edit"></i>
-</a>
-{% set confirm_msg = '¿Seguro que desea desactivar este producto?' if p.activo == 'Activo' else '¿Seguro que desea activar este producto?' %}
-<a class="btn btn-sm {{ 'btn-danger' if p.activo == 'Activo' else 'btn-success' }}" href="/productos/cambiarEstado/{{ p.id_producto }}" onclick="return confirm('{{ confirm_msg }}')" title="{{ 'Desactivar' if p.activo == 'Activo' else 'Activar' }}">
-<i class="fas {{ 'fa-ban' if p.activo == 'Activo' else 'fa-check-circle' }}"></i>
-</a>
+        </div>
+        <a class="btn btn-primary rounded-pill px-4 shadow-sm" href="/dashboard"><i class="fas fa-arrow-left"></i> Volver</a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-edit me-2"></i>
+            <span>{{ 'Detalles del Producto' if readonly else ('Editar Producto' if editMode else 'Nuevo Producto') }}</span>
+        </div>
+        <div class="card-body">
+            <form action="{% if editMode %}{{ url_for('productos.actualizar', id=producto.id_producto) }}{% else %}{{ url_for('productos.guardar') }}{% endif %}" method="post">
+                
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Código</label>
+                        <input class="form-control" placeholder="Autogenerado" readonly name="codigo" value="{{ producto.codigo if producto.codigo else '' }}" type="text"/>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Nombre</label>
+                        <input class="form-control" required {{ 'readonly' if readonly else '' }} name="nombre" value="{{ producto.nombre if producto.nombre else '' }}" type="text"/>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Categoría</label>
+                        <select class="form-select" required {{ 'disabled' if readonly else '' }} name="id_categoria">
+                            <option value="">Seleccione...</option>
+                            {% for cat in categorias %}
+                                <option value="{{ cat.id_categoria }}" {{ 'selected' if producto.id_categoria == cat.id_categoria else '' }}>{{ cat.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% if producto.id_producto != None %}
+                    <div class="col-md-3">
+                        <label class="form-label">Estado</label>
+                        <select class="form-select" {{ 'disabled' if readonly else '' }} name="activo">
+                            <option value="Activo" {{ 'selected' if producto.activo == 'Activo' else '' }}>Activo</option>
+                            <option value="Inactivo" {{ 'selected' if producto.activo == 'Inactivo' else '' }}>Inactivo</option>
+                        </select>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="row g-3 mt-2">
+                    <div class="col-md-12">
+                        <label class="form-label">Descripción</label>
+                        <textarea class="form-control" rows="2" {{ 'readonly' if readonly else '' }} name="descripcion">{{ producto.descripcion if producto.descripcion else '' }}</textarea>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">URL de Imagen</label>
+                        <input class="form-control" placeholder="https://ejemplo.com/imagen.jpg" {{ 'readonly' if readonly else '' }} name="imagenUrl" value="{{ producto.imagenUrl if producto.imagenUrl else '' }}" type="text"/>
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-2">
+                    <div class="col-md-3">
+                        <label class="form-label">Precio Compra</label>
+                        <input class="form-control" required step="0.01" {{ 'readonly' if readonly else '' }} name="precio_compra" value="{{ producto.precio_compra if producto.precio_compra else '' }}" type="number"/>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Precio Venta</label>
+                        <input class="form-control" required step="0.01" {{ 'readonly' if readonly else '' }} name="precio_venta" value="{{ producto.precio_venta if producto.precio_venta else '' }}" type="number"/>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Stock Actual</label>
+                        <input class="form-control" required {{ 'readonly' if readonly else '' }} name="stock_actual" value="{{ producto.stock_actual if producto.stock_actual else '' }}" type="number"/>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Stock Mínimo</label>
+                        <input class="form-control" required {{ 'readonly' if readonly else '' }} name="stock_minimo" value="{{ producto.stock_minimo if producto.stock_minimo else '' }}" type="number"/>
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-2">
+                    <div class="col-md-4">
+                        <label class="form-label">Unidad de Medida</label>
+                        <select class="form-select" {{ 'disabled' if readonly else '' }} name="unidad_medida">
+                            <option value="Unidad" {{ 'selected' if producto.unidad_medida == 'Unidad' else '' }}>Unidad</option>
+                            <option value="Paquete" {{ 'selected' if producto.unidad_medida == 'Paquete' else '' }}>Paquete</option>
+                            <option value="Docena" {{ 'selected' if producto.unidad_medida == 'Docena' else '' }}>Docena</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-end">
+                    {% if producto.id_producto != None %}
+                        <a class="btn btn-secondary me-2" href="{{ url_for('productos.listar_productos') }}">Cancelar / Nuevo</a>
+                    {% endif %}
+                    {% if not readonly %}
+                        <button class="btn btn-success" type="submit">
+                            <i class="fas fa-save"></i> Guardar
+                        </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><i class="fas fa-list me-2"></i> Listado de Productos</div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0">
+                    <thead style="background-color: #1565C0; color: white;">
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>$/Venta</th>
+                            <th>Stock</th>
+                            <th>Activo</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in listaProductos %}
+                        <tr>
+                            <td>{{ p.codigo }}</td>
+                            <td>{{ p.nombre }}</td>
+                            <td>{{ p.categoria.nombre }}</td>
+                            <td>{{ p.precio_venta }}</td>
+                            <td>{{ p.stock_actual }}</td>
+                            <td>
+                                <span class="badge {{ 'bg-success' if p.activo == 'Activo' else 'bg-danger' }}">{{ p.activo }}</span>
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-center gap-1 flex-nowrap">
+                                    <a class="btn btn-sm btn-info text-white" href="{{ url_for('productos.ver', id=p.id_producto) }}" title="Ver"><i class="fas fa-eye"></i></a>
+                                    <a class="btn btn-sm btn-warning" href="{{ url_for('productos.editar', id=p.id_producto) }}" title="Editar"><i class="fas fa-edit"></i></a>
+                                    <a class="btn btn-sm {{ 'btn-danger' if p.activo == 'Activo' else 'btn-success' }}" 
+                                       href="{{ url_for('productos.cambiar_estado', id=p.id_producto) }}" 
+                                       onclick="return confirm('¿Desea cambiar el estado?')">
+                                        <i class="fas {{ 'fa-ban' if p.activo == 'Activo' else 'fa-check-circle' }}"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
-</td>
-</tr>{% endfor %}
-{% if not listaProductos %}<tr>
-<td class="text-center text-muted p-4" colspan="8">No hay productos registrados.</td>
-</tr>{% endif %}
-</tbody>
-</table>
-</div>
-</div>
-</div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

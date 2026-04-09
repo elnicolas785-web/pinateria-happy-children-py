@@ -68,7 +68,7 @@ def guardar():
                 cliente.estado = estado
                 flash('Cliente actualizado correctamente.', 'success')
         else:
-            # --- CREAR CLIENTE NUEVO (Autogenerar Código) ---
+            # --- CREAR CLIENTE NUEVO  ---
             
             ultimo_cliente = Cliente.query.order_by(Cliente.id_cliente.desc()).first()
             
@@ -151,7 +151,7 @@ def enviar_publicidad():
                 
                 if ultima_venta:
                     total_recibo = ultima_venta.total
-                    # 1. Preparar items para la tabla HTML
+                    
                     for detalle in ultima_venta.detalles_venta.all():
                         items_recibo.append({
                             'nombre': detalle.producto.nombre if detalle.producto else "Producto",
@@ -160,11 +160,11 @@ def enviar_publicidad():
                             'subtotal': float(detalle.subtotal)
                         })
                     
-                    # 2. Generar el PDF adjunto
+                    
                     pdf_data = generar_recibo_pdf(ultima_venta)
                     adjuntos.append((f"Recibo_{ultima_venta.numero_factura}.pdf", "application/pdf", pdf_data))
 
-                # Datos del correo
+                
                 asunto = "🎈 ¡Novedades y sorpresas en Happy Children!"
                 titulo = f"¡Hola, {cliente.nombres}!"
                 mensaje_body = f"""
@@ -192,7 +192,7 @@ def enviar_publicidad():
                     'documento': cliente.numero_documento
                 }
 
-                # Enviar usando la utilidad premium con adjuntos y diseño de recibo
+               
                 exito = send_styled_email(
                     recipient=cliente.email,
                     subject=asunto,
