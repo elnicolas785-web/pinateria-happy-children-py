@@ -28,6 +28,23 @@
         <a class="btn btn-primary rounded-pill px-4 shadow-sm" href="/dashboard"><i class="fas fa-arrow-left"></i> Volver</a>
     </div>
 
+    <div class="card mb-4 border-primary shadow-sm">
+        <div class="card-body py-3">
+            <form action="{{ url_for('productos.importar_excel') }}" method="post" enctype="multipart/form-data" class="row align-items-center">
+                <div class="col-md-4">
+                    <label class="form-label mb-1 text-primary fw-bold"><i class="fas fa-file-excel"></i> Carga masiva (Excel)</label>
+                    <input type="file" name="archivo" class="form-control form-control-sm" accept=".xlsx, .xls" required>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-sm btn-primary w-100 mt-4">
+                        <i class="fas fa-file-import"></i> Subir Datos
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
     <div class="card mb-4">
         <div class="card-header">
             <i class="fas fa-edit me-2"></i>
