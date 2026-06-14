@@ -1,3 +1,5 @@
+import io
+from flask import send_file
 import pandas as pd
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
@@ -199,3 +201,58 @@ def importar_excel():
         flash(f'Error al procesar: {str(error_desc)}', 'danger')
         
     return redirect(url_for('productos.listar_productos'))
+
+# --- 9. EXPORTAR A EXCEL (LISTADO / PLANTILLA) ---
+@productos_bp.route('/exportar', methods=['GET'])
+@employee_required
+def exportar_productos_excel():
+    try:
+        # 1. Obtener todos los productos actuales
+        productos = Producto.query.all()
+        
+        # 2. Estructurar los datos sin incluir la columna de imagen
+        data = []
+        for p in productos:
+            data.append({
+                'codigo': p.codigo,
+                'nombre': p.nombre,
+                'descripcion': p.descripcion,
+                'id_categoria': p.id_categoria,
+                'precio_compra': p.precio_compra,
+                'precio_venta': p.precio_venta,
+                'stock_actual': p.stock_actual,
+                'stock_minimo': p.stock_minimo,
+                'unidad_medida': p.unidad_medida
+            })
+        
+        # 3. Si la base de datos está vacía, genera la estructura limpia con las cabeceras requeridas
+        if not data:
+            columnas = [
+                'codigo', 'nombre', 'descripcion', 'id_categoria', 
+                'precio_compra', 'precio_venta', 'stock_actual', 'stock_minimo', 'unidad_medida'
+            ]
+            df = pd.DataFrame(columns=columnas)
+        else:
+            df = pd.DataFrame(data)
+        
+        # 4. Crear el archivo Excel en la memoria RAM
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Productos')
+        
+        output.seek(0)
+        
+        # 5. Enviar el archivo para descarga automatizada
+        return send_file(
+            output,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name='Plantilla_Productos_HappyChildren.xlsx'
+        )
+        
+    except Exception as e:
+        print("---------- ERROR AL EXPORTAR EXCEL ----------")
+        print(str(e))
+        print("---------------------------------------------")
+        flash(f'Error al generar la plantilla Excel: {str(e)}', 'danger')
+        return redirect(url_for('productos.listar_productos'))
