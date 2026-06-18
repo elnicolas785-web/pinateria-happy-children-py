@@ -65,7 +65,7 @@ class Empleado(db.Model, UserMixin):
 
     rol = db.relationship('Rol')
     
-    # 🔐 Sincronizado perfectamente con la opción B de tu app.py
+   
     def get_id(self):
         return f"EMP-{self.id_empleado}"
 
