@@ -1,24 +1,21 @@
-from flask import render_template, request, redirect, url_for, flash, session, current_app # type: ignore
-from flask_login import login_user, logout_user # type: ignore
-from routes import auth_bp # type: ignore
-from models import Cliente, UsuarioCliente, Rol, Empleado # type: ignore
-from extensions import db, mail # Se agrega mail a las extensiones
-from flask_mail import Message # Para enviar el correo
-from itsdangerous import URLSafeTimedSerializer as Serializer # Para el token seguro
+from flask import render_template, request, redirect, url_for, flash, session, current_app
+from flask_login import login_user, logout_user
+from routes import auth_bp
+from models import Cliente, UsuarioCliente, Rol, Empleado
+from extensions import db, mail 
+from flask_mail import Message 
+from itsdangerous import URLSafeTimedSerializer as Serializer 
+from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 import re
-
 
 def enviar_email_restablecimiento(usuario, tipo):
     s = Serializer(current_app.config['SECRET_KEY'])
     
-    # Definimos el ID según el tipo
     user_id = usuario.id_cliente if tipo == 'cliente' else usuario.id_empleado
     token = s.dumps({'user_id': user_id, 'tipo': tipo}, salt='pw-reset')
     
-    #Verifica que ambos modelos tengan el atributo .email
     destinatario = usuario.email 
-    
     print(f"DEBUG: Intentando enviar correo de recuperación a: {destinatario}")
 
     msg = Message(
@@ -48,7 +45,6 @@ def enviar_email_restablecimiento(usuario, tipo):
     except Exception as e:
         print(f"DEBUG ERROR: No se pudo enviar el correo. Motivo: {e}")
 
-
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -57,7 +53,7 @@ def login():
         
         # Validar Cliente
         cliente_u = UsuarioCliente.query.filter_by(nombre_usuario=username).first()
-        if cliente_u and cliente_u.contrasena == password:
+        if cliente_u and check_password_hash(cliente_u.contrasena, password):
             session.pop('_flashes', None)
             login_user(cliente_u)
             flash(f'¡Bienvenido {cliente_u.cliente.nombres}!', 'success')
@@ -65,13 +61,14 @@ def login():
             
         # Validar Empleado
         empleado = Empleado.query.filter_by(nombre_usuario=username).first()
-        if empleado and empleado.contrasena_hash == password:
+        if empleado and check_password_hash(empleado.contrasena_hash, password):
             session.pop('_flashes', None)
             login_user(empleado)
+            
             rol_nombre = empleado.rol.nombre_rol.capitalize() if empleado.rol else 'Empleado'
-            if rol_nombre.upper() in ['ADMINISTRADOR', 'ADMIN']:
-                rol_nombre = 'Administrador'
             flash(f'¡Bienvenido {rol_nombre} {empleado.nombres}!', 'success')
+            
+            # 🚀 FIX: Mandamos SIEMPRE a la ruta puente para que ella decida a dónde va.
             return redirect(url_for('dashboard.dashboard'))
             
         return render_template('login.html', errorGeneral="Usuario o contraseña incorrectos")
@@ -103,6 +100,7 @@ def register():
 
         try:
             rol_cliente = Rol.query.filter(Rol.nombre_rol.ilike('CLIENTE')).first()
+            password_encriptada = generate_password_hash(password)
 
             nuevo_cliente = Cliente(
                 nombres=firstname,
@@ -110,7 +108,7 @@ def register():
                 numero_documento=numeroDocumento,
                 tipo_documento=tipoDocumento,
                 email=email,
-                password=password, 
+                password=password_encriptada,
                 estado="Activo",
                 fecha_registro=datetime.date.today(),
                 codigo=f"CLI-{int(datetime.datetime.now().timestamp() * 1000) % 10000:04d}"
@@ -121,7 +119,7 @@ def register():
             nuevo_usuario = UsuarioCliente(
                 id_cliente=nuevo_cliente.id_cliente,
                 nombre_usuario=email,
-                contrasena=password,
+                contrasena=password_encriptada,
                 id_rol=rol_cliente.id_rol if rol_cliente else 1,
                 estado="Activo",
                 codigo=f"USR-{int(datetime.datetime.now().timestamp() * 1000) % 10000:04d}"
@@ -148,10 +146,6 @@ def logout():
 def logout_success():
     return render_template('logout_success.html')
 
-
-import re
-
-# Página para pedir el correo (La que va en el Login)
 @auth_bp.route("/reset_password", methods=['GET', 'POST'])
 def reset_request():
     if request.method == 'POST':
@@ -172,7 +166,6 @@ def reset_request():
             
     return render_template('reset_request.html')
 
-# Página para poner la clave nueva (La que llega por correo)
 @auth_bp.route("/reset_password/<token>", methods=['GET', 'POST'])
 def restablecer_token(token):
     s = Serializer(current_app.config['SECRET_KEY'])
@@ -192,21 +185,22 @@ def restablecer_token(token):
             flash('Las contraseñas no coinciden.', 'danger')
             return render_template('reset_password.html')
 
-        # VALIDACIONES ESTRICTAS
         reglas = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
         if not re.match(reglas, nueva_clave):
             flash('Requisito: 8 caracteres, Mayúscula, Minúscula, Número y Carácter especial.', 'warning')
             return render_template('reset_password.html')
 
         try:
+            nueva_clave_encriptada = generate_password_hash(nueva_clave)
+
             if tipo == 'cliente':
                 usuario_c = UsuarioCliente.query.filter_by(id_cliente=user_id).first()
                 cliente = Cliente.query.get(user_id)
-                if usuario_c: usuario_c.contrasena = nueva_clave
-                if cliente: cliente.password = nueva_clave
+                if usuario_c: usuario_c.contrasena = nueva_clave_encriptada
+                if cliente: cliente.password = nueva_clave_encriptada
             else:
                 empleado = Empleado.query.get(user_id)
-                if empleado: empleado.contrasena_hash = nueva_clave
+                if empleado: empleado.contrasena_hash = nueva_clave_encriptada
                 
             db.session.commit()
             flash('Tu contraseña ha sido actualizada exitosamente.', 'success')
@@ -214,5 +208,5 @@ def restablecer_token(token):
         except Exception as e:
             db.session.rollback()
             flash('Error al actualizar la contraseña.', 'danger')
-        
+       
     return render_template('reset_password.html')

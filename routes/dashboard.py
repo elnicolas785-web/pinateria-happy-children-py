@@ -1,8 +1,7 @@
-from flask import render_template, redirect, url_for, flash, request, abort # type: ignore
-from routes import dashboard_bp # type: ignore
-from flask_login import login_required, current_user # type: ignore
-from models import Producto, Venta, Cliente, Empleado, Rol, UsuarioCliente, CategoriaProducto, db # type: ignore
-from extensions import admin_required, employee_required # Importamos los decoradores
+from flask import render_template, redirect, url_for, flash, request, abort
+from routes import dashboard_bp
+from flask_login import login_required, current_user
+from models import Producto, Venta, Cliente, Empleado, Rol, UsuarioCliente, CategoriaProducto, db
 
 @dashboard_bp.route('/')
 def root():
@@ -20,6 +19,7 @@ def dashboard():
     
     if isinstance(current_user, Empleado):
         rol_nombre = current_user.rol.nombre_rol.upper() if current_user.rol else ""
+        # Según tu base de datos, el rol 1 es 'Administrador'
         if rol_nombre in ['ADMINISTRADOR', 'ADMIN']:
             return redirect(url_for('dashboard.admin_dashboard'))
         else:
@@ -28,8 +28,12 @@ def dashboard():
     return redirect(url_for('dashboard.root'))
 
 @dashboard_bp.route('/admin/dashboard')
-@admin_required # Ya incluye @login_required y chequeo de ADMIN
+@login_required # 🚀 FIX: Usamos validación nativa sin dependencias externas
 def admin_dashboard():
+    # Validación de seguridad directa
+    if not isinstance(current_user, Empleado) or current_user.rol.nombre_rol.upper() not in ['ADMINISTRADOR', 'ADMIN']:
+        abort(403)
+
     # Consultas para las tarjetas de estadísticas
     cant_productos = Producto.query.count()
     cant_empleados = Empleado.query.count()
@@ -70,9 +74,12 @@ def admin_dashboard():
                           catValues=categorias_conteos)
 
 @dashboard_bp.route('/empleado/dashboard')
-@employee_required # Ya incluye @login_required y chequeo de EMPLEADO
+@login_required # 🚀 FIX: Usamos validación nativa sin dependencias externas
 def empleado_dashboard():
-    # Seguridad: Si es un Admin, lo mandamos a SU dashboard (opcional, pero ayuda)
+    # Validación de seguridad directa
+    if not isinstance(current_user, Empleado):
+        abort(403)
+
     rol_nombre = current_user.rol.nombre_rol.upper() if current_user.rol else ""
     if rol_nombre in ['ADMINISTRADOR', 'ADMIN']:
         return redirect(url_for('dashboard.admin_dashboard'))

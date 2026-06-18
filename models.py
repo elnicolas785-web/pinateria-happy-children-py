@@ -5,6 +5,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from extensions import db
 from flask_login import UserMixin
 import datetime
+
 class Rol(db.Model):
     __tablename__ = 'rol'
     id_rol = db.Column(db.Integer, primary_key=True)
@@ -41,6 +42,7 @@ class UsuarioCliente(db.Model, UserMixin):
     cliente = db.relationship('Cliente', backref=db.backref('usuarios_cliente', lazy=True))
     rol = db.relationship('Rol')
     
+    # 🔐 Sincronizado perfectamente con la opción B de tu app.py
     def get_id(self):
         return f"UC-{self.id_usuario}"
 
@@ -63,6 +65,7 @@ class Empleado(db.Model, UserMixin):
 
     rol = db.relationship('Rol')
     
+    # 🔐 Sincronizado perfectamente con la opción B de tu app.py
     def get_id(self):
         return f"EMP-{self.id_empleado}"
 
