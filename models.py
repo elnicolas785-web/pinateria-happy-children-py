@@ -42,7 +42,7 @@ class UsuarioCliente(db.Model, UserMixin):
     cliente = db.relationship('Cliente', backref=db.backref('usuarios_cliente', lazy=True))
     rol = db.relationship('Rol')
     
-    # 🔐 Sincronizado perfectamente con la opción B de tu app.py
+    
     def get_id(self):
         return f"UC-{self.id_usuario}"
 
