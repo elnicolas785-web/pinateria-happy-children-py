@@ -18,7 +18,8 @@ def send_styled_email(recipient, subject, title, body_text, items=None, total=0,
     has_logo = os.path.exists(logo_path)
     if has_logo:
         with current_app.open_resource(logo_path) as fp:
-            msg.attach("logo.jpg", "image/jpeg", fp.read(), headers=[['Content-ID', '<logo>']])
+            # CORRECCIÓN: Se cambió la lista por un diccionario en el parámetro headers
+            msg.attach("logo.jpg", "image/jpeg", fp.read(), headers={'Content-ID': '<logo>'})
 
     if attachments:
         for filename, content_type, data in attachments:
