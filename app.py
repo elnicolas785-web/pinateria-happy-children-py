@@ -28,6 +28,41 @@ def create_app():
     login_manager.init_app(flask_app)
     mail.init_app(flask_app)
 
+    # Crear tablas y semilla de datos si la base de datos está vacía
+    with flask_app.app_context():
+        try:
+            db.create_all()
+            from models import Rol, Empleado
+            from werkzeug.security import generate_password_hash
+            if Rol.query.count() == 0:
+                admin_rol = Rol(codigo="ROL-ADMIN", nombre_rol="Administrador", estado="Activo")
+                cliente_rol = Rol(codigo="ROL-CLIENTE", nombre_rol="Cliente", estado="Activo")
+                empleado_rol = Rol(codigo="ROL-EMPLEADO", nombre_rol="Empleado", estado="Activo")
+                db.session.add_all([admin_rol, cliente_rol, empleado_rol])
+                db.session.commit()
+                print("Default roles seeded successfully.")
+            if Empleado.query.count() == 0:
+                admin_rol = Rol.query.filter_by(nombre_rol="Administrador").first()
+                if admin_rol:
+                    admin_emp = Empleado(
+                        codigo="EMP-ADMIN",
+                        nombres="Administrador",
+                        apellidos="Sistema",
+                        tipo_documento="CC",
+                        documento_identidad="0000000000",
+                        email="admin@happychildren.com",
+                        id_rol=admin_rol.id_rol,
+                        estado="Activo",
+                        nombre_usuario="admin",
+                        contrasena_hash=generate_password_hash("admin123")
+                    )
+                    db.session.add(admin_emp)
+                    db.session.commit()
+                    print("Default administrator seeded successfully.")
+        except Exception as e:
+            print(f"Error checking/seeding database tables: {e}")
+
+
     # Registrar blueprints (rutas)
     flask_app.register_blueprint(auth_bp)
     flask_app.register_blueprint(dashboard_bp)
