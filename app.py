@@ -73,7 +73,10 @@ def create_app():
     return flask_app
 
 
+# Instancia global de la aplicación para que Railway la detecten
+app = create_app()
+
 if __name__ == '__main__':
-    # Lee el puerto que asigna Railway, si no existe usa el 5000
+    # Lee el puerto que asigna Railway dinámicamente, si no existe usa el 5000 por defecto
     puerto = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=puerto, debug=True)
