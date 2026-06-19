@@ -3,27 +3,25 @@ import os
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'clave-secreta-muy-segura-pinateria'
     
-    # 1. Intentamos obtener la URL de la base de datos de Railway
-    _RAILWAY_DB = os.environ.get('MYSQL_URL')
-    
-    if _RAILWAY_DB:
-        # Railway genera la URL como 'mysql://...', pero Flask-SQLAlchemy 
-        # necesita obligatoriamente saber el driver ('mysql+pymysql://')
-        if _RAILWAY_DB.startswith("mysql://"):
-            SQLALCHEMY_DATABASE_URI = _RAILWAY_DB.replace("mysql://", "mysql+pymysql://", 1)
-        else:
-            SQLALCHEMY_DATABASE_URI = _RAILWAY_DB
+    # Variables que Railway SÍ provee (las que vimos en tu panel)
+    _host = os.environ.get('MYSQLHOST')
+    _user = os.environ.get('MYSQLUSER')
+    _password = os.environ.get('MYSQLPASSWORD')
+    _port = os.environ.get('MYSQLPORT', '3306')
+    _database = os.environ.get('MYSQLDATABASE')
+
+    if _host:
+        # Estamos en Railway
+        SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{_user}:{_password}@{_host}:{_port}/{_database}"
     else:
-        # 2. Si no está en Railway, usa tu phpMyAdmin local por defecto
+        # Local con phpMyAdmin
         SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:@localhost:3306/sistema_feliz'
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-# CONFIGURACIÓN DE FLASK-MAIL
-    MAIL_SERVER = 'smtp.gmail.com'          # Servidor de Gmail
-    MAIL_PORT = 587                         # Puerto estándar para TLS
-    MAIL_USE_TLS = True                     # Activa la seguridad
-    MAIL_USERNAME = 'hchildren815@gmail.com'  # correo real
-    
-    # Es una "Contraseña de Aplicación" de 16 letras.
+    # CONFIGURACIÓN DE FLASK-MAIL
+    MAIL_SERVER = 'smtp.gmail.com'
+    MAIL_PORT = 587
+    MAIL_USE_TLS = True
+    MAIL_USERNAME = 'hchildren815@gmail.com'
     MAIL_PASSWORD = 'hkcwqghazwroverq'
