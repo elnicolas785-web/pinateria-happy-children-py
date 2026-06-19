@@ -75,4 +75,7 @@ def create_app():
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(debug=True)
+    # 1. Lee el puerto dinámico asignado por Railway (o usa 5000 por defecto en tu máquina)
+    port = int(os.environ.get("PORT", 5000))
+    # 2. Obliga a Flask a escuchar en 0.0.0.0 para abrirse al proxy de Railway
+    app.run(host='0.0.0.0', port=port, debug=True)
