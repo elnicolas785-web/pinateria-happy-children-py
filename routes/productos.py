@@ -99,21 +99,43 @@ def actualizar(id):
         flash(f'Error al actualizar: {str(e)}', 'danger')
     return redirect(url_for('productos.listar_productos'))
 
-# --- 6. BUSCAR ---
+# --- 6. BUSCAR (BLOQUE MODIFICADO) ---
 @productos_bp.route('/buscar', methods=['GET'])
 @employee_required
 def buscar():
-    busqueda = request.args.get('busqueda', '')
+    # Capturar todos los parámetros del formulario HTML
+    busqueda = request.args.get('busqueda', '').strip()
+    categoria_id = request.args.get('categoria_id', '')
+    estado = request.args.get('estado', '')
+    stock_bajo = request.args.get('stock_bajo', '')
+
+    # Iniciar la consulta base uniendo la tabla de Categorías
+    query = Producto.query.join(CategoriaProducto)
+
+    # Aplicar filtro de texto
     if busqueda:
-        productos = Producto.query.join(CategoriaProducto).filter(
+        query = query.filter(
             db.or_(
                 Producto.nombre.ilike(f'%{busqueda}%'),
                 Producto.codigo.ilike(f'%{busqueda}%'),
                 CategoriaProducto.nombre.ilike(f'%{busqueda}%')
             )
-        ).all()
-    else:
-        productos = Producto.query.all()
+        )
+
+    # Aplicar filtro por Categoría exacta
+    if categoria_id:
+        query = query.filter(Producto.id_categoria == categoria_id)
+
+    # Aplicar filtro por Estado (Activo / Inactivo)
+    if estado:
+        query = query.filter(Producto.activo == estado)
+
+    # Aplicar filtro de Stock Crítico
+    if stock_bajo == '1':
+        query = query.filter(Producto.stock_actual <= Producto.stock_minimo)
+
+    # Ejecutar la consulta final
+    productos = query.all()
     
     categorias = CategoriaProducto.query.all()
     return render_template('crud_productos.html', 
@@ -121,7 +143,11 @@ def buscar():
                            categorias=categorias, 
                            producto=Producto(), 
                            readonly=False,
-                           editMode=False)
+                           editMode=False,
+                           busqueda=busqueda,
+                           categoria_id=categoria_id,
+                           estado=estado,
+                           stock_bajo=stock_bajo)
     
 # --- 7. CAMBIAR ESTADO (ACTIVAR/DESACTIVAR) ---
 @productos_bp.route('/cambiar_estado/<int:id>')
