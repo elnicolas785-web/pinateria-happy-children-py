@@ -43,7 +43,6 @@
                         <i class="fas fa-download"></i> Descargar Plantilla
                     </a>
                 </div>
-
             </form>
         </div>
     </div>
@@ -135,6 +134,63 @@
                             <i class="fas fa-save"></i> Guardar
                         </button>
                     {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- BARRA DE BÚSQUEDA MULTICRITERIO -->
+    <div class="card mb-3 border-0 shadow-sm">
+        <div class="card-body py-3">
+            <form action="{{ url_for('productos.buscar') }}" method="get" class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold text-primary mb-1">
+                        <i class="fas fa-search"></i> Buscar
+                    </label>
+                    <input type="text" name="busqueda" class="form-control"
+                           placeholder="Nombre, código o categoría..."
+                           value="{{ busqueda if busqueda is defined else '' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold text-primary mb-1">
+                        <i class="fas fa-tags"></i> Categoría
+                    </label>
+                    <select name="categoria_id" class="form-select">
+                        <option value="">Todas las categorías</option>
+                        {% for cat in categorias %}
+                            <option value="{{ cat.id_categoria }}"
+                                {{ 'selected' if categoria_id is defined and categoria_id == cat.id_categoria|string else '' }}>
+                                {{ cat.nombre }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold text-primary mb-1">
+                        <i class="fas fa-toggle-on"></i> Estado
+                    </label>
+                    <select name="estado" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="Activo" {{ 'selected' if estado is defined and estado == 'Activo' else '' }}>Activo</option>
+                        <option value="Inactivo" {{ 'selected' if estado is defined and estado == 'Inactivo' else '' }}>Inactivo</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold text-primary mb-1">
+                        <i class="fas fa-exclamation-triangle"></i> Stock
+                    </label>
+                    <select name="stock_bajo" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="1" {{ 'selected' if stock_bajo is defined and stock_bajo == '1' else '' }}>Stock bajo</option>
+                    </select>
+                </div>
+                <div class="col-md-1 d-flex gap-1">
+                    <button type="submit" class="btn btn-primary w-100" title="Buscar">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <a href="{{ url_for('productos.listar_productos') }}" class="btn btn-outline-secondary w-100" title="Limpiar filtros">
+                        <i class="fas fa-times"></i>
+                    </a>
                 </div>
             </form>
         </div>
