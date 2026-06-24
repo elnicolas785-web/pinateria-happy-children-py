@@ -10,15 +10,8 @@ def send_styled_email(recipient, subject, title, body_text, items=None, total=0,
     Evita el bloqueo de puertos SMTP en Railway.
     """
 
-    logo_path = os.path.join(current_app.root_path, 'static', 'images', 'logo_happychildren.jpg')
-    has_logo = os.path.exists(logo_path)
-
-    # Logo en base64 para embeber directamente en el HTML
-    logo_tag = ""
-    if has_logo:
-        with open(logo_path, "rb") as f:
-            logo_b64 = base64.b64encode(f.read()).decode()
-        logo_tag = f'<img src="data:image/jpeg;base64,{logo_b64}" class="logo-img" alt="Logo">'
+    # Logo como URL directa para evitar que Gmail recorte el mensaje
+    logo_tag = '<img src="https://pinateria-happy-children-py-production.up.railway.app/static/images/logo_happychildren.jpg" class="logo-img" alt="Logo">'
 
     # Recibo HTML
     receipt_html = ""
