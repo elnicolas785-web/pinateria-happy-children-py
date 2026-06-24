@@ -1,5 +1,4 @@
 from flask import render_template, request, redirect, url_for, flash, current_app
-from flask_mail import Message
 from flask_login import login_required, current_user
 import datetime
 import time 
@@ -7,7 +6,7 @@ import threading
 from routes import clientes_bp
 
 from models import Cliente, Venta
-from extensions import mail, db, employee_required
+from extensions import db, employee_required
 from .mailer import send_styled_email
 from .pdf_utils import generar_recibo_pdf
 
@@ -55,7 +54,6 @@ def guardar():
 
     try:
         if id_cliente:
-            # --- EDITAR CLIENTE ---
             cliente = Cliente.query.get(id_cliente)
             if cliente:
                 cliente.nombres = nombres
@@ -68,10 +66,7 @@ def guardar():
                 cliente.estado = estado
                 flash('Cliente actualizado correctamente.', 'success')
         else:
-            # --- CREAR CLIENTE NUEVO  ---
-            
             ultimo_cliente = Cliente.query.order_by(Cliente.id_cliente.desc()).first()
-            
             if ultimo_cliente and ultimo_cliente.codigo:
                 try:
                     numero_actual = int(ultimo_cliente.codigo.replace('CLI', ''))
@@ -82,7 +77,6 @@ def guardar():
                 nuevo_numero = 1
             
             nuevo_codigo = f"CLI{str(nuevo_numero).zfill(3)}"
-
             nuevo_cliente = Cliente(
                 codigo=nuevo_codigo, 
                 nombres=nombres,
@@ -126,14 +120,11 @@ def buscar():
     return render_template('clientes.html', listaClientes=clientes, cliente=None, readonly=False)
 
 def enviar_publicidad_async_thread(app):
-    """Función de fondo para enviar correos de publicidad masiva de forma optimizada."""
+    """Función de fondo para enviar correos de publicidad masiva usando API de Brevo."""
     with app.app_context():
         print("[BULK EMAIL] Iniciando envío de correos masivos en segundo plano...")
         try:
-            # Buscar todos los clientes con estado 'Activo'
             clientes = Cliente.query.filter_by(estado='Activo').all()
-            
-            # Filtrar clientes que realmente tengan correo
             clientes_con_correo = [c for c in clientes if c.email]
             
             if not clientes_con_correo:
@@ -145,87 +136,79 @@ def enviar_publicidad_async_thread(app):
             
             print(f"[BULK EMAIL] Se enviarán correos a {len(clientes_con_correo)} clientes.")
 
-            # Conectarse al servidor SMTP una sola vez
-            with mail.connect() as conn:
-                for cliente in clientes_con_correo:
-                    print(f"[BULK EMAIL] Enviando correo a: {cliente.nombres} ({cliente.email})")
-                    try:
-                        # Buscar su última venta
-                        ultima_venta = Venta.query.filter_by(id_cliente=cliente.id_cliente).order_by(Venta.fecha_venta.desc()).first()
-                        
-                        items_recibo = []
-                        total_recibo = 0
-                        adjuntos = []
-                        
-                        if ultima_venta:
-                            total_recibo = ultima_venta.total
-                            
-                            for detalle in ultima_venta.detalles_venta.all():
-                                items_recibo.append({
-                                    'nombre': detalle.producto.nombre if detalle.producto else "Producto",
-                                    'cantidad': detalle.cantidad,
-                                    'precio': float(detalle.precio_unitario),
-                                    'subtotal': float(detalle.subtotal)
-                                })
-                            
-                            pdf_data = generar_recibo_pdf(ultima_venta)
-                            adjuntos.append((f"Recibo_{ultima_venta.numero_factura}.pdf", "application/pdf", pdf_data))
+            for cliente in clientes_con_correo:
+                print(f"[BULK EMAIL] Enviando correo a: {cliente.nombres} ({cliente.email})")
+                try:
+                    ultima_venta = Venta.query.filter_by(id_cliente=cliente.id_cliente).order_by(Venta.fecha_venta.desc()).first()
+                    
+                    items_recibo = []
+                    total_recibo = 0
+                    adjuntos = []
+                    
+                    if ultima_venta:
+                        total_recibo = ultima_venta.total
+                        for detalle in ultima_venta.detalles_venta.all():
+                            items_recibo.append({
+                                'nombre': detalle.producto.nombre if detalle.producto else "Producto",
+                                'cantidad': detalle.cantidad,
+                                'precio': float(detalle.precio_unitario),
+                                'subtotal': float(detalle.subtotal)
+                            })
+                        pdf_data = generar_recibo_pdf(ultima_venta)
+                        adjuntos.append((f"Recibo_{ultima_venta.numero_factura}.pdf", "application/pdf", pdf_data))
 
-                        asunto = "🎈 ¡Novedades y sorpresas en Happy Children!"
-                        titulo = f"¡Hola, {cliente.nombres}!"
-                        mensaje_body = f"""
-                        En <strong>Happy Children</strong> queremos que tus celebraciones sean mágicas. 
-                        Tenemos nuevas piñatas personalizadas, globos y todo lo que necesitas para tu fiesta.
-                        <br><br>
-                        Te recordamos que te esperamos en nuestra tienda física para asesorarte con la mejor decoración.
+                    asunto = "🎈 ¡Novedades y sorpresas en Happy Children!"
+                    titulo = f"¡Hola, {cliente.nombres}!"
+                    mensaje_body = f"""
+                    En <strong>Happy Children</strong> queremos que tus celebraciones sean mágicas. 
+                    Tenemos nuevas piñatas personalizadas, globos y todo lo que necesitas para tu fiesta.
+                    <br><br>
+                    Te recordamos que te esperamos en nuestra tienda física para asesorarte con la mejor decoración.
+                    """
+                    
+                    if ultima_venta:
+                        mensaje_body += f"<p>Adjunto a este correo encontrarás el recibo de tu última compra (<b>{ultima_venta.numero_factura}</b>) para tu control personal.</p>"
+                    else:
+                        mensaje_body += """
+                        <div style="background-color: #ebf5ff; border-left: 4px solid #1E88E5; padding: 15px; margin: 20px 0; border-radius: 8px;">
+                            <p style="margin: 0; font-weight: bold; color: #1565C0;">🎁 ¡Regalo de Bienvenida!</p>
+                            <p style="margin: 5px 0 0;">Muestra este correo en tu primera compra y recibe un <strong>10% de descuento</strong>.</p>
+                        </div>
                         """
-                        
-                        if ultima_venta:
-                            mensaje_body += f"<p>Adjunto a este correo encontrarás el recibo de tu última compra (<b>{ultima_venta.numero_factura}</b>) para tu control personal.</p>"
-                        else:
-                            mensaje_body += """
-                            <div style="background-color: #ebf5ff; border-left: 4px solid #1E88E5; padding: 15px; margin: 20px 0; border-radius: 8px;">
-                                <p style="margin: 0; font-weight: bold; color: #1565C0;">🎁 ¡Regalo de Bienvenida!</p>
-                                <p style="margin: 5px 0 0;">Muestra este correo en tu primera compra y recibe un <strong>10% de descuento</strong>.</p>
-                            </div>
-                            """
 
-                        # Datos para el diseño estilo PDF en el cuerpo del correo
-                        info_cliente = {
-                            'num_pedido': ultima_venta.numero_factura if ultima_venta else 'N/A',
-                            'fecha': ultima_venta.fecha_venta.strftime('%Y-%m-%d') if ultima_venta else 'N/A',
-                            'cliente': f"{cliente.nombres} {cliente.apellidos}",
-                            'documento': cliente.numero_documento
-                        }
+                    info_cliente = {
+                        'num_pedido': ultima_venta.numero_factura if ultima_venta else 'N/A',
+                        'fecha': ultima_venta.fecha_venta.strftime('%Y-%m-%d') if ultima_venta else 'N/A',
+                        'cliente': f"{cliente.nombres} {cliente.apellidos}",
+                        'documento': cliente.numero_documento
+                    }
 
-                        # Enviar reutilizando la conexión SMTP
-                        exito = send_styled_email(
-                            recipient=cliente.email,
-                            subject=asunto,
-                            title=titulo,
-                            body_text=mensaje_body,
-                            items=items_recibo,
-                            total=total_recibo,
-                            attachments=adjuntos,
-                            client_info=info_cliente if ultima_venta else None,
-                            connection=conn
-                        )
-                        
-                        if exito:
-                            enviados += 1
-                            print(f"[BULK EMAIL] Correo enviado con éxito a {cliente.email}")
-                        else:
-                            errores += 1
-                            print(f"[BULK EMAIL] Error al enviar correo a {cliente.email}")
-                        
-                        # Retraso entre correos de 1.5 segundos para evitar límites de spam
-                        time.sleep(1.5)
-                        
-                    except Exception as e:
-                        print(f"[BULK EMAIL] Error procesando cliente {cliente.email}: {e}")
+                    # Usar API HTTP de Brevo (sin conexión SMTP)
+                    exito = send_styled_email(
+                        recipient=cliente.email,
+                        subject=asunto,
+                        title=titulo,
+                        body_text=mensaje_body,
+                        items=items_recibo,
+                        total=total_recibo,
+                        attachments=adjuntos,
+                        client_info=info_cliente if ultima_venta else None
+                    )
+                    
+                    if exito:
+                        enviados += 1
+                        print(f"[BULK EMAIL] Correo enviado con éxito a {cliente.email}")
+                    else:
                         errores += 1
+                        print(f"[BULK EMAIL] Error al enviar correo a {cliente.email}")
+                    
+                    time.sleep(1.5)
+                    
+                except Exception as e:
+                    print(f"[BULK EMAIL] Error procesando cliente {cliente.email}: {e}")
+                    errores += 1
                         
-            print(f"[BULK EMAIL] Proceso finalizado. Total Enviados: {enviados}, Total Errores: {errores}")
+            print(f"[BULK EMAIL] Proceso finalizado. Enviados: {enviados}, Errores: {errores}")
         except Exception as e:
             print(f"[BULK EMAIL] Error general en el envío asíncrono: {e}")
         finally:
@@ -235,7 +218,6 @@ def enviar_publicidad_async_thread(app):
 @employee_required
 def enviar_publicidad():
     """Inicia el envío masivo de correos en segundo plano."""
-    # Verificar si hay clientes activos
     clientes_activos = Cliente.query.filter_by(estado='Activo').all()
     clientes_con_correo = [c for c in clientes_activos if c.email]
     
@@ -243,42 +225,10 @@ def enviar_publicidad():
         flash('No hay clientes activos con correos electrónicos registrados.', 'warning')
         return redirect(url_for('clientes.listar_clientes'))
 
-    # Obtener el objeto real de la aplicación Flask
     app = current_app._get_current_object()
-
-    # Lanzar el hilo en segundo plano
     hilo = threading.Thread(target=enviar_publicidad_async_thread, args=(app,))
     hilo.daemon = True
     hilo.start()
 
-    flash(f'El envío masivo a {len(clientes_con_correo)} clientes ha comenzado en segundo plano. Puedes monitorear el progreso en los logs del servidor.', 'info')
+    flash(f'El envío masivo a {len(clientes_con_correo)} clientes ha comenzado en segundo plano.', 'info')
     return redirect(url_for('clientes.listar_clientes'))
-
-@clientes_bp.route('/diagnostico-correo')
-def diagnostico_correo():
-    import traceback
-    output = []
-    output.append("<h2>Diagnóstico de Correo Electrónico</h2>")
-    output.append(f"<b>SMTP Server:</b> {current_app.config.get('MAIL_SERVER')}")
-    output.append(f"<b>SMTP Port:</b> {current_app.config.get('MAIL_PORT')}")
-    output.append(f"<b>SMTP User:</b> {current_app.config.get('MAIL_USERNAME')}")
-    output.append(f"<b>SMTP Use SSL:</b> {current_app.config.get('MAIL_USE_SSL')}")
-    output.append(f"<b>SMTP Use TLS:</b> {current_app.config.get('MAIL_USE_TLS')}")
-    
-    # Intentar enviar un correo de prueba
-    destinatario = current_app.config.get('MAIL_USERNAME')
-    msg = Message(
-        subject="Diagnóstico de Conexión en Railway",
-        sender=destinatario,
-        recipients=[destinatario]
-    )
-    msg.body = "Esta es una prueba de diagnóstico ejecutada directamente desde el servidor de Railway."
-    
-    try:
-        mail.send(msg)
-        output.append("<p style='color:green; font-weight:bold;'>>>> ¡ÉXITO! El correo de prueba se envió correctamente a " + str(destinatario) + "</p>")
-    except Exception as e:
-        output.append("<p style='color:red; font-weight:bold;'>>>> ¡ERROR DE CONEXIÓN/ENVÍO!</p>")
-        output.append(f"<pre>{traceback.format_exc()}</pre>")
-        
-    return "<br>".join(output)
