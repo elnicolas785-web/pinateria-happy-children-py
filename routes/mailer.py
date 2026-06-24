@@ -1,30 +1,26 @@
 import os
+import base64
+import requests
 from flask import current_app
-from flask_mail import Message
-from extensions import mail
+
 
 def send_styled_email(recipient, subject, title, body_text, items=None, total=0, attachments=None, client_info=None, connection=None):
     """
-    Envía un correo electrónico con el diseño premium original (Logo grande y degradado)
-    e integra el recibo con estilo PDF si hay ítems disponibles.
-    Usa Brevo SMTP para compatibilidad con Railway.
+    Envía correos usando la API HTTP de Brevo (no SMTP).
+    Evita el bloqueo de puertos SMTP en Railway.
     """
-    msg = Message(
-        subject=subject,
-        sender=current_app.config['MAIL_USERNAME'],
-        recipients=[recipient]
-    )
 
     logo_path = os.path.join(current_app.root_path, 'static', 'images', 'logo_happychildren.jpg')
     has_logo = os.path.exists(logo_path)
+
+    # Logo en base64 para embeber directamente en el HTML
+    logo_tag = ""
     if has_logo:
-        with current_app.open_resource(logo_path) as fp:
-            msg.attach("logo.jpg", "image/jpeg", fp.read(), headers={'Content-ID': '<logo>'})
+        with open(logo_path, "rb") as f:
+            logo_b64 = base64.b64encode(f.read()).decode()
+        logo_tag = f'<img src="data:image/jpeg;base64,{logo_b64}" class="logo-img" alt="Logo">'
 
-    if attachments:
-        for filename, content_type, data in attachments:
-            msg.attach(filename, content_type, data)
-
+    # Recibo HTML
     receipt_html = ""
     if items and client_info:
         rows = ""
@@ -36,7 +32,7 @@ def send_styled_email(recipient, subject, title, body_text, items=None, total=0,
                 <td style="padding: 10px 0; text-align: right; font-weight: bold; font-size: 14px;">${float(item.get('subtotal', 0)):,.2f}</td>
             </tr>
             """
-        
+
         receipt_html = f"""
         <div style="margin-top: 30px; border: 1px solid #ddd; border-top: 5px solid #1565C0; border-radius: 8px; padding: 20px; background-color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
             <div style="text-align: center; margin-bottom: 20px;">
@@ -62,19 +58,17 @@ def send_styled_email(recipient, subject, title, body_text, items=None, total=0,
                 </tr>
             </table>
             <div style="background-color: #f1f8ff; padding: 8px 15px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #1E88E5;">
-                <p style="margin: 0; color: #1565C0; font-weight: bold; font-size: 12px;">📍 Detalles de Envío y Pago:</p>
+                <p style="margin: 0; color: #1565C0; font-weight: bold; font-size: 12px;">Detalles de Envio y Pago:</p>
             </div>
             <table style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr style="border-bottom: 2px solid #333;">
-                        <th style="padding: 10px 0; text-align: left; font-size: 11px; color: #666; text-transform: uppercase;">Descripción</th>
+                        <th style="padding: 10px 0; text-align: left; font-size: 11px; color: #666; text-transform: uppercase;">Descripcion</th>
                         <th style="padding: 10px 0; text-align: center; font-size: 11px; color: #666; text-transform: uppercase;">Cant</th>
                         <th style="padding: 10px 0; text-align: right; font-size: 11px; color: #666; text-transform: uppercase;">Total</th>
                     </tr>
                 </thead>
-                <tbody>
-                    {rows}
-                </tbody>
+                <tbody>{rows}</tbody>
             </table>
             <div style="border-top: 1px dashed #ccc; margin: 15px 0;"></div>
             <table style="width: 100%;">
@@ -86,7 +80,7 @@ def send_styled_email(recipient, subject, title, body_text, items=None, total=0,
         </div>
         """
 
-    msg.html = f"""
+    html_content = f"""
     <!DOCTYPE html>
     <html>
     <head>
@@ -148,24 +142,22 @@ def send_styled_email(recipient, subject, title, body_text, items=None, total=0,
     <body class="main-bg">
         <div class="container">
             <div class="header">
-                {f'<img src="cid:logo" class="logo-img" alt="Logo">' if has_logo else ''}
+                {logo_tag}
                 <h1 style="margin: 0; font-size: 26px; font-weight: 300; letter-spacing: 1.5px; text-transform: uppercase;">Happy Children</h1>
             </div>
             <div class="content">
                 <h2 style="color: #1565C0; margin-top: 0; font-size: 22px;">{title}</h2>
-                <div style="font-size: 16px;">
-                    {body_text}
-                </div>
+                <div style="font-size: 16px;">{body_text}</div>
                 {receipt_html}
                 <div style="text-align: center;">
-                    <a href="https://pinateria-happy-children-py-production.up.railway.app" class="btn">Visitar Tienda en Línea</a>
+                    <a href="https://pinateria-happy-children-py-production.up.railway.app" class="btn">Visitar Tienda en Linea</a>
                 </div>
             </div>
             <div class="footer">
-                <p style="margin: 5px 0; color: #444; font-size: 14px;"><strong>Piñatería Happy Children 🎈</strong></p>
-                <p style="margin: 5px 0;">¡Donde la diversión nunca termina!</p>
+                <p style="margin: 5px 0; color: #444; font-size: 14px;"><strong>Pinateria Happy Children</strong></p>
+                <p style="margin: 5px 0;">Donde la diversion nunca termina!</p>
                 <div style="border-top: 1px solid #eee; margin: 15px 0; padding-top: 15px;">
-                    <p style="margin: 0; font-size: 10px; color: #bbb;">Este correo fue enviado automáticamente por nuestro sistema de gestión. Por favor no responder.</p>
+                    <p style="margin: 0; font-size: 10px; color: #bbb;">Este correo fue enviado automaticamente. Por favor no responder.</p>
                     <p style="margin: 5px 0; font-size: 10px;">&copy; 2026 Happy Children | Barranquilla, Colombia</p>
                 </div>
             </div>
@@ -175,11 +167,39 @@ def send_styled_email(recipient, subject, title, body_text, items=None, total=0,
     """
 
     try:
-        if connection:
-            connection.send(msg)
-        else:
-            mail.send(msg)
-        return True
+        api_key = os.environ.get('BREVO_API_KEY')
+        sender_email = os.environ.get('BREVO_SENDER_EMAIL', 'hchildren815@gmail.com')
+        sender_name = os.environ.get('BREVO_SENDER_NAME', 'Happy Children')
+
+        payload = {
+            "sender": {"name": sender_name, "email": sender_email},
+            "to": [{"email": recipient}],
+            "subject": subject,
+            "htmlContent": html_content
+        }
+
+        # Adjuntos en base64
+        if attachments:
+            payload["attachment"] = []
+            for filename, content_type, data in attachments:
+                payload["attachment"].append({
+                    "name": filename,
+                    "content": base64.b64encode(data).decode()
+                })
+
+        response = requests.post(
+            "https://api.brevo.com/v3/smtp/email",
+            headers={
+                "api-key": api_key,
+                "Content-Type": "application/json"
+            },
+            json=payload,
+            timeout=30
+        )
+
+        print(f"Brevo API status: {response.status_code} - {response.text}")
+        return response.status_code in [200, 201]
+
     except Exception as e:
-        print(f"Error al enviar email: {str(e)}")
+        print(f"Error al enviar email con Brevo API: {str(e)}")
         return False
