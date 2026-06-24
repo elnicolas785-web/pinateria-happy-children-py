@@ -3,10 +3,11 @@ from flask import current_app
 from flask_mail import Message
 from extensions import mail
 
-def send_styled_email(recipient, subject, title, body_text, items=None, total=0, attachments=None, client_info=None):
+def send_styled_email(recipient, subject, title, body_text, items=None, total=0, attachments=None, client_info=None, connection=None):
     """
     Envía un correo electrónico con el diseño premium original (Logo grande y degradado)
     e integra el recibo con estilo PDF si hay ítems disponibles.
+    Usa Brevo SMTP para compatibilidad con Railway.
     """
     msg = Message(
         subject=subject,
@@ -18,14 +19,12 @@ def send_styled_email(recipient, subject, title, body_text, items=None, total=0,
     has_logo = os.path.exists(logo_path)
     if has_logo:
         with current_app.open_resource(logo_path) as fp:
-            # CORRECCIÓN: Se cambió la lista por un diccionario en el parámetro headers
             msg.attach("logo.jpg", "image/jpeg", fp.read(), headers={'Content-ID': '<logo>'})
 
     if attachments:
         for filename, content_type, data in attachments:
             msg.attach(filename, content_type, data)
 
-    # Lógica de Recibo Estilo PDF (Aparece si hay items)
     receipt_html = ""
     if items and client_info:
         rows = ""
@@ -44,7 +43,6 @@ def send_styled_email(recipient, subject, title, body_text, items=None, total=0,
                 <h2 style="color: #1565C0; margin: 0; font-family: sans-serif; letter-spacing: 2px; font-size: 18px;">RECIBO DE COMPRA</h2>
                 <div style="border-top: 1px dashed #ccc; margin: 10px 0;"></div>
             </div>
-            
             <table style="width: 100%; font-size: 13px; color: #333; margin-bottom: 15px;">
                 <tr>
                     <td style="font-weight: bold; width: 35%;">No. Documento:</td>
@@ -63,11 +61,9 @@ def send_styled_email(recipient, subject, title, body_text, items=None, total=0,
                     <td style="text-align: right;">{client_info.get('documento', 'N/A')}</td>
                 </tr>
             </table>
-
             <div style="background-color: #f1f8ff; padding: 8px 15px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #1E88E5;">
                 <p style="margin: 0; color: #1565C0; font-weight: bold; font-size: 12px;">📍 Detalles de Envío y Pago:</p>
             </div>
-
             <table style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr style="border-bottom: 2px solid #333;">
@@ -80,9 +76,7 @@ def send_styled_email(recipient, subject, title, body_text, items=None, total=0,
                     {rows}
                 </tbody>
             </table>
-
             <div style="border-top: 1px dashed #ccc; margin: 15px 0;"></div>
-            
             <table style="width: 100%;">
                 <tr>
                     <td style="font-size: 16px; font-weight: bold; font-family: sans-serif;">TOTAL A PAGAR:</td>
@@ -92,7 +86,6 @@ def send_styled_email(recipient, subject, title, body_text, items=None, total=0,
         </div>
         """
 
-    # Template HTML Premium con Encabezado Original Restaurado
     msg.html = f"""
     <!DOCTYPE html>
     <html>
@@ -158,20 +151,16 @@ def send_styled_email(recipient, subject, title, body_text, items=None, total=0,
                 {f'<img src="cid:logo" class="logo-img" alt="Logo">' if has_logo else ''}
                 <h1 style="margin: 0; font-size: 26px; font-weight: 300; letter-spacing: 1.5px; text-transform: uppercase;">Happy Children</h1>
             </div>
-            
             <div class="content">
                 <h2 style="color: #1565C0; margin-top: 0; font-size: 22px;">{title}</h2>
                 <div style="font-size: 16px;">
                     {body_text}
                 </div>
-                
                 {receipt_html}
-                
                 <div style="text-align: center;">
-                    <a href="http://127.0.0.1:5000" class="btn">Visitar Tienda en Línea</a>
+                    <a href="https://pinateria-happy-children-py-production.up.railway.app" class="btn">Visitar Tienda en Línea</a>
                 </div>
             </div>
-            
             <div class="footer">
                 <p style="margin: 5px 0; color: #444; font-size: 14px;"><strong>Piñatería Happy Children 🎈</strong></p>
                 <p style="margin: 5px 0;">¡Donde la diversión nunca termina!</p>
@@ -186,7 +175,10 @@ def send_styled_email(recipient, subject, title, body_text, items=None, total=0,
     """
 
     try:
-        mail.send(msg)
+        if connection:
+            connection.send(msg)
+        else:
+            mail.send(msg)
         return True
     except Exception as e:
         print(f"Error al enviar email: {str(e)}")
