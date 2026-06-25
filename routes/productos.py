@@ -1,4 +1,5 @@
 import io
+import time
 from flask import send_file
 import pandas as pd
 from flask import render_template, request, redirect, url_for, flash
@@ -53,8 +54,11 @@ def editar(id):
 @employee_required
 def guardar():
     try:
+        # Autogenerar código único basado en timestamp
+        codigo_generado = f"PROD-{int(time.time() * 1000)}"
+
         nuevo_prod = Producto(
-            codigo=request.form.get('codigo'),
+            codigo=codigo_generado,
             nombre=request.form.get('nombre'),
             descripcion=request.form.get('descripcion'),
             imagen_url=request.form.get('imagenUrl'),
