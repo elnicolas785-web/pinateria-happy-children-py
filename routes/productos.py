@@ -13,7 +13,6 @@ from extensions import db, employee_required
 def listar_productos():
     productos = Producto.query.all()
     categorias = CategoriaProducto.query.all()
-    # Formulario limpio para nuevo producto
     return render_template('crud_productos.html', 
                            listaProductos=productos, 
                            categorias=categorias, 
@@ -58,7 +57,7 @@ def guardar():
             codigo=request.form.get('codigo'),
             nombre=request.form.get('nombre'),
             descripcion=request.form.get('descripcion'),
-            imagenUrl=request.form.get('imagenUrl'),
+            imagen_url=request.form.get('imagenUrl'),
             id_categoria=request.form.get('id_categoria'),
             precio_compra=request.form.get('precio_compra'),
             precio_venta=request.form.get('precio_venta'),
@@ -84,14 +83,13 @@ def actualizar(id):
         producto.codigo = request.form.get('codigo')
         producto.nombre = request.form.get('nombre')
         producto.descripcion = request.form.get('descripcion')
-        producto.imagenUrl = request.form.get('imagenUrl')
+        producto.imagen_url = request.form.get('imagenUrl')
         producto.id_categoria = request.form.get('id_categoria')
         producto.precio_compra = request.form.get('precio_compra')
         producto.precio_venta = request.form.get('precio_venta')
         producto.stock_actual = request.form.get('stock_actual')
         producto.stock_minimo = request.form.get('stock_minimo')
         producto.unidad_medida = request.form.get('unidad_medida')
-
         db.session.commit()
         flash('Producto actualizado correctamente', 'success')
     except Exception as e:
@@ -99,30 +97,45 @@ def actualizar(id):
         flash(f'Error al actualizar: {str(e)}', 'danger')
     return redirect(url_for('productos.listar_productos'))
 
-# --- 6. BUSCAR ---
+# --- 6. BUSCAR (MULTICRITERIO) ---
 @productos_bp.route('/buscar', methods=['GET'])
 @employee_required
 def buscar():
     busqueda = request.args.get('busqueda', '')
+    categoria_id = request.args.get('categoria_id', '')
+    estado = request.args.get('estado', '')
+    stock_bajo = request.args.get('stock_bajo', '')
+
+    query = Producto.query.join(CategoriaProducto)
+
     if busqueda:
-        productos = Producto.query.join(CategoriaProducto).filter(
+        query = query.filter(
             db.or_(
                 Producto.nombre.ilike(f'%{busqueda}%'),
                 Producto.codigo.ilike(f'%{busqueda}%'),
                 CategoriaProducto.nombre.ilike(f'%{busqueda}%')
             )
-        ).all()
-    else:
-        productos = Producto.query.all()
-    
+        )
+    if categoria_id:
+        query = query.filter(Producto.id_categoria == categoria_id)
+    if estado:
+        query = query.filter(Producto.activo == estado)
+    if stock_bajo == '1':
+        query = query.filter(Producto.stock_actual <= Producto.stock_minimo)
+
+    productos = query.all()
     categorias = CategoriaProducto.query.all()
-    return render_template('crud_productos.html', 
-                           listaProductos=productos, 
-                           categorias=categorias, 
-                           producto=Producto(), 
+    return render_template('crud_productos.html',
+                           listaProductos=productos,
+                           categorias=categorias,
+                           producto=Producto(),
                            readonly=False,
-                           editMode=False)
-    
+                           editMode=False,
+                           busqueda=busqueda,
+                           categoria_id=categoria_id,
+                           estado=estado,
+                           stock_bajo=stock_bajo)
+
 # --- 7. CAMBIAR ESTADO (ACTIVAR/DESACTIVAR) ---
 @productos_bp.route('/cambiar_estado/<int:id>')
 @employee_required
@@ -145,19 +158,17 @@ def importar_excel():
     try:
         df = pd.read_excel(file, engine='openpyxl')
         print("--- COLUMNAS DETECTADAS EN EL EXCEL ---")
-        print(df.columns.tolist()) # Esto saldrá en tu terminal
+        print(df.columns.tolist())
         
         nuevos = 0
         actualizados = 0
 
         for index, row in df.iterrows():
             codigo = str(row['codigo']).strip()
-            # Debug por cada fila
             print(f"Procesando fila {index}: Código {codigo}")
 
             prod_existente = Producto.query.filter_by(codigo=codigo).first()
             
-            # Aseguramos conversión limpia de datos
             id_cat = int(row['id_categoria'])
             p_compra = float(row['precio_compra'])
             p_venta = float(row['precio_venta'])
@@ -194,7 +205,6 @@ def importar_excel():
         
     except Exception as error_desc:
         db.session.rollback()
-        # ESTO ES LO MÁS IMPORTANTE: Mira tu terminal cuando esto falle
         print("---------- ERROR CRÍTICO ----------")
         print(error_desc)
         print("-----------------------------------")
@@ -202,15 +212,13 @@ def importar_excel():
         
     return redirect(url_for('productos.listar_productos'))
 
-# --- 9. EXPORTAR A EXCEL (LISTADO / PLANTILLA) ---
+# --- 9. EXPORTAR A EXCEL ---
 @productos_bp.route('/exportar', methods=['GET'])
 @employee_required
 def exportar_productos_excel():
     try:
-        # 1. Obtener todos los productos actuales
         productos = Producto.query.all()
         
-        # 2. Estructurar los datos sin incluir la columna de imagen
         data = []
         for p in productos:
             data.append({
@@ -225,7 +233,6 @@ def exportar_productos_excel():
                 'unidad_medida': p.unidad_medida
             })
         
-        # 3. Si la base de datos está vacía, genera la estructura limpia con las cabeceras requeridas
         if not data:
             columnas = [
                 'codigo', 'nombre', 'descripcion', 'id_categoria', 
@@ -235,14 +242,12 @@ def exportar_productos_excel():
         else:
             df = pd.DataFrame(data)
         
-        # 4. Crear el archivo Excel en la memoria RAM
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             df.to_excel(writer, index=False, sheet_name='Productos')
         
         output.seek(0)
         
-        # 5. Enviar el archivo para descarga automatizada
         return send_file(
             output,
             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
