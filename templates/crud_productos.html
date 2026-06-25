@@ -98,19 +98,19 @@
                 <div class="row g-3 mt-2">
                     <div class="col-md-3">
                         <label class="form-label">Precio Compra</label>
-                        <input class="form-control" required step="0.01" {{ 'readonly' if readonly else '' }} name="precio_compra" value="{{ producto.precio_compra if producto.precio_compra else '' }}" type="number"/>
+                        <input class="form-control" required step="0.01" {{ 'readonly' if readonly else '' }} name="precio_compra" value="{{ producto.precio_compra if producto.precio_compra else '' }}" type="number" min="0"/>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Precio Venta</label>
-                        <input class="form-control" required step="0.01" {{ 'readonly' if readonly else '' }} name="precio_venta" value="{{ producto.precio_venta if producto.precio_venta else '' }}" type="number"/>
+                        <input class="form-control" required step="0.01" {{ 'readonly' if readonly else '' }} name="precio_venta" value="{{ producto.precio_venta if producto.precio_venta else '' }}" type="number" min="0"/>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Stock Actual</label>
-                        <input class="form-control" required {{ 'readonly' if readonly else '' }} name="stock_actual" value="{{ producto.stock_actual if producto.stock_actual else '' }}" type="number"/>
+                        <input class="form-control" required {{ 'readonly' if readonly else '' }} name="stock_actual" value="{{ producto.stock_actual if producto.stock_actual else '' }}" type="number" min="0"/>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Stock Mínimo</label>
-                        <input class="form-control" required {{ 'readonly' if readonly else '' }} name="stock_minimo" value="{{ producto.stock_minimo if producto.stock_minimo else '' }}" type="number"/>
+                        <input class="form-control" required {{ 'readonly' if readonly else '' }} name="stock_minimo" value="{{ producto.stock_minimo if producto.stock_minimo else '' }}" type="number" min="0"/>
                     </div>
                 </div>
 
@@ -139,7 +139,6 @@
         </div>
     </div>
 
-    <!-- BARRA DE BÚSQUEDA MULTICRITERIO -->
     <div class="card mb-3 border-0 shadow-sm">
         <div class="card-body py-3">
             <form action="{{ url_for('productos.buscar') }}" method="get" class="row g-2 align-items-end">

@@ -53,6 +53,15 @@ def editar(id):
 @employee_required
 def guardar():
     try:
+        # Validación para evitar negativos en el backend
+        if int(request.form.get('stock_actual', 0)) < 0 or int(request.form.get('stock_minimo', 0)) < 0:
+            flash('Error: El stock no puede tener valores negativos.', 'danger')
+            return redirect(url_for('productos.listar_productos'))
+
+        if float(request.form.get('precio_compra', 0)) < 0 or float(request.form.get('precio_venta', 0)) < 0:
+            flash('Error: Los precios no pueden ser negativos.', 'danger')
+            return redirect(url_for('productos.listar_productos'))
+
         nuevo_prod = Producto(
             codigo=request.form.get('codigo'),
             nombre=request.form.get('nombre'),
@@ -80,6 +89,15 @@ def guardar():
 def actualizar(id):
     producto = Producto.query.get_or_404(id)
     try:
+        # Validación para evitar negativos en el backend
+        if int(request.form.get('stock_actual', 0)) < 0 or int(request.form.get('stock_minimo', 0)) < 0:
+            flash('Error: El stock no puede tener valores negativos.', 'danger')
+            return redirect(url_for('productos.listar_productos'))
+            
+        if float(request.form.get('precio_compra', 0)) < 0 or float(request.form.get('precio_venta', 0)) < 0:
+            flash('Error: Los precios no pueden ser negativos.', 'danger')
+            return redirect(url_for('productos.listar_productos'))
+
         producto.codigo = request.form.get('codigo')
         producto.nombre = request.form.get('nombre')
         producto.descripcion = request.form.get('descripcion')
@@ -101,13 +119,25 @@ def actualizar(id):
 @productos_bp.route('/buscar', methods=['GET'])
 @employee_required
 def buscar():
+<<<<<<< HEAD
     busqueda = request.args.get('busqueda', '')
+=======
+    # Capturar todos los parámetros del formulario HTML
+    busqueda = request.args.get('busqueda', '').strip()
+>>>>>>> 2b53d683c5c81d116f7c0ed1009cd6bd8e6b612d
     categoria_id = request.args.get('categoria_id', '')
     estado = request.args.get('estado', '')
     stock_bajo = request.args.get('stock_bajo', '')
 
+<<<<<<< HEAD
     query = Producto.query.join(CategoriaProducto)
 
+=======
+    # Iniciar la consulta base uniendo la tabla de Categorías
+    query = Producto.query.join(CategoriaProducto)
+
+    # Aplicar filtro de texto (Nombre, Código o Nombre de Categoría)
+>>>>>>> 2b53d683c5c81d116f7c0ed1009cd6bd8e6b612d
     if busqueda:
         query = query.filter(
             db.or_(
@@ -116,6 +146,7 @@ def buscar():
                 CategoriaProducto.nombre.ilike(f'%{busqueda}%')
             )
         )
+<<<<<<< HEAD
     if categoria_id:
         query = query.filter(Producto.id_categoria == categoria_id)
     if estado:
@@ -129,13 +160,42 @@ def buscar():
                            listaProductos=productos,
                            categorias=categorias,
                            producto=Producto(),
+=======
+
+    # Aplicar filtro por Categoría exacta
+    if categoria_id:
+        query = query.filter(Producto.id_categoria == categoria_id)
+
+    # Aplicar filtro por Estado (Activo / Inactivo)
+    if estado:
+        query = query.filter(Producto.activo == estado)
+
+    # Aplicar filtro de Stock Crítico (Actual <= Mínimo)
+    if stock_bajo == '1':
+        query = query.filter(Producto.stock_actual <= Producto.stock_minimo)
+
+    # Ejecutar la consulta final
+    productos = query.all()
+    
+    categorias = CategoriaProducto.query.all()
+    
+    # Renderizar la plantilla devolviendo las variables para mantener los filtros seleccionados en la vista
+    return render_template('crud_productos.html', 
+                           listaProductos=productos, 
+                           categorias=categorias, 
+                           producto=Producto(), 
+>>>>>>> 2b53d683c5c81d116f7c0ed1009cd6bd8e6b612d
                            readonly=False,
                            editMode=False,
                            busqueda=busqueda,
                            categoria_id=categoria_id,
                            estado=estado,
                            stock_bajo=stock_bajo)
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> 2b53d683c5c81d116f7c0ed1009cd6bd8e6b612d
 # --- 7. CAMBIAR ESTADO (ACTIVAR/DESACTIVAR) ---
 @productos_bp.route('/cambiar_estado/<int:id>')
 @employee_required
@@ -261,3 +321,4 @@ def exportar_productos_excel():
         print("---------------------------------------------")
         flash(f'Error al generar la plantilla Excel: {str(e)}', 'danger')
         return redirect(url_for('productos.listar_productos'))
+        
